@@ -37,6 +37,15 @@ const TrustIndicators = () => {
   return (
     <section className="section-padding bg-section-alt">
       <div className="container-custom">
+        {/* Trust Statement */}
+        <div className="mb-10 text-center">
+          <p className="text-lg text-muted-foreground">
+            {language === 'en' 
+              ? 'Trusted by startups and enterprises across Bangladesh and beyond'
+              : 'বাংলাদেশ এবং বিশ্বব্যাপী স্টার্টআপ ও এন্টারপ্রাইজের বিশ্বস্ত অংশীদার'}
+          </p>
+        </div>
+        
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, index) => (
             <div
@@ -51,6 +60,29 @@ const TrustIndicators = () => {
               </p>
             </div>
           ))}
+        </div>
+        
+        {/* Process Statement */}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            {language === 'en' ? 'Discover' : 'আবিষ্কার'}
+          </span>
+          <span className="text-border">→</span>
+          <span className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            {language === 'en' ? 'Design' : 'ডিজাইন'}
+          </span>
+          <span className="text-border">→</span>
+          <span className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            {language === 'en' ? 'Build' : 'নির্মাণ'}
+          </span>
+          <span className="text-border">→</span>
+          <span className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            {language === 'en' ? 'Deliver' : 'ডেলিভার'}
+          </span>
         </div>
       </div>
     </section>

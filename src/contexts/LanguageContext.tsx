@@ -28,18 +28,18 @@ const translations: Record<Language, Record<string, string>> = {
     'common.viewAll': 'View All',
     'common.readMore': 'Read More',
     'common.submit': 'Submit',
-    'common.send': 'Send Message',
+    'common.send': 'Submit Inquiry',
     'common.apply': 'Apply Now',
     
     // Hero
-    'hero.title': 'Transforming Ideas Into Digital Reality',
-    'hero.subtitle': 'We deliver innovative IT solutions that drive business growth and operational excellence.',
-    'hero.cta.primary': 'Get Started',
-    'hero.cta.secondary': 'View Our Work',
+    'hero.title': 'We Build Software That Grows Your Business',
+    'hero.subtitle': 'Custom web apps, mobile solutions, and IT services for local businesses and enterprises in Bangladesh and beyond.',
+    'hero.cta.primary': 'Get a Free Quote',
+    'hero.cta.secondary': 'Book a Meeting',
     
     // Services
-    'services.title': 'Our Services',
-    'services.subtitle': 'Comprehensive IT solutions tailored to your business needs',
+    'services.title': 'What We Do',
+    'services.subtitle': 'Expert solutions that solve real business problems',
     
     // About
     'about.title': 'About Us',
@@ -106,18 +106,18 @@ const translations: Record<Language, Record<string, string>> = {
     'common.viewAll': 'সব দেখুন',
     'common.readMore': 'আরও পড়ুন',
     'common.submit': 'জমা দিন',
-    'common.send': 'বার্তা পাঠান',
+    'common.send': 'অনুসন্ধান পাঠান',
     'common.apply': 'আবেদন করুন',
     
     // Hero
-    'hero.title': 'ধারণাকে ডিজিটাল বাস্তবতায় রূপান্তর',
-    'hero.subtitle': 'আমরা উদ্ভাবনী আইটি সমাধান সরবরাহ করি যা ব্যবসায়িক বৃদ্ধি এবং অপারেশনাল শ্রেষ্ঠত্ব চালিত করে।',
-    'hero.cta.primary': 'শুরু করুন',
-    'hero.cta.secondary': 'আমাদের কাজ দেখুন',
+    'hero.title': 'আমরা এমন সফ্টওয়্যার তৈরি করি যা আপনার ব্যবসা বাড়ায়',
+    'hero.subtitle': 'বাংলাদেশ এবং বিশ্বব্যাপী স্থানীয় ব্যবসা ও এন্টারপ্রাইজের জন্য কাস্টম ওয়েব অ্যাপ, মোবাইল সমাধান এবং আইটি সেবা।',
+    'hero.cta.primary': 'বিনামূল্যে কোটেশন নিন',
+    'hero.cta.secondary': 'মিটিং বুক করুন',
     
     // Services
-    'services.title': 'আমাদের সেবাসমূহ',
-    'services.subtitle': 'আপনার ব্যবসার প্রয়োজন অনুযায়ী সম্পূর্ণ আইটি সমাধান',
+    'services.title': 'আমরা যা করি',
+    'services.subtitle': 'আপনার ব্যবসার সমস্যা সমাধানে আমাদের বিশেষজ্ঞ সেবা',
     
     // About
     'about.title': 'আমাদের সম্পর্কে',

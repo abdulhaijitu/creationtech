@@ -59,7 +59,7 @@ const HeroSection = () => {
                 asChild
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
               >
-                <Link to="/contact">
+                <Link to="/contact?type=quote">
                   {t('hero.cta.primary')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -70,7 +70,7 @@ const HeroSection = () => {
                 asChild
                 className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
               >
-                <Link to="/portfolio">{t('hero.cta.secondary')}</Link>
+                <Link to="/contact?type=meeting">{t('hero.cta.secondary')}</Link>
               </Button>
             </div>
           </div>
