@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { ExternalLink, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -110,19 +110,19 @@ const Portfolio = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="gradient-hero py-20 lg:py-28">
+        <section className="gradient-hero py-24 lg:py-32">
           <div className="container-custom text-center">
-            <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
+            <h1 className="mb-5 text-4xl font-bold text-primary-foreground sm:text-5xl animate-fade-up" style={{ letterSpacing: '-0.03em' }}>
               {t('portfolio.title')}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
+            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/75 leading-relaxed animate-fade-up animation-delay-100">
               {t('portfolio.subtitle')}
             </p>
           </div>
         </section>
 
         {/* Filter */}
-        <section className="border-b border-border py-6">
+        <section className="border-b border-border/50 py-6">
           <div className="container-custom">
             <div className="flex flex-wrap gap-2 justify-center">
               {categories.map((category) => (
@@ -130,6 +130,7 @@ const Portfolio = () => {
                   key={category}
                   variant={category === 'All' ? 'default' : 'outline'}
                   size="sm"
+                  className="rounded-full"
                 >
                   {category}
                 </Button>
@@ -143,7 +144,7 @@ const Portfolio = () => {
           <div className="container-custom">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {projects.map((project) => (
-                <Card key={project.id} className="group overflow-hidden hover-lift">
+                <Card key={project.id} className="group overflow-hidden card-interactive border-border/40">
                   {/* Image */}
                   <div className="aspect-video overflow-hidden bg-muted">
                     <img
@@ -152,29 +153,29 @@ const Portfolio = () => {
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
-                  <CardHeader>
-                    <div className="mb-2">
-                      <Badge variant="secondary">{project.category}</Badge>
+                  <CardHeader className="pb-3">
+                    <div className="mb-3">
+                      <Badge variant="secondary" className="text-xs font-medium">{project.category}</Badge>
                     </div>
-                    <CardTitle className="text-xl">
+                    <CardTitle className="text-lg font-semibold leading-snug">
                       {language === 'en' ? project.titleEn : project.titleBn}
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-sm">
                       {language === 'en' ? project.clientEn : project.clientBn}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
+                    <p className="mb-5 text-sm text-muted-foreground leading-relaxed line-clamp-2">
                       {language === 'en' ? project.descEn : project.descBn}
                     </p>
-                    <div className="mb-4 flex flex-wrap gap-1">
+                    <div className="mb-5 flex flex-wrap gap-1.5">
                       {project.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
+                        <Badge key={tag} variant="outline" className="text-xs font-normal">
                           {tag}
                         </Badge>
                       ))}
                     </div>
-                    <div className="rounded-lg bg-accent/10 p-3">
+                    <div className="rounded-lg bg-accent/8 p-4 border border-accent/15">
                       <p className="text-sm font-medium text-accent">
                         {language === 'en' ? project.resultEn : project.resultBn}
                       </p>
@@ -189,16 +190,19 @@ const Portfolio = () => {
         {/* CTA */}
         <section className="section-padding bg-section-alt">
           <div className="container-custom text-center">
-            <h2 className="mb-4 text-3xl font-bold">
+            <h2 className="mb-5 text-3xl font-bold tracking-tight sm:text-4xl">
               {language === 'en' ? 'Ready to Start Your Project?' : 'আপনার প্রকল্প শুরু করতে প্রস্তুত?'}
             </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground leading-relaxed">
               {language === 'en'
                 ? "Let's discuss how we can help bring your ideas to life."
                 : 'আসুন আলোচনা করি কীভাবে আমরা আপনার ধারণাগুলি বাস্তবায়িত করতে সাহায্য করতে পারি।'}
             </p>
-            <Button size="lg" asChild>
-              <Link to="/contact">{t('common.getQuote')}</Link>
+            <Button size="lg" asChild className="group">
+              <Link to="/contact">
+                {t('common.getQuote')}
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </Link>
             </Button>
           </div>
         </section>

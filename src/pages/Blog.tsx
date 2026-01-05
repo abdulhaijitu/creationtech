@@ -1,11 +1,12 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { Calendar, User, ArrowRight, Tag } from 'lucide-react';
+import { Calendar, User, ArrowRight } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const blogPosts = [
   {
@@ -111,19 +112,19 @@ const Blog = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="gradient-hero py-20 lg:py-28">
+        <section className="gradient-hero py-24 lg:py-32">
           <div className="container-custom text-center">
-            <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
+            <h1 className="mb-5 text-4xl font-bold text-primary-foreground sm:text-5xl animate-fade-up" style={{ letterSpacing: '-0.03em' }}>
               {t('blog.title')}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
+            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/75 leading-relaxed animate-fade-up animation-delay-100">
               {t('blog.subtitle')}
             </p>
           </div>
         </section>
 
         {/* Categories */}
-        <section className="border-b border-border py-6">
+        <section className="border-b border-border/50 py-6">
           <div className="container-custom">
             <div className="flex flex-wrap gap-2 justify-center">
               {categories.map((category) => (
@@ -131,6 +132,7 @@ const Blog = () => {
                   key={category}
                   variant={category === 'All' ? 'default' : 'outline'}
                   size="sm"
+                  className="rounded-full"
                 >
                   {category}
                 </Button>
@@ -144,7 +146,7 @@ const Blog = () => {
           <div className="container-custom">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {blogPosts.map((post) => (
-                <Card key={post.id} className="group overflow-hidden hover-lift">
+                <Card key={post.id} className="group overflow-hidden card-interactive border-border/40">
                   <div className="aspect-video overflow-hidden bg-muted">
                     <img
                       src={post.image}
@@ -152,39 +154,39 @@ const Blog = () => {
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
-                  <CardHeader>
-                    <div className="mb-2 flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
+                  <CardHeader className="pb-3">
+                    <div className="mb-3 flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5" />
                         {formatDate(post.date)}
                       </span>
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1.5">
                         <User className="h-3.5 w-3.5" />
                         {post.author}
                       </span>
                     </div>
-                    <Badge variant="secondary" className="w-fit mb-2">
+                    <Badge variant="secondary" className="w-fit mb-3 text-xs font-medium">
                       {post.category}
                     </Badge>
-                    <CardTitle className="text-xl leading-tight line-clamp-2">
+                    <CardTitle className="text-lg font-semibold leading-snug">
                       <Link
                         to={`/blog/${post.slug}`}
-                        className="hover:text-primary transition-colors"
+                        className="hover:text-primary transition-colors duration-200"
                       >
                         {language === 'en' ? post.titleEn : post.titleBn}
                       </Link>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="mb-4 text-sm text-muted-foreground line-clamp-2">
+                    <p className="mb-5 text-sm text-muted-foreground leading-relaxed line-clamp-2">
                       {language === 'en' ? post.excerptEn : post.excerptBn}
                     </p>
                     <Link
                       to={`/blog/${post.slug}`}
-                      className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+                      className="inline-flex items-center text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80 group/link"
                     >
                       {t('common.readMore')}
-                      <ArrowRight className="ml-1 h-4 w-4" />
+                      <ArrowRight className="ml-1.5 h-4 w-4 transition-transform duration-200 group-hover/link:translate-x-0.5" />
                     </Link>
                   </CardContent>
                 </Card>
@@ -195,20 +197,20 @@ const Blog = () => {
 
         {/* Newsletter */}
         <section className="section-padding bg-section-alt">
-          <div className="container-custom text-center">
-            <h2 className="mb-4 text-3xl font-bold">
+          <div className="container-narrow text-center">
+            <h2 className="mb-5 text-3xl font-bold tracking-tight sm:text-4xl">
               {language === 'en' ? 'Subscribe to Our Newsletter' : 'আমাদের নিউজলেটারে সাবস্ক্রাইব করুন'}
             </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
+            <p className="mx-auto mb-10 max-w-xl text-lg text-muted-foreground leading-relaxed">
               {language === 'en'
                 ? 'Get the latest articles, insights, and updates delivered directly to your inbox.'
                 : 'সর্বশেষ নিবন্ধ, অন্তর্দৃষ্টি এবং আপডেট সরাসরি আপনার ইনবক্সে পান।'}
             </p>
-            <div className="mx-auto flex max-w-md gap-2">
-              <input
+            <div className="mx-auto flex max-w-md gap-3">
+              <Input
                 type="email"
                 placeholder={language === 'en' ? 'Enter your email' : 'আপনার ইমেইল লিখুন'}
-                className="flex-1 rounded-lg border border-input bg-background px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="flex-1"
               />
               <Button>
                 {language === 'en' ? 'Subscribe' : 'সাবস্ক্রাইব'}

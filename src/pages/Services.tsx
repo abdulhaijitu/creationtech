@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import {
   Code, Smartphone, Cloud, Shield, Cog, BarChart, ArrowRight,
-  CheckCircle, Database, Globe, Headphones, LineChart, Palette
+  CheckCircle, Headphones, Palette
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -105,12 +105,12 @@ const Services = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="gradient-hero py-20 lg:py-28">
+        <section className="gradient-hero py-24 lg:py-32">
           <div className="container-custom text-center">
-            <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
+            <h1 className="mb-5 text-4xl font-bold text-primary-foreground sm:text-5xl animate-fade-up" style={{ letterSpacing: '-0.03em' }}>
               {heroTitle}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
+            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/75 leading-relaxed animate-fade-up animation-delay-100">
               {heroSubtitle}
             </p>
           </div>
@@ -119,7 +119,7 @@ const Services = () => {
         {/* Services List */}
         <section className="section-padding">
           <div className="container-custom">
-            <div className="space-y-16">
+            <div className="space-y-20 lg:space-y-28">
               {services.map((service, index) => {
                 const Icon = service.icon;
                 const isEven = index % 2 === 0;
@@ -127,37 +127,37 @@ const Services = () => {
                   <div
                     key={service.id}
                     id={service.id}
-                    className={`flex flex-col gap-8 lg:flex-row lg:items-center ${
+                    className={`flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16 ${
                       isEven ? '' : 'lg:flex-row-reverse'
                     }`}
                   >
                     {/* Icon Card */}
-                    <div className="lg:w-1/3">
-                      <div className="flex aspect-square max-w-xs items-center justify-center rounded-2xl bg-primary/10 mx-auto lg:mx-0">
-                        <Icon className="h-24 w-24 text-primary" />
+                    <div className="lg:w-5/12">
+                      <div className="flex aspect-square max-w-sm items-center justify-center rounded-2xl bg-gradient-to-br from-primary/8 to-primary/4 mx-auto lg:mx-0 border border-border/30">
+                        <Icon className="h-24 w-24 text-primary lg:h-28 lg:w-28" strokeWidth={1.5} />
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="lg:w-2/3">
-                      <h2 className="mb-4 text-3xl font-bold">
+                    <div className="lg:w-7/12">
+                      <h2 className="mb-4 text-2xl font-bold tracking-tight sm:text-3xl">
                         {language === 'en' ? service.titleEn : service.titleBn}
                       </h2>
-                      <p className="mb-6 text-lg text-muted-foreground">
+                      <p className="mb-8 text-lg text-muted-foreground leading-relaxed">
                         {language === 'en' ? service.descEn : service.descBn}
                       </p>
-                      <ul className="mb-6 grid gap-2 sm:grid-cols-2">
+                      <ul className="mb-8 grid gap-3 sm:grid-cols-2">
                         {service.features.map((feature, i) => (
-                          <li key={i} className="flex items-center gap-2 text-sm">
-                            <CheckCircle className="h-4 w-4 text-accent" />
-                            {feature}
+                          <li key={i} className="flex items-center gap-3 text-sm">
+                            <CheckCircle className="h-5 w-5 text-accent flex-shrink-0" />
+                            <span>{feature}</span>
                           </li>
                         ))}
                       </ul>
-                      <Button asChild>
+                      <Button asChild className="group">
                         <Link to={`/contact?service=${service.id}`}>
                           {language === 'en' ? 'Get Quote' : 'কোটেশন নিন'}
-                          <ArrowRight className="ml-2 h-4 w-4" />
+                          <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                         </Link>
                       </Button>
                     </div>
@@ -171,10 +171,10 @@ const Services = () => {
         {/* CTA */}
         <section className="section-padding bg-section-alt">
           <div className="container-custom text-center">
-            <h2 className="mb-4 text-3xl font-bold">
+            <h2 className="mb-5 text-3xl font-bold tracking-tight sm:text-4xl">
               {ctaTitle}
             </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground leading-relaxed">
               {ctaContent}
             </p>
             <Button size="lg" asChild>

@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async';
-import { Target, Eye, Users, Award, Clock, Heart } from 'lucide-react';
+import { Target, Eye, Users, Award, Heart } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -89,12 +89,12 @@ const About = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="gradient-hero py-20 lg:py-28">
+        <section className="gradient-hero py-24 lg:py-32">
           <div className="container-custom text-center">
-            <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
+            <h1 className="mb-5 text-4xl font-bold text-primary-foreground sm:text-5xl animate-fade-up" style={{ letterSpacing: '-0.03em' }}>
               {heroSection.title || t('about.title')}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
+            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/75 leading-relaxed animate-fade-up animation-delay-100">
               {heroSection.content || t('about.subtitle')}
             </p>
           </div>
@@ -102,16 +102,18 @@ const About = () => {
 
         {/* Story */}
         <section className="section-padding">
-          <div className="container-custom">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="mb-6 text-3xl font-bold">
+          <div className="container-narrow">
+            <div className="text-center">
+              <h2 className="mb-8 text-3xl font-bold tracking-tight sm:text-4xl">
                 {getSectionText('story', 'title', language === 'en' ? 'Our Story' : 'আমাদের গল্প')}
               </h2>
-              {storyContent.split('\n\n').map((paragraph, idx) => (
-                <p key={idx} className="mb-6 text-lg text-muted-foreground leading-relaxed last:mb-0">
-                  {paragraph}
-                </p>
-              ))}
+              <div className="space-y-6">
+                {storyContent.split('\n\n').map((paragraph, idx) => (
+                  <p key={idx} className="text-lg text-muted-foreground leading-relaxed">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -120,10 +122,10 @@ const About = () => {
         <section className="section-padding bg-section-alt">
           <div className="container-custom">
             <div className="grid gap-8 lg:grid-cols-2">
-              <Card className="border-0 bg-primary text-primary-foreground">
-                <CardContent className="p-8">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground/20">
-                    <Target className="h-6 w-6" />
+              <Card className="border-0 bg-primary text-primary-foreground shadow-lg">
+                <CardContent className="p-8 lg:p-10">
+                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-foreground/15">
+                    <Target className="h-7 w-7" />
                   </div>
                   <h3 className="mb-4 text-2xl font-bold">
                     {getSectionText('mission', 'title', t('about.mission'))}
@@ -133,10 +135,10 @@ const About = () => {
                   </p>
                 </CardContent>
               </Card>
-              <Card className="border-0 bg-accent text-accent-foreground">
-                <CardContent className="p-8">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent-foreground/20">
-                    <Eye className="h-6 w-6" />
+              <Card className="border-0 bg-accent text-accent-foreground shadow-lg">
+                <CardContent className="p-8 lg:p-10">
+                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent-foreground/15">
+                    <Eye className="h-7 w-7" />
                   </div>
                   <h3 className="mb-4 text-2xl font-bold">
                     {getSectionText('vision', 'title', t('about.vision'))}
@@ -153,22 +155,22 @@ const About = () => {
         {/* Values */}
         <section className="section-padding">
           <div className="container-custom">
-            <h2 className="mb-12 text-center text-3xl font-bold">
+            <h2 className="mb-14 text-center text-3xl font-bold tracking-tight sm:text-4xl">
               {language === 'en' ? 'Our Values' : 'আমাদের মূল্যবোধ'}
             </h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
               {values.map((value, index) => {
                 const Icon = value.icon;
                 return (
-                  <Card key={index} className="text-center">
-                    <CardContent className="p-6">
-                      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Card key={index} className="text-center card-interactive border-border/40 hover:border-border/60">
+                    <CardContent className="p-7">
+                      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/8 text-primary">
                         <Icon className="h-7 w-7" />
                       </div>
-                      <h3 className="mb-2 text-lg font-semibold">
+                      <h3 className="mb-3 text-lg font-semibold">
                         {language === 'en' ? value.titleEn : value.titleBn}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         {language === 'en' ? value.descEn : value.descBn}
                       </p>
                     </CardContent>
@@ -182,29 +184,29 @@ const About = () => {
         {/* Timeline */}
         <section className="section-padding bg-section-alt">
           <div className="container-custom">
-            <h2 className="mb-12 text-center text-3xl font-bold">
+            <h2 className="mb-14 text-center text-3xl font-bold tracking-tight sm:text-4xl">
               {language === 'en' ? 'Our Journey' : 'আমাদের যাত্রা'}
             </h2>
             <div className="relative mx-auto max-w-3xl">
-              <div className="absolute left-4 top-0 h-full w-0.5 bg-border md:left-1/2 md:-ml-px" />
+              <div className="absolute left-4 top-0 h-full w-0.5 bg-border/60 md:left-1/2 md:-ml-px" />
               {timeline.map((item, index) => (
                 <div
                   key={index}
-                  className={`relative mb-8 flex items-start md:items-center ${
+                  className={`relative mb-10 flex items-start md:items-center ${
                     index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                   }`}
                 >
-                  <div className="absolute left-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground md:left-1/2 md:-ml-4">
+                  <div className="absolute left-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-sm md:left-1/2 md:-ml-4">
                     {item.year.slice(-2)}
                   </div>
                   <div className={`ml-16 md:ml-0 md:w-1/2 ${index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
-                    <Card>
-                      <CardContent className="p-4">
+                    <Card className="card-interactive border-border/40">
+                      <CardContent className="p-5">
                         <span className="text-sm font-bold text-primary">{item.year}</span>
-                        <h3 className="font-semibold">
+                        <h3 className="font-semibold mt-1">
                           {language === 'en' ? item.titleEn : item.titleBn}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                           {language === 'en' ? item.descEn : item.descBn}
                         </p>
                       </CardContent>

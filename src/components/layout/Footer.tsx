@@ -41,67 +41,52 @@ const Footer = () => {
     { label: 'Cybersecurity', href: '/services#security' },
   ];
 
+  const socialLinks = [
+    { icon: Facebook, key: 'social_facebook', label: 'Facebook' },
+    { icon: Twitter, key: 'social_twitter', label: 'Twitter' },
+    { icon: Linkedin, key: 'social_linkedin', label: 'LinkedIn' },
+    { icon: Instagram, key: 'social_instagram', label: 'Instagram' },
+  ];
+
   return (
     <footer className="bg-primary text-primary-foreground">
-      <div className="container-custom section-padding">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      <div className="container-custom py-16 lg:py-20">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           {/* Company Info */}
-          <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2">
+          <div className="space-y-5">
+            <Link to="/" className="inline-block transition-opacity hover:opacity-80">
               <img src={logo} alt={getInfo('company_name', 'Creation Tech')} className="h-10" />
             </Link>
-            <p className="text-sm leading-relaxed text-primary-foreground/80">
+            <p className="text-sm leading-relaxed text-primary-foreground/70 max-w-xs">
               {t('footer.description')}
             </p>
-            <div className="flex gap-3">
-              <a
-                href={getSocialLink('social_facebook', '#')}
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/10 transition-colors hover:bg-primary-foreground/20"
-                aria-label="Facebook"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Facebook className="h-4 w-4" />
-              </a>
-              <a
-                href={getSocialLink('social_twitter', '#')}
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/10 transition-colors hover:bg-primary-foreground/20"
-                aria-label="Twitter"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Twitter className="h-4 w-4" />
-              </a>
-              <a
-                href={getSocialLink('social_linkedin', '#')}
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/10 transition-colors hover:bg-primary-foreground/20"
-                aria-label="LinkedIn"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Linkedin className="h-4 w-4" />
-              </a>
-              <a
-                href={getSocialLink('social_instagram', '#')}
-                className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/10 transition-colors hover:bg-primary-foreground/20"
-                aria-label="Instagram"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Instagram className="h-4 w-4" />
-              </a>
+            <div className="flex gap-2.5">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.key}
+                  href={getSocialLink(social.key, '#')}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-foreground/8 transition-all duration-200 hover:bg-primary-foreground/15"
+                  aria-label={social.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <social.icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold">{t('footer.quickLinks')}</h3>
-            <ul className="space-y-2">
+            <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-primary-foreground/90">
+              {t('footer.quickLinks')}
+            </h3>
+            <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.key}>
                   <Link
                     to={link.href}
-                    className="text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                    className="text-sm text-primary-foreground/65 transition-colors duration-200 hover:text-primary-foreground"
                   >
                     {t(link.key)}
                   </Link>
@@ -112,13 +97,15 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold">{t('footer.services')}</h3>
-            <ul className="space-y-2">
+            <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-primary-foreground/90">
+              {t('footer.services')}
+            </h3>
+            <ul className="space-y-3">
               {services.map((service) => (
                 <li key={service.label}>
                   <Link
                     to={service.href}
-                    className="text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                    className="text-sm text-primary-foreground/65 transition-colors duration-200 hover:text-primary-foreground"
                   >
                     {service.label}
                   </Link>
@@ -128,36 +115,40 @@ const Footer = () => {
           </div>
 
           {/* Contact & Newsletter */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <h3 className="mb-4 text-lg font-semibold">{t('footer.contact')}</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3 text-sm text-primary-foreground/80">
-                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-primary-foreground/90">
+                {t('footer.contact')}
+              </h3>
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3 text-sm text-primary-foreground/65">
+                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-foreground/50" />
                   <span>{getInfo('address', '123 Tech Street, Dhaka 1205, Bangladesh', '১২৩ টেক স্ট্রিট, ঢাকা ১২০৫, বাংলাদেশ')}</span>
                 </li>
-                <li className="flex items-center gap-3 text-sm text-primary-foreground/80">
-                  <Phone className="h-4 w-4 flex-shrink-0" />
+                <li className="flex items-center gap-3 text-sm text-primary-foreground/65">
+                  <Phone className="h-4 w-4 flex-shrink-0 text-primary-foreground/50" />
                   <span>{getInfo('phone_primary', '+880 1XXX-XXXXXX')}</span>
                 </li>
-                <li className="flex items-center gap-3 text-sm text-primary-foreground/80">
-                  <Mail className="h-4 w-4 flex-shrink-0" />
+                <li className="flex items-center gap-3 text-sm text-primary-foreground/65">
+                  <Mail className="h-4 w-4 flex-shrink-0 text-primary-foreground/50" />
                   <span>{getInfo('email_primary', 'info@creationtech.com')}</span>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="mb-2 text-lg font-semibold">{t('footer.newsletter')}</h3>
-              <p className="mb-3 text-sm text-primary-foreground/80">
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground/90">
+                {t('footer.newsletter')}
+              </h3>
+              <p className="mb-4 text-sm text-primary-foreground/65">
                 {t('footer.newsletterText')}
               </p>
               <form className="flex gap-2">
                 <Input
                   type="email"
                   placeholder="Email"
-                  className="border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/50"
+                  className="h-10 border-primary-foreground/15 bg-primary-foreground/5 text-primary-foreground placeholder:text-primary-foreground/40 focus-visible:ring-primary-foreground/30"
                 />
-                <Button variant="secondary" size="sm">
+                <Button variant="secondary" size="sm" className="h-10 px-4">
                   Subscribe
                 </Button>
               </form>
@@ -169,18 +160,18 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="border-t border-primary-foreground/10">
         <div className="container-custom flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
-          <p className="text-sm text-primary-foreground/70">{t('footer.copyright')}</p>
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-primary-foreground/70">
-            <Link to="/terms" className="hover:text-primary-foreground">
+          <p className="text-sm text-primary-foreground/55">{t('footer.copyright')}</p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-primary-foreground/55">
+            <Link to="/terms" className="transition-colors duration-200 hover:text-primary-foreground">
               {language === 'en' ? 'Terms & Conditions' : 'শর্তাবলী'}
             </Link>
-            <Link to="/privacy" className="hover:text-primary-foreground">
+            <Link to="/privacy" className="transition-colors duration-200 hover:text-primary-foreground">
               {language === 'en' ? 'Privacy Policy' : 'গোপনীয়তা নীতি'}
             </Link>
-            <Link to="/refund" className="hover:text-primary-foreground">
+            <Link to="/refund" className="transition-colors duration-200 hover:text-primary-foreground">
               {language === 'en' ? 'Refund Policy' : 'ফেরত নীতি'}
             </Link>
-            <Link to="/cookies" className="hover:text-primary-foreground">
+            <Link to="/cookies" className="transition-colors duration-200 hover:text-primary-foreground">
               {language === 'en' ? 'Cookie Policy' : 'কুকি নীতি'}
             </Link>
           </div>
