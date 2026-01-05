@@ -8,30 +8,30 @@ const CTASection = () => {
 
   const actions = [
     {
-      icon: MessageSquare,
-      titleEn: 'Contact Us',
-      titleBn: 'যোগাযোগ করুন',
-      descEn: 'Have questions? Get in touch with our team.',
-      descBn: 'প্রশ্ন আছে? আমাদের দলের সাথে যোগাযোগ করুন।',
-      href: '/contact',
-      variant: 'default' as const,
-    },
-    {
       icon: FileText,
-      titleEn: 'Get a Quote',
-      titleBn: 'কোটেশন নিন',
-      descEn: 'Request a detailed quote for your project.',
-      descBn: 'আপনার প্রকল্পের জন্য বিস্তারিত কোটেশন অনুরোধ করুন।',
+      titleEn: 'Get a Free Quote',
+      titleBn: 'বিনামূল্যে কোটেশন নিন',
+      descEn: 'Tell us about your project. We respond within 24 hours.',
+      descBn: 'আপনার প্রকল্প সম্পর্কে বলুন। আমরা ২৪ ঘণ্টার মধ্যে উত্তর দিই।',
       href: '/contact?type=quote',
-      variant: 'secondary' as const,
+      variant: 'default' as const,
     },
     {
       icon: Calendar,
       titleEn: 'Book a Meeting',
       titleBn: 'মিটিং বুক করুন',
-      descEn: 'Schedule a consultation with our experts.',
-      descBn: 'আমাদের বিশেষজ্ঞদের সাথে পরামর্শ সিডিউল করুন।',
+      descEn: 'Schedule a free 30-minute consultation call.',
+      descBn: 'বিনামূল্যে ৩০ মিনিটের পরামর্শ কল সিডিউল করুন।',
       href: '/contact?type=meeting',
+      variant: 'secondary' as const,
+    },
+    {
+      icon: MessageSquare,
+      titleEn: 'Send a Message',
+      titleBn: 'বার্তা পাঠান',
+      descEn: 'General inquiries? Drop us a quick message.',
+      descBn: 'সাধারণ জিজ্ঞাসা? আমাদের একটি বার্তা পাঠান।',
+      href: '/contact',
       variant: 'outline' as const,
     },
   ];
@@ -44,13 +44,13 @@ const CTASection = () => {
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="mb-4 text-3xl font-bold text-primary-foreground sm:text-4xl">
             {language === 'en'
-              ? 'Ready to Transform Your Business?'
-              : 'আপনার ব্যবসা রূপান্তর করতে প্রস্তুত?'}
+              ? "Let's Build Something Great Together"
+              : 'আসুন একসাথে দারুণ কিছু তৈরি করি'}
           </h2>
           <p className="mb-10 text-lg text-primary-foreground/80">
             {language === 'en'
-              ? "Let's discuss how we can help you achieve your digital goals."
-              : 'আসুন আলোচনা করি কীভাবে আমরা আপনার ডিজিটাল লক্ষ্য অর্জনে সাহায্য করতে পারি।'}
+              ? 'From discovery to delivery — we partner with you every step of the way.'
+              : 'আবিষ্কার থেকে ডেলিভারি পর্যন্ত — প্রতিটি ধাপে আমরা আপনার সাথে আছি।'}
           </p>
 
           <div className="grid gap-6 sm:grid-cols-3">
@@ -72,7 +72,7 @@ const CTASection = () => {
                     {language === 'en' ? action.descEn : action.descBn}
                   </p>
                   <span className="inline-flex items-center text-sm font-medium text-accent">
-                    {t('common.learnMore')}
+                    {language === 'en' ? 'Get Started' : 'শুরু করুন'}
                     <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
                 </Link>
