@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAllTestimonials, useCreateTestimonial, useUpdateTestimonial, useDeleteTestimonial, Testimonial } from '@/hooks/useTestimonials';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -13,8 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Quote } from 'lucide-react';
+import { Plus, Pencil, Trash2, Quote, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const emptyTestimonial = {
   name_en: '',
@@ -37,6 +38,52 @@ const AdminTestimonials = () => {
 
   const [editingItem, setEditingItem] = useState<Partial<Testimonial> | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be less than 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setEditingItem({ ...editingItem, avatar_url: publicUrl });
+      toast.success('Avatar uploaded');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload avatar');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setEditingItem({ ...editingItem, avatar_url: '' });
+  };
 
   const handleSave = async () => {
     if (!editingItem?.name_en || !editingItem?.quote_en) {
@@ -146,12 +193,48 @@ const AdminTestimonials = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Avatar URL</Label>
-                    <Input
-                      value={editingItem.avatar_url || ''}
-                      onChange={(e) => setEditingItem({ ...editingItem, avatar_url: e.target.value })}
-                      placeholder="https://..."
-                    />
+                    <Label>Avatar</Label>
+                    <div className="flex items-center gap-2">
+                      {editingItem.avatar_url ? (
+                        <div className="relative">
+                          <img
+                            src={editingItem.avatar_url}
+                            alt="Avatar preview"
+                            className="h-12 w-12 rounded-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleRemoveAvatar}
+                            className="absolute -right-1 -top-1 rounded-full bg-destructive p-0.5 text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                          {editingItem.name_en?.charAt(0) || '?'}
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          {isUploading ? 'Uploading...' : 'Upload'}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -224,9 +307,17 @@ const AdminTestimonials = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-                      {item.company?.charAt(0) || item.name_en.charAt(0)}
-                    </div>
+                    {item.avatar_url ? (
+                      <img
+                        src={item.avatar_url}
+                        alt={item.name_en}
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                        {item.company?.charAt(0) || item.name_en.charAt(0)}
+                      </div>
+                    )}
                     <div>
                       <CardTitle className="text-base">{item.name_en}</CardTitle>
                       <p className="text-sm text-muted-foreground">{item.role_en}</p>
