@@ -170,12 +170,18 @@ const Footer = () => {
       <div className="border-t border-primary-foreground/10">
         <div className="container-custom flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
           <p className="text-sm text-primary-foreground/70">{t('footer.copyright')}</p>
-          <div className="flex gap-4 text-sm text-primary-foreground/70">
-            <Link to="/privacy" className="hover:text-primary-foreground">
-              Privacy Policy
-            </Link>
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-primary-foreground/70">
             <Link to="/terms" className="hover:text-primary-foreground">
-              Terms of Service
+              {language === 'en' ? 'Terms & Conditions' : 'শর্তাবলী'}
+            </Link>
+            <Link to="/privacy" className="hover:text-primary-foreground">
+              {language === 'en' ? 'Privacy Policy' : 'গোপনীয়তা নীতি'}
+            </Link>
+            <Link to="/refund" className="hover:text-primary-foreground">
+              {language === 'en' ? 'Refund Policy' : 'ফেরত নীতি'}
+            </Link>
+            <Link to="/cookies" className="hover:text-primary-foreground">
+              {language === 'en' ? 'Cookie Policy' : 'কুকি নীতি'}
             </Link>
           </div>
         </div>
