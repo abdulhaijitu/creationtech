@@ -13,6 +13,8 @@ import {
   LogOut,
   Menu,
   X,
+  Building2,
+  FileCode,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +36,8 @@ const navGroups = [
   {
     label: 'Content',
     items: [
+      { label: 'Business Info', href: '/admin/business-info', icon: Building2 },
+      { label: 'Pages', href: '/admin/pages', icon: FileCode },
       { label: 'Services', href: '/admin/services', icon: Briefcase },
       { label: 'Portfolio', href: '/admin/portfolio', icon: FolderOpen },
       { label: 'Blog', href: '/admin/blog', icon: FileText },

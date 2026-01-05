@@ -21,6 +21,8 @@ import NotFound from "./pages/NotFound";
 // Admin pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminBusinessInfo from "./pages/admin/AdminBusinessInfo";
+import AdminPages from "./pages/admin/AdminPages";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminPortfolio from "./pages/admin/AdminPortfolio";
 import AdminBlog from "./pages/admin/AdminBlog";
@@ -60,6 +62,22 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/business-info"
+                  element={
+                    <ProtectedRoute>
+                      <AdminBusinessInfo />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/pages"
+                  element={
+                    <ProtectedRoute>
+                      <AdminPages />
                     </ProtectedRoute>
                   }
                 />

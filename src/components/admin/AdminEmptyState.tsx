@@ -1,14 +1,11 @@
+import { ReactNode } from 'react';
 import { LucideIcon, Inbox } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface AdminEmptyStateProps {
   icon?: LucideIcon;
   title: string;
   description: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
+  action?: ReactNode;
 }
 
 const AdminEmptyState = ({ 
@@ -24,11 +21,7 @@ const AdminEmptyState = ({
       </div>
       <h3 className="font-medium text-foreground mb-1">{title}</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-4">{description}</p>
-      {action && (
-        <Button variant="outline" onClick={action.onClick}>
-          {action.label}
-        </Button>
-      )}
+      {action}
     </div>
   );
 };

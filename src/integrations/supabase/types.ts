@@ -112,6 +112,36 @@ export type Database = {
           },
         ]
       }
+      business_info: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          metadata: Json | null
+          updated_at: string
+          value_bn: string | null
+          value_en: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          metadata?: Json | null
+          updated_at?: string
+          value_bn?: string | null
+          value_en?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          metadata?: Json | null
+          updated_at?: string
+          value_bn?: string | null
+          value_en?: string | null
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
@@ -290,6 +320,60 @@ export type Database = {
           preferred_date?: string | null
           preferred_time?: string | null
           status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      page_content: {
+        Row: {
+          content_bn: string | null
+          content_en: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          meta_description_bn: string | null
+          meta_description_en: string | null
+          meta_title_bn: string | null
+          meta_title_en: string | null
+          page_slug: string
+          section_key: string
+          title_bn: string | null
+          title_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          content_bn?: string | null
+          content_en?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          meta_description_bn?: string | null
+          meta_description_en?: string | null
+          meta_title_bn?: string | null
+          meta_title_en?: string | null
+          page_slug: string
+          section_key: string
+          title_bn?: string | null
+          title_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content_bn?: string | null
+          content_en?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          meta_description_bn?: string | null
+          meta_description_en?: string | null
+          meta_title_bn?: string | null
+          meta_title_en?: string | null
+          page_slug?: string
+          section_key?: string
+          title_bn?: string | null
+          title_en?: string | null
           updated_at?: string
         }
         Relationships: []
