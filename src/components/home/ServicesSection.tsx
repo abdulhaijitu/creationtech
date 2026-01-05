@@ -3,6 +3,7 @@ import { ArrowRight, Code, Smartphone, Cloud, Shield, Cog, BarChart } from 'luci
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePageContent } from '@/hooks/usePageContent';
 
 const services = [
   {
@@ -57,14 +58,25 @@ const services = [
 
 const ServicesSection = () => {
   const { t, language } = useLanguage();
+  const { data: homeContent } = usePageContent('home');
+
+  const servicesSection = homeContent?.find((c) => c.section_key === 'services_section');
+
+  const sectionTitle = language === 'en'
+    ? servicesSection?.title_en || t('services.title')
+    : servicesSection?.title_bn || t('services.title');
+
+  const sectionSubtitle = language === 'en'
+    ? servicesSection?.content_en || t('services.subtitle')
+    : servicesSection?.content_bn || t('services.subtitle');
 
   return (
     <section className="section-padding bg-section-light">
       <div className="container-custom">
         {/* Section Header */}
         <div className="mx-auto mb-12 max-w-2xl text-center">
-          <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{t('services.title')}</h2>
-          <p className="text-lg text-muted-foreground">{t('services.subtitle')}</p>
+          <h2 className="mb-4 text-3xl font-bold sm:text-4xl">{sectionTitle}</h2>
+          <p className="text-lg text-muted-foreground">{sectionSubtitle}</p>
         </div>
 
         {/* Services Grid */}

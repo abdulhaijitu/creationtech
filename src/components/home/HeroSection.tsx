@@ -2,9 +2,26 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePageContent } from '@/hooks/usePageContent';
 
 const HeroSection = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { data: homeContent } = usePageContent('home');
+
+  const heroSection = homeContent?.find((c) => c.section_key === 'hero');
+  const badgeSection = homeContent?.find((c) => c.section_key === 'hero_badge');
+
+  const title = language === 'en' 
+    ? heroSection?.title_en || t('hero.title')
+    : heroSection?.title_bn || t('hero.title');
+
+  const subtitle = language === 'en'
+    ? heroSection?.content_en || t('hero.subtitle')
+    : heroSection?.content_bn || t('hero.subtitle');
+
+  const badge = language === 'en'
+    ? badgeSection?.title_en || 'Trusted by 100+ businesses worldwide'
+    : badgeSection?.title_bn || '১০০+ ব্যবসা বিশ্বব্যাপী বিশ্বস্ত';
 
   return (
     <section className="relative overflow-hidden gradient-hero">
@@ -22,17 +39,17 @@ const HeroSection = () => {
             {/* Badge */}
             <div className="mb-6 inline-flex items-center rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-sm text-primary-foreground">
               <span className="mr-2 h-2 w-2 rounded-full bg-accent" />
-              Trusted by 100+ businesses worldwide
+              {badge}
             </div>
 
             {/* Title */}
             <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight text-primary-foreground sm:text-5xl md:text-6xl lg:text-7xl">
-              {t('hero.title')}
+              {title}
             </h1>
 
             {/* Subtitle */}
             <p className="mx-auto mb-10 max-w-2xl text-lg text-primary-foreground/80 sm:text-xl">
-              {t('hero.subtitle')}
+              {subtitle}
             </p>
 
             {/* CTA Buttons */}
