@@ -15,6 +15,7 @@ import {
   X,
   Building2,
   FileCode,
+  Quote,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,6 +41,7 @@ const navGroups = [
       { label: 'Pages', href: '/admin/pages', icon: FileCode },
       { label: 'Services', href: '/admin/services', icon: Briefcase },
       { label: 'Portfolio', href: '/admin/portfolio', icon: FolderOpen },
+      { label: 'Testimonials', href: '/admin/testimonials', icon: Quote },
       { label: 'Blog', href: '/admin/blog', icon: FileText },
     ],
   },
