@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
 import { cn } from '@/lib/utils';
+import logo from '@/assets/logo.png';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,11 +33,8 @@ const Header = () => {
       <div className="container-custom">
         <div className="flex h-16 items-center justify-between lg:h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <span className="text-lg font-bold text-primary-foreground">CT</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">Creation Tech</span>
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="CreationTech" className="h-10 lg:h-12" />
           </Link>
 
           {/* Desktop Navigation */}
