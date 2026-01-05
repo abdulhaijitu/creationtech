@@ -46,13 +46,21 @@ import {
 } from '@/hooks/usePageContent';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Legal pages that cannot be deleted by managers
+const PROTECTED_LEGAL_PAGES = ['terms', 'privacy', 'refund', 'cookies'];
+
 const AVAILABLE_PAGES = [
-  { slug: 'home', label: 'Home Page' },
-  { slug: 'about', label: 'About Us' },
-  { slug: 'services', label: 'Services' },
-  { slug: 'contact', label: 'Contact' },
-  { slug: 'pricing', label: 'Pricing' },
-  { slug: 'careers', label: 'Careers' },
+  { slug: 'home', label: 'Home Page', category: 'main' },
+  { slug: 'about', label: 'About Us', category: 'main' },
+  { slug: 'services', label: 'Services', category: 'main' },
+  { slug: 'contact', label: 'Contact', category: 'main' },
+  { slug: 'pricing', label: 'Pricing', category: 'main' },
+  { slug: 'careers', label: 'Careers', category: 'main' },
+  { slug: 'blog', label: 'Blog', category: 'main' },
+  { slug: 'terms', label: 'Terms & Conditions', category: 'legal' },
+  { slug: 'privacy', label: 'Privacy Policy', category: 'legal' },
+  { slug: 'refund', label: 'Refund Policy', category: 'legal' },
+  { slug: 'cookies', label: 'Cookie Policy', category: 'legal' },
 ];
 
 const AdminPages = () => {
@@ -70,8 +78,10 @@ const AdminPages = () => {
   const [formData, setFormData] = useState<Partial<PageContent>>({});
 
   const canEdit = role === 'admin' || role === 'manager';
+  const canDeleteLegalPages = role === 'admin'; // Only admin can delete legal pages
 
   const pageContent = allContent?.filter((c) => c.page_slug === selectedPage) ?? [];
+  const isLegalPage = PROTECTED_LEGAL_PAGES.includes(selectedPage);
 
   useEffect(() => {
     if (editingSection) {
@@ -246,14 +256,17 @@ const AdminPages = () => {
                       <Button variant="outline" size="sm" onClick={() => openEditDialog(section)}>
                         Edit
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDeleteConfirm(section.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {/* Hide delete button for legal pages if user is not admin */}
+                      {(!isLegalPage || canDeleteLegalPages) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDeleteConfirm(section.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   )}
                 </CardHeader>
