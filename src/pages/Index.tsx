@@ -3,6 +3,7 @@ import Layout from '@/components/layout/Layout';
 import HeroSection from '@/components/home/HeroSection';
 import ServicesSection from '@/components/home/ServicesSection';
 import TrustIndicators from '@/components/home/TrustIndicators';
+import TestimonialsSection from '@/components/home/TestimonialsSection';
 import PartnersSection from '@/components/home/PartnersSection';
 import CTASection from '@/components/home/CTASection';
 
@@ -26,6 +27,7 @@ const Index = () => {
         <PartnersSection />
         <ServicesSection />
         <TrustIndicators />
+        <TestimonialsSection />
         <CTASection />
       </Layout>
     </>
