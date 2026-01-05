@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import RichTextEditor from '@/components/ui/rich-text-editor';
 import {
   Dialog,
   DialogContent,
@@ -342,29 +343,24 @@ const AdminPages = () => {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="content_en">Content (English)</Label>
-                  <Textarea
-                    id="content_en"
-                    value={formData.content_en ?? ''}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, content_en: e.target.value }))
-                    }
-                    rows={6}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="content_bn">Content (বাংলা)</Label>
-                  <Textarea
-                    id="content_bn"
-                    value={formData.content_bn ?? ''}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, content_bn: e.target.value }))
-                    }
-                    rows={6}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="content_en">Content (English)</Label>
+                <RichTextEditor
+                  content={formData.content_en ?? ''}
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, content_en: value }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="content_bn">Content (বাংলা)</Label>
+                <RichTextEditor
+                  content={formData.content_bn ?? ''}
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, content_bn: value }))
+                  }
+                />
               </div>
             </TabsContent>
 
