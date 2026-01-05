@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useCMSContent } from '@/hooks/useCMSContent';
 
 const pricingPlans = [
   {
@@ -90,14 +91,21 @@ const faqs = [
 
 const Pricing = () => {
   const { t, language } = useLanguage();
+  const { getSectionText, getMetaTitle, getMetaDescription } = useCMSContent({ pageSlug: 'pricing' });
+
+  // CMS content with fallbacks
+  const heroTitle = getSectionText('hero', 'title', language === 'en' ? 'Pricing' : 'মূল্য');
+  const heroSubtitle = getSectionText('hero', 'content', language === 'en' ? 'Transparent pricing for quality solutions' : 'মানসম্মত সমাধানের জন্য স্বচ্ছ মূল্য');
+  const ctaTitle = getSectionText('cta', 'title', language === 'en' ? 'Need a Custom Quote?' : 'কাস্টম কোটেশন প্রয়োজন?');
+  const ctaContent = getSectionText('cta', 'content', language === 'en' ? 'Every project is unique. Contact us to discuss your specific requirements and get a tailored quote.' : 'প্রতিটি প্রকল্প অনন্য। আপনার নির্দিষ্ট প্রয়োজনীয়তা আলোচনা করতে এবং একটি কাস্টম কোটেশন পেতে যোগাযোগ করুন।');
 
   return (
     <>
       <Helmet>
-        <title>Pricing - Creation Tech | Transparent IT Service Pricing</title>
+        <title>{getMetaTitle('Pricing - Creation Tech | Transparent IT Service Pricing')}</title>
         <meta
           name="description"
-          content="View Creation Tech's transparent pricing for web development, mobile apps, cloud solutions, and IT services. Get a quote for your project."
+          content={getMetaDescription("View Creation Tech's transparent pricing for web development, mobile apps, cloud solutions, and IT services. Get a quote for your project.")}
         />
       </Helmet>
       <Layout>
@@ -105,10 +113,10 @@ const Pricing = () => {
         <section className="gradient-hero py-20 lg:py-28">
           <div className="container-custom text-center">
             <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
-              {t('pricing.title')}
+              {heroTitle}
             </h1>
             <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
-              {t('pricing.subtitle')}
+              {heroSubtitle}
             </p>
           </div>
         </section>
@@ -200,12 +208,10 @@ const Pricing = () => {
         <section className="section-padding">
           <div className="container-custom text-center">
             <h2 className="mb-4 text-3xl font-bold">
-              {language === 'en' ? 'Need a Custom Quote?' : 'কাস্টম কোটেশন প্রয়োজন?'}
+              {ctaTitle}
             </h2>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-              {language === 'en'
-                ? "Every project is unique. Contact us to discuss your specific requirements and get a tailored quote."
-                : 'প্রতিটি প্রকল্প অনন্য। আপনার নির্দিষ্ট প্রয়োজনীয়তা আলোচনা করতে এবং একটি কাস্টম কোটেশন পেতে যোগাযোগ করুন।'}
+              {ctaContent}
             </p>
             <Button size="lg" asChild>
               <Link to="/contact">{t('common.contactUs')}</Link>

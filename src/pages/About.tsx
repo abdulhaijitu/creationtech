@@ -3,6 +3,7 @@ import { Target, Eye, Users, Award, Clock, Heart } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
+import { useCMSContent } from '@/hooks/useCMSContent';
 
 const values = [
   {
@@ -45,14 +46,45 @@ const timeline = [
 
 const About = () => {
   const { t, language } = useLanguage();
+  const { getSection, getSectionText, getMetaTitle, getMetaDescription } = useCMSContent({ pageSlug: 'about' });
+
+  // CMS content with fallbacks
+  const heroSection = getSection('hero', {
+    title: language === 'en' ? 'About Us' : 'আমাদের সম্পর্কে',
+    content: language === 'en' ? 'Learn about our journey and mission' : 'আমাদের যাত্রা এবং মিশন সম্পর্কে জানুন',
+  });
+
+  const storyContent = getSectionText(
+    'story',
+    'content',
+    language === 'en'
+      ? 'Creation Tech was founded in 2015 with a simple yet powerful mission: to help businesses harness the power of technology for growth and success. What started as a small team of passionate developers has grown into a full-service IT company serving clients across Bangladesh and beyond.\n\nToday, we are proud to be a trusted technology partner for over 200 businesses, delivering innovative solutions that drive real results. Our team of 50+ experts brings together diverse skills in development, design, cloud computing, and cybersecurity.'
+      : 'Creation Tech ২০১৫ সালে একটি সহজ কিন্তু শক্তিশালী মিশন নিয়ে প্রতিষ্ঠিত হয়েছিল: ব্যবসাগুলিকে বৃদ্ধি এবং সাফল্যের জন্য প্রযুক্তির শক্তি কাজে লাগাতে সাহায্য করা।\n\nআজ, আমরা ২০০+ ব্যবসার জন্য একটি বিশ্বস্ত প্রযুক্তি অংশীদার হতে পেরে গর্বিত, প্রকৃত ফলাফল চালিত উদ্ভাবনী সমাধান সরবরাহ করছি।'
+  );
+
+  const missionContent = getSectionText(
+    'mission',
+    'content',
+    language === 'en'
+      ? 'To empower businesses with innovative technology solutions that drive growth, efficiency, and competitive advantage. We are committed to delivering excellence in every project while building lasting partnerships based on trust and mutual success.'
+      : 'উদ্ভাবনী প্রযুক্তি সমাধান দিয়ে ব্যবসাগুলিকে ক্ষমতায়ন করা যা বৃদ্ধি, দক্ষতা এবং প্রতিযোগিতামূলক সুবিধা চালিত করে।'
+  );
+
+  const visionContent = getSectionText(
+    'vision',
+    'content',
+    language === 'en'
+      ? 'To be the leading IT solutions provider in Bangladesh and Southeast Asia, recognized for our innovation, quality, and commitment to client success. We envision a future where every business, regardless of size, can leverage technology to achieve their full potential.'
+      : 'বাংলাদেশ এবং দক্ষিণ-পূর্ব এশিয়ায় শীর্ষস্থানীয় আইটি সলিউশন প্রদানকারী হওয়া, আমাদের উদ্ভাবন, গুণমান এবং ক্লায়েন্ট সাফল্যের প্রতিশ্রুতির জন্য স্বীকৃত।'
+  );
 
   return (
     <>
       <Helmet>
-        <title>About Us - Creation Tech | Our Story & Mission</title>
+        <title>{getMetaTitle('About Us - Creation Tech | Our Story & Mission')}</title>
         <meta
           name="description"
-          content="Learn about Creation Tech's journey, mission, vision, and the values that drive us to deliver exceptional IT solutions to businesses worldwide."
+          content={getMetaDescription("Learn about Creation Tech's journey, mission, vision, and the values that drive us to deliver exceptional IT solutions to businesses worldwide.")}
         />
       </Helmet>
       <Layout>
@@ -60,10 +92,10 @@ const About = () => {
         <section className="gradient-hero py-20 lg:py-28">
           <div className="container-custom text-center">
             <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
-              {t('about.title')}
+              {heroSection.title || t('about.title')}
             </h1>
             <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
-              {t('about.subtitle')}
+              {heroSection.content || t('about.subtitle')}
             </p>
           </div>
         </section>
@@ -73,18 +105,13 @@ const About = () => {
           <div className="container-custom">
             <div className="mx-auto max-w-3xl text-center">
               <h2 className="mb-6 text-3xl font-bold">
-                {language === 'en' ? 'Our Story' : 'আমাদের গল্প'}
+                {getSectionText('story', 'title', language === 'en' ? 'Our Story' : 'আমাদের গল্প')}
               </h2>
-              <p className="mb-6 text-lg text-muted-foreground leading-relaxed">
-                {language === 'en'
-                  ? 'Creation Tech was founded in 2015 with a simple yet powerful mission: to help businesses harness the power of technology for growth and success. What started as a small team of passionate developers has grown into a full-service IT company serving clients across Bangladesh and beyond.'
-                  : 'Creation Tech ২০১৫ সালে একটি সহজ কিন্তু শক্তিশালী মিশন নিয়ে প্রতিষ্ঠিত হয়েছিল: ব্যবসাগুলিকে বৃদ্ধি এবং সাফল্যের জন্য প্রযুক্তির শক্তি কাজে লাগাতে সাহায্য করা।'}
-              </p>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                {language === 'en'
-                  ? 'Today, we are proud to be a trusted technology partner for over 200 businesses, delivering innovative solutions that drive real results. Our team of 50+ experts brings together diverse skills in development, design, cloud computing, and cybersecurity.'
-                  : 'আজ, আমরা ২০০+ ব্যবসার জন্য একটি বিশ্বস্ত প্রযুক্তি অংশীদার হতে পেরে গর্বিত, প্রকৃত ফলাফল চালিত উদ্ভাবনী সমাধান সরবরাহ করছি।'}
-              </p>
+              {storyContent.split('\n\n').map((paragraph, idx) => (
+                <p key={idx} className="mb-6 text-lg text-muted-foreground leading-relaxed last:mb-0">
+                  {paragraph}
+                </p>
+              ))}
             </div>
           </div>
         </section>
@@ -98,11 +125,11 @@ const About = () => {
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground/20">
                     <Target className="h-6 w-6" />
                   </div>
-                  <h3 className="mb-4 text-2xl font-bold">{t('about.mission')}</h3>
+                  <h3 className="mb-4 text-2xl font-bold">
+                    {getSectionText('mission', 'title', t('about.mission'))}
+                  </h3>
                   <p className="text-primary-foreground/80 leading-relaxed">
-                    {language === 'en'
-                      ? 'To empower businesses with innovative technology solutions that drive growth, efficiency, and competitive advantage. We are committed to delivering excellence in every project while building lasting partnerships based on trust and mutual success.'
-                      : 'উদ্ভাবনী প্রযুক্তি সমাধান দিয়ে ব্যবসাগুলিকে ক্ষমতায়ন করা যা বৃদ্ধি, দক্ষতা এবং প্রতিযোগিতামূলক সুবিধা চালিত করে।'}
+                    {missionContent}
                   </p>
                 </CardContent>
               </Card>
@@ -111,11 +138,11 @@ const About = () => {
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent-foreground/20">
                     <Eye className="h-6 w-6" />
                   </div>
-                  <h3 className="mb-4 text-2xl font-bold">{t('about.vision')}</h3>
+                  <h3 className="mb-4 text-2xl font-bold">
+                    {getSectionText('vision', 'title', t('about.vision'))}
+                  </h3>
                   <p className="text-accent-foreground/80 leading-relaxed">
-                    {language === 'en'
-                      ? 'To be the leading IT solutions provider in Bangladesh and Southeast Asia, recognized for our innovation, quality, and commitment to client success. We envision a future where every business, regardless of size, can leverage technology to achieve their full potential.'
-                      : 'বাংলাদেশ এবং দক্ষিণ-পূর্ব এশিয়ায় শীর্ষস্থানীয় আইটি সলিউশন প্রদানকারী হওয়া, আমাদের উদ্ভাবন, গুণমান এবং ক্লায়েন্ট সাফল্যের প্রতিশ্রুতির জন্য স্বীকৃত।'}
+                    {visionContent}
                   </p>
                 </CardContent>
               </Card>

@@ -6,8 +6,8 @@ import {
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useCMSContent } from '@/hooks/useCMSContent';
 
 const services = [
   {
@@ -86,14 +86,21 @@ const services = [
 
 const Services = () => {
   const { t, language } = useLanguage();
+  const { getSectionText, getMetaTitle, getMetaDescription } = useCMSContent({ pageSlug: 'services' });
+
+  // CMS content with fallbacks
+  const heroTitle = getSectionText('hero', 'title', language === 'en' ? 'Our Services' : 'আমাদের সেবাসমূহ');
+  const heroSubtitle = getSectionText('hero', 'content', language === 'en' ? 'Comprehensive IT solutions tailored to your business needs' : 'আপনার ব্যবসার প্রয়োজন অনুযায়ী ব্যাপক আইটি সমাধান');
+  const ctaTitle = getSectionText('cta', 'title', language === 'en' ? "Can't Find What You Need?" : 'আপনার প্রয়োজনীয় সেবা খুঁজে পাচ্ছেন না?');
+  const ctaContent = getSectionText('cta', 'content', language === 'en' ? 'We offer custom solutions tailored to your specific requirements. Let us know what you need.' : 'আমরা আপনার নির্দিষ্ট প্রয়োজনীয়তা অনুযায়ী কাস্টম সমাধান অফার করি।');
 
   return (
     <>
       <Helmet>
-        <title>Our Services - Creation Tech | IT Solutions & Development</title>
+        <title>{getMetaTitle('Our Services - Creation Tech | IT Solutions & Development')}</title>
         <meta
           name="description"
-          content="Explore Creation Tech's comprehensive IT services including web development, mobile apps, cloud solutions, cybersecurity, and IT consulting."
+          content={getMetaDescription("Explore Creation Tech's comprehensive IT services including web development, mobile apps, cloud solutions, cybersecurity, and IT consulting.")}
         />
       </Helmet>
       <Layout>
@@ -101,10 +108,10 @@ const Services = () => {
         <section className="gradient-hero py-20 lg:py-28">
           <div className="container-custom text-center">
             <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
-              {t('services.title')}
+              {heroTitle}
             </h1>
             <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
-              {t('services.subtitle')}
+              {heroSubtitle}
             </p>
           </div>
         </section>
@@ -165,12 +172,10 @@ const Services = () => {
         <section className="section-padding bg-section-alt">
           <div className="container-custom text-center">
             <h2 className="mb-4 text-3xl font-bold">
-              {language === 'en' ? "Can't Find What You Need?" : 'আপনার প্রয়োজনীয় সেবা খুঁজে পাচ্ছেন না?'}
+              {ctaTitle}
             </h2>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-              {language === 'en'
-                ? 'We offer custom solutions tailored to your specific requirements. Let us know what you need.'
-                : 'আমরা আপনার নির্দিষ্ট প্রয়োজনীয়তা অনুযায়ী কাস্টম সমাধান অফার করি।'}
+              {ctaContent}
             </p>
             <Button size="lg" asChild>
               <Link to="/contact">{t('common.contactUs')}</Link>
