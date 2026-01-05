@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
 
 const services = [
   { value: 'web', labelEn: 'Web Development', labelBn: 'ওয়েব ডেভেলপমেন্ট' },
@@ -27,6 +28,16 @@ const Contact = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('type') || 'contact';
+  const { data: businessInfo } = useBusinessInfoMap();
+
+  // Helper to get value with fallback
+  const getInfo = (key: string, fallbackEn: string, fallbackBn?: string) => {
+    const info = businessInfo[key];
+    if (info) {
+      return language === 'en' ? (info.value_en || fallbackEn) : (info.value_bn || fallbackBn || fallbackEn);
+    }
+    return language === 'en' ? fallbackEn : (fallbackBn || fallbackEn);
+  };
 
   const handleSubmit = (e: React.FormEvent, formType: string) => {
     e.preventDefault();
@@ -80,8 +91,7 @@ const Contact = () => {
                           {language === 'en' ? 'Office Address' : 'অফিসের ঠিকানা'}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          123 Tech Street, Gulshan-2<br />
-                          Dhaka 1212, Bangladesh
+                          {getInfo('address', '123 Tech Street, Gulshan-2, Dhaka 1212, Bangladesh', '১২৩ টেক স্ট্রিট, গুলশান-২, ঢাকা ১২১২, বাংলাদেশ')}
                         </p>
                       </div>
                     </div>
@@ -94,8 +104,8 @@ const Contact = () => {
                           {language === 'en' ? 'Phone' : 'ফোন'}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          +880 1XXX-XXXXXX<br />
-                          +880 2-XXXXXXXX
+                          {getInfo('phone_primary', '+880 1XXX-XXXXXX')}<br />
+                          {getInfo('phone_secondary', '+880 2-XXXXXXXX')}
                         </p>
                       </div>
                     </div>
@@ -108,8 +118,8 @@ const Contact = () => {
                           {language === 'en' ? 'Email' : 'ইমেইল'}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          info@creationtech.com<br />
-                          support@creationtech.com
+                          {getInfo('email_primary', 'info@creationtech.com')}<br />
+                          {getInfo('email_support', 'support@creationtech.com')}
                         </p>
                       </div>
                     </div>
@@ -122,9 +132,7 @@ const Contact = () => {
                           {language === 'en' ? 'Business Hours' : 'ব্যবসায়িক সময়'}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {language === 'en'
-                            ? 'Sun - Thu: 9:00 AM - 6:00 PM'
-                            : 'রবি - বৃহস্পতি: সকাল ৯:০০ - সন্ধ্যা ৬:০০'}
+                          {getInfo('business_hours', 'Sun - Thu: 9:00 AM - 6:00 PM', 'রবি - বৃহস্পতি: সকাল ৯:০০ - সন্ধ্যা ৬:০০')}
                         </p>
                       </div>
                     </div>
@@ -350,7 +358,7 @@ const Contact = () => {
                           </div>
                           <Button type="submit" className="w-full">
                             <Calendar className="mr-2 h-4 w-4" />
-                            {t('common.bookMeeting')}
+                            {language === 'en' ? 'Book Meeting' : 'মিটিং বুক করুন'}
                           </Button>
                         </form>
                       </CardContent>

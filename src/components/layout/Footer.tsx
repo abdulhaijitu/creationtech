@@ -3,9 +3,26 @@ import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } from 'luc
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
+import logo from '@/assets/logo.png';
 
 const Footer = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { data: businessInfo, isLoading } = useBusinessInfoMap();
+
+  // Helper to get value with fallback
+  const getInfo = (key: string, fallbackEn: string, fallbackBn?: string) => {
+    const info = businessInfo[key];
+    if (info) {
+      return language === 'en' ? (info.value_en || fallbackEn) : (info.value_bn || fallbackBn || fallbackEn);
+    }
+    return language === 'en' ? fallbackEn : (fallbackBn || fallbackEn);
+  };
+
+  const getSocialLink = (key: string, fallback: string) => {
+    const info = businessInfo[key];
+    return info?.value_en || fallback;
+  };
 
   const quickLinks = [
     { key: 'nav.home', href: '/' },
@@ -31,40 +48,45 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
-                <span className="text-lg font-bold text-accent-foreground">CT</span>
-              </div>
-              <span className="text-xl font-bold">Creation Tech</span>
+              <img src={logo} alt={getInfo('company_name', 'Creation Tech')} className="h-10" />
             </Link>
             <p className="text-sm leading-relaxed text-primary-foreground/80">
               {t('footer.description')}
             </p>
             <div className="flex gap-3">
               <a
-                href="#"
+                href={getSocialLink('social_facebook', '#')}
                 className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/10 transition-colors hover:bg-primary-foreground/20"
                 aria-label="Facebook"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Facebook className="h-4 w-4" />
               </a>
               <a
-                href="#"
+                href={getSocialLink('social_twitter', '#')}
                 className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/10 transition-colors hover:bg-primary-foreground/20"
                 aria-label="Twitter"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Twitter className="h-4 w-4" />
               </a>
               <a
-                href="#"
+                href={getSocialLink('social_linkedin', '#')}
                 className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/10 transition-colors hover:bg-primary-foreground/20"
                 aria-label="LinkedIn"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Linkedin className="h-4 w-4" />
               </a>
               <a
-                href="#"
+                href={getSocialLink('social_instagram', '#')}
                 className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/10 transition-colors hover:bg-primary-foreground/20"
                 aria-label="Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Instagram className="h-4 w-4" />
               </a>
@@ -112,15 +134,15 @@ const Footer = () => {
               <ul className="space-y-3">
                 <li className="flex items-start gap-3 text-sm text-primary-foreground/80">
                   <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                  <span>123 Tech Street, Dhaka 1205, Bangladesh</span>
+                  <span>{getInfo('address', '123 Tech Street, Dhaka 1205, Bangladesh', '১২৩ টেক স্ট্রিট, ঢাকা ১২০৫, বাংলাদেশ')}</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-primary-foreground/80">
                   <Phone className="h-4 w-4 flex-shrink-0" />
-                  <span>+880 1XXX-XXXXXX</span>
+                  <span>{getInfo('phone_primary', '+880 1XXX-XXXXXX')}</span>
                 </li>
                 <li className="flex items-center gap-3 text-sm text-primary-foreground/80">
                   <Mail className="h-4 w-4 flex-shrink-0" />
-                  <span>info@creationtech.com</span>
+                  <span>{getInfo('email_primary', 'info@creationtech.com')}</span>
                 </li>
               </ul>
             </div>

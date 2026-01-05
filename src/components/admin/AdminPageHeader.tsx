@@ -5,17 +5,13 @@ import { LucideIcon } from 'lucide-react';
 interface AdminPageHeaderProps {
   title: string;
   description?: string;
-  action?: {
-    label: string;
-    icon?: LucideIcon;
-    onClick: () => void;
-  };
+  action?: ReactNode;
   children?: ReactNode;
 }
 
 const AdminPageHeader = ({ title, description, action, children }: AdminPageHeaderProps) => {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         {description && (
@@ -24,12 +20,7 @@ const AdminPageHeader = ({ title, description, action, children }: AdminPageHead
       </div>
       <div className="flex items-center gap-3">
         {children}
-        {action && (
-          <Button onClick={action.onClick}>
-            {action.icon && <action.icon className="mr-2 h-4 w-4" />}
-            {action.label}
-          </Button>
-        )}
+        {action}
       </div>
     </div>
   );
