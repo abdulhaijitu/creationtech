@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { MapPin, Clock, Briefcase, Users, Heart, Coffee } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -8,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const jobOpenings = [
   {
@@ -65,6 +68,47 @@ const benefits = [
 
 const Careers = () => {
   const { t, language } = useLanguage();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    position: '',
+    resumeUrl: '',
+    coverLetter: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('job_applications').insert({
+        full_name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        position: formData.position,
+        resume_url: formData.resumeUrl || null,
+        cover_letter: formData.coverLetter || null,
+      });
+      if (error) throw error;
+      toast({
+        title: language === 'en' ? 'Application Submitted!' : 'আবেদন জমা হয়েছে!',
+        description: language === 'en'
+          ? 'Thank you for applying. We will review your application and get back to you soon.'
+          : 'আবেদন করার জন্য ধন্যবাদ। আমরা আপনার আবেদন পর্যালোচনা করব এবং শীঘ্রই যোগাযোগ করব।',
+      });
+      setFormData({ name: '', email: '', phone: '', position: '', resumeUrl: '', coverLetter: '' });
+    } catch (error: any) {
+      toast({
+        title: language === 'en' ? 'Error' : 'ত্রুটি',
+        description: language === 'en' ? 'Failed to submit application. Please try again.' : 'আবেদন জমা দিতে ব্যর্থ। অনুগ্রহ করে আবার চেষ্টা করুন।',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -148,7 +192,7 @@ const Careers = () => {
                         </CardDescription>
                       </div>
                       <Button asChild>
-                        <a href={`#apply-${job.id}`}>{t('common.apply')}</a>
+                        <a href="#apply">{t('common.apply')}</a>
                       </Button>
                     </div>
                   </CardHeader>
@@ -184,42 +228,78 @@ const Careers = () => {
               </p>
               <Card>
                 <CardContent className="p-6">
-                  <form className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="name">{t('contact.form.name')} *</Label>
-                        <Input id="name" required />
+                        <Input 
+                          id="name" 
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          required 
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">{t('contact.form.email')} *</Label>
-                        <Input id="email" type="email" required />
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          required 
+                        />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">{t('contact.form.phone')}</Label>
-                      <Input id="phone" type="tel" />
+                      <Input 
+                        id="phone" 
+                        type="tel" 
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="position">
                         {language === 'en' ? 'Position Applied For' : 'আবেদনকৃত পদ'} *
                       </Label>
-                      <Input id="position" required />
+                      <Input 
+                        id="position" 
+                        value={formData.position}
+                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="resume">
-                        {language === 'en' ? 'Resume/CV' : 'জীবনবৃত্তান্ত'} *
+                      <Label htmlFor="resumeUrl">
+                        {language === 'en' ? 'Resume/CV Link' : 'জীবনবৃত্তান্ত লিংক'}
                       </Label>
-                      <Input id="resume" type="file" accept=".pdf,.doc,.docx" required />
-                      <p className="text-xs text-muted-foreground">PDF, DOC, DOCX (Max 5MB)</p>
+                      <Input 
+                        id="resumeUrl" 
+                        type="url" 
+                        placeholder={language === 'en' ? 'Google Drive, Dropbox, or LinkedIn URL' : 'Google Drive, Dropbox, বা LinkedIn URL'}
+                        value={formData.resumeUrl}
+                        onChange={(e) => setFormData({ ...formData, resumeUrl: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {language === 'en' ? 'Share a link to your resume from Google Drive, Dropbox, or LinkedIn' : 'Google Drive, Dropbox, বা LinkedIn থেকে আপনার জীবনবৃত্তান্তের লিংক শেয়ার করুন'}
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="cover">
                         {language === 'en' ? 'Cover Letter' : 'কভার লেটার'}
                       </Label>
-                      <Textarea id="cover" rows={4} />
+                      <Textarea 
+                        id="cover" 
+                        rows={4} 
+                        value={formData.coverLetter}
+                        onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
+                      />
                     </div>
-                    <Button type="submit" className="w-full">
-                      {t('common.submit')}
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting 
+                        ? (language === 'en' ? 'Submitting...' : 'জমা দেওয়া হচ্ছে...') 
+                        : t('common.submit')}
                     </Button>
                   </form>
                 </CardContent>
