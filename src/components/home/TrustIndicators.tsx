@@ -1,7 +1,8 @@
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePageContent } from '@/hooks/usePageContent';
 import CountUp from '@/components/common/CountUp';
 
-const stats = [
+const defaultStats = [
   { value: 10, suffix: '+', keyEn: 'Years Experience', keyBn: 'বছরের অভিজ্ঞতা' },
   { value: 500, suffix: '+', keyEn: 'Projects Delivered', keyBn: 'প্রকল্প সম্পন্ন' },
   { value: 200, suffix: '+', keyEn: 'Happy Clients', keyBn: 'সন্তুষ্ট ক্লায়েন্ট' },
@@ -10,6 +11,28 @@ const stats = [
 
 const TrustIndicators = () => {
   const { language } = useLanguage();
+  const { data: homeContent } = usePageContent('home');
+
+  const getStatFromCMS = (index: number) => {
+    const sectionKey = `trust_stat_${index + 1}`;
+    const cmsData = homeContent?.find((c) => c.section_key === sectionKey);
+    const fallback = defaultStats[index];
+
+    if (!cmsData) return fallback;
+
+    const titleValue = language === 'en' ? cmsData.title_en : cmsData.title_bn;
+    const numericValue = parseInt(titleValue?.replace(/[^0-9]/g, '') || '') || fallback.value;
+    const suffix = titleValue?.includes('+') ? '+' : '';
+
+    return {
+      value: numericValue,
+      suffix,
+      keyEn: cmsData.content_en || fallback.keyEn,
+      keyBn: cmsData.content_bn || fallback.keyBn,
+    };
+  };
+
+  const stats = [0, 1, 2, 3].map(getStatFromCMS);
 
   return (
     <section className="section-padding bg-section-alt">
