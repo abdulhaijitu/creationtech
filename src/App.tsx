@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+
+// Public pages
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Services from "./pages/Services";
@@ -15,30 +18,122 @@ import Careers from "./pages/Careers";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
+// Admin pages
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminServices from "./pages/admin/AdminServices";
+import AdminPortfolio from "./pages/admin/AdminPortfolio";
+import AdminBlog from "./pages/admin/AdminBlog";
+import AdminCareers from "./pages/admin/AdminCareers";
+import AdminContacts from "./pages/admin/AdminContacts";
+import AdminQuotes from "./pages/admin/AdminQuotes";
+import AdminMeetings from "./pages/admin/AdminMeetings";
+import AdminUsers from "./pages/admin/AdminUsers";
+import ProtectedRoute from "./components/admin/ProtectedRoute";
+
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/portfolio" element={<Portfolio />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/careers" element={<Careers />} />
-              <Route path="/contact" element={<Contact />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Index />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/careers" element={<Careers />} />
+                <Route path="/contact" element={<Contact />} />
+
+                {/* Admin Routes */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/services"
+                  element={
+                    <ProtectedRoute>
+                      <AdminServices />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/portfolio"
+                  element={
+                    <ProtectedRoute>
+                      <AdminPortfolio />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/blog"
+                  element={
+                    <ProtectedRoute>
+                      <AdminBlog />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/careers"
+                  element={
+                    <ProtectedRoute>
+                      <AdminCareers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/leads/contacts"
+                  element={
+                    <ProtectedRoute>
+                      <AdminContacts />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/leads/quotes"
+                  element={
+                    <ProtectedRoute>
+                      <AdminQuotes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/leads/meetings"
+                  element={
+                    <ProtectedRoute>
+                      <AdminMeetings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminUsers />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Catch-all */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </LanguageProvider>
     </HelmetProvider>
   </QueryClientProvider>
