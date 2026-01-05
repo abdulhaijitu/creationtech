@@ -34,55 +34,55 @@ const TrustIndicators = () => {
 
   const stats = [0, 1, 2, 3].map(getStatFromCMS);
 
+  const processSteps = [
+    { en: 'Discover', bn: 'আবিষ্কার' },
+    { en: 'Design', bn: 'ডিজাইন' },
+    { en: 'Build', bn: 'নির্মাণ' },
+    { en: 'Deliver', bn: 'ডেলিভার' },
+  ];
+
   return (
-    <section className="section-padding bg-section-alt">
+    <section className="section-padding-sm bg-section-light">
       <div className="container-custom">
         {/* Trust Statement */}
-        <div className="mb-10 text-center">
-          <p className="text-lg text-muted-foreground">
+        <div className="mb-12 text-center">
+          <p className="text-lg text-muted-foreground leading-relaxed">
             {language === 'en' 
               ? 'Trusted by startups and enterprises across Bangladesh and beyond'
               : 'বাংলাদেশ এবং বিশ্বব্যাপী স্টার্টআপ ও এন্টারপ্রাইজের বিশ্বস্ত অংশীদার'}
           </p>
         </div>
         
+        {/* Stats Grid */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, index) => (
             <div
               key={index}
               className="flex flex-col items-center text-center"
             >
-              <div className="mb-2 text-4xl font-bold text-primary sm:text-5xl">
+              <div className="mb-3 text-4xl font-bold text-primary sm:text-5xl" style={{ letterSpacing: '-0.02em' }}>
                 <CountUp end={stat.value} suffix={stat.suffix} />
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 {language === 'en' ? stat.keyEn : stat.keyBn}
               </p>
             </div>
           ))}
         </div>
         
-        {/* Process Statement */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            {language === 'en' ? 'Discover' : 'আবিষ্কার'}
-          </span>
-          <span className="text-border">→</span>
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            {language === 'en' ? 'Design' : 'ডিজাইন'}
-          </span>
-          <span className="text-border">→</span>
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            {language === 'en' ? 'Build' : 'নির্মাণ'}
-          </span>
-          <span className="text-border">→</span>
-          <span className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            {language === 'en' ? 'Deliver' : 'ডেলিভার'}
-          </span>
+        {/* Process Steps */}
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+          {processSteps.map((step, index) => (
+            <div key={index} className="flex items-center gap-3 sm:gap-4">
+              <span className="flex items-center gap-2.5 rounded-full bg-primary/8 px-4 py-2 text-sm font-medium text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                {language === 'en' ? step.en : step.bn}
+              </span>
+              {index < processSteps.length - 1 && (
+                <span className="text-border text-lg hidden sm:inline">→</span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
@@ -29,12 +29,12 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
       <div className="container-custom">
-        <div className="flex h-16 items-center justify-between lg:h-20">
+        <div className="flex h-16 items-center justify-between lg:h-[72px]">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img src={logo} alt="CreationTech" className="h-10 lg:h-12" />
+          <Link to="/" className="flex items-center transition-opacity hover:opacity-80">
+            <img src={logo} alt="CreationTech" className="h-9 lg:h-10" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -44,33 +44,37 @@ const Header = () => {
                 key={item.key}
                 to={item.href}
                 className={cn(
-                  'px-3 py-2 text-sm font-medium transition-colors duration-200',
+                  'relative px-3.5 py-2 text-sm font-medium transition-colors duration-200',
                   isActive(item.href)
                     ? 'text-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {t(item.key)}
+                {isActive(item.href) && (
+                  <span className="absolute inset-x-3.5 -bottom-[1.125rem] h-0.5 rounded-full bg-primary" />
+                )}
               </Link>
             ))}
           </nav>
 
           {/* Desktop Actions */}
-          <div className="hidden lg:flex lg:items-center lg:gap-3">
+          <div className="hidden lg:flex lg:items-center lg:gap-4">
             <LanguageToggle />
-            <Button asChild>
+            <Button asChild size="default">
               <Link to="/contact">{t('common.getQuote')}</Link>
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex items-center gap-3 lg:hidden">
             <LanguageToggle />
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
+              className="h-10 w-10"
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -79,18 +83,18 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="border-t border-border pb-4 lg:hidden">
-            <nav className="flex flex-col space-y-1 pt-4">
+          <div className="border-t border-border/50 pb-6 lg:hidden animate-fade-in">
+            <nav className="flex flex-col gap-1 pt-4">
               {navItems.map((item) => (
                 <Link
                   key={item.key}
                   to={item.href}
                   onClick={() => setIsMenuOpen(false)}
                   className={cn(
-                    'px-3 py-2 text-sm font-medium transition-colors duration-200',
+                    'rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200',
                     isActive(item.href)
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-primary/8 text-primary'
+                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                   )}
                 >
                   {t(item.key)}
