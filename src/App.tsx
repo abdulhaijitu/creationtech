@@ -35,6 +35,7 @@ import AdminContacts from "./pages/admin/AdminContacts";
 import AdminQuotes from "./pages/admin/AdminQuotes";
 import AdminMeetings from "./pages/admin/AdminMeetings";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -152,6 +153,14 @@ const App = () => (
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminUsers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/testimonials"
+                  element={
+                    <ProtectedRoute>
+                      <AdminTestimonials />
                     </ProtectedRoute>
                   }
                 />
