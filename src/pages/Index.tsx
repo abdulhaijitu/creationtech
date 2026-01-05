@@ -1,13 +1,34 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Helmet } from 'react-helmet-async';
+import Layout from '@/components/layout/Layout';
+import HeroSection from '@/components/home/HeroSection';
+import ServicesSection from '@/components/home/ServicesSection';
+import TrustIndicators from '@/components/home/TrustIndicators';
+import PartnersSection from '@/components/home/PartnersSection';
+import CTASection from '@/components/home/CTASection';
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      <Helmet>
+        <title>Creation Tech - Innovative IT Solutions for Business Growth</title>
+        <meta
+          name="description"
+          content="Creation Tech delivers innovative IT solutions including web development, mobile apps, cloud solutions, and cybersecurity services to help businesses grow and succeed."
+        />
+        <meta
+          name="keywords"
+          content="IT solutions, web development, mobile apps, cloud solutions, cybersecurity, Bangladesh, Dhaka"
+        />
+        <link rel="canonical" href="https://creationtech.com" />
+      </Helmet>
+      <Layout>
+        <HeroSection />
+        <PartnersSection />
+        <ServicesSection />
+        <TrustIndicators />
+        <CTASection />
+      </Layout>
+    </>
   );
 };
 
