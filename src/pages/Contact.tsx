@@ -156,78 +156,83 @@ const Contact = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="gradient-hero py-20 lg:py-28">
-          <div className="container-custom text-center">
-            <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
+        <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-20 lg:py-28">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-foreground/5 via-transparent to-transparent" />
+          <div className="container-custom relative text-center">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-sm font-medium text-primary-foreground backdrop-blur-sm">
+              <Mail className="h-4 w-4" />
+              {language === 'en' ? 'Get in Touch' : 'যোগাযোগ করুন'}
+            </span>
+            <h1 className="mb-6 text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl">
               {t('contact.title')}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
+            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80 leading-relaxed">
               {t('contact.subtitle')}
             </p>
           </div>
         </section>
 
         {/* Contact Section */}
-        <section className="section-padding">
+        <section className="section-padding bg-background">
           <div className="container-custom">
-            <div className="grid gap-12 lg:grid-cols-3">
+            <div className="grid gap-12 lg:gap-16 lg:grid-cols-3">
               {/* Contact Info */}
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div>
-                  <h2 className="mb-6 text-2xl font-bold">
+                  <h2 className="mb-8 text-2xl font-bold tracking-tight">
                     {language === 'en' ? 'Contact Information' : 'যোগাযোগের তথ্য'}
                   </h2>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <div className="space-y-6">
+                    <div className="group flex items-start gap-4">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
                         <MapPin className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="font-medium">
+                        <h3 className="font-semibold text-foreground">
                           {language === 'en' ? 'Office Address' : 'অফিসের ঠিকানা'}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                           {getInfo('address', 'House # 71, Road # 27, Gulshan-01, Dhaka', 'বাসা # ৭১, রোড # ২৭, গুলশান-০১, ঢাকা')}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <div className="group flex items-start gap-4">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
                         <Phone className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="font-medium">
+                        <h3 className="font-semibold text-foreground">
                           {language === 'en' ? 'Phone' : 'ফোন'}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                           {getInfo('phone_primary', '+880 1777656517')}<br />
                           {getInfo('phone_secondary', '+880 2-9123456')}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <div className="group flex items-start gap-4">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
                         <Mail className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="font-medium">
+                        <h3 className="font-semibold text-foreground">
                           {language === 'en' ? 'Email' : 'ইমেইল'}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                           {getInfo('email_primary', 'info@creationtech.com')}<br />
                           {getInfo('email_support', 'support@creationtech.com')}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <div className="group flex items-start gap-4">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
                         <Clock className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="font-medium">
+                        <h3 className="font-semibold text-foreground">
                           {language === 'en' ? 'Business Hours' : 'ব্যবসায়িক সময়'}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                           {getInfo('business_hours', 'Sun - Thu: 9:00 AM - 6:00 PM', 'রবি - বৃহস্পতি: সকাল ৯:০০ - সন্ধ্যা ৬:০০')}
                         </p>
                       </div>
@@ -236,7 +241,7 @@ const Contact = () => {
                 </div>
 
                 {/* Map */}
-                <div className="aspect-video overflow-hidden rounded-lg bg-muted">
+                <div className="aspect-video overflow-hidden rounded-xl border border-border/60 bg-muted shadow-card">
                   {getMapEmbed() ? (
                     <div 
                       className="h-full w-full"
@@ -256,20 +261,29 @@ const Contact = () => {
               {/* Forms */}
               <div className="lg:col-span-2">
                 <Tabs defaultValue={defaultTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 mb-6">
-                    <TabsTrigger value="contact" className="flex items-center gap-2">
+                  <TabsList className="mb-8 grid w-full grid-cols-3 rounded-xl bg-muted/50 p-1.5">
+                    <TabsTrigger 
+                      value="contact" 
+                      className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                    >
                       <MessageSquare className="h-4 w-4" />
                       <span className="hidden sm:inline">
                         {language === 'en' ? 'Contact' : 'যোগাযোগ'}
                       </span>
                     </TabsTrigger>
-                    <TabsTrigger value="quote" className="flex items-center gap-2">
+                    <TabsTrigger 
+                      value="quote" 
+                      className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                    >
                       <FileText className="h-4 w-4" />
                       <span className="hidden sm:inline">
                         {language === 'en' ? 'Quote' : 'কোটেশন'}
                       </span>
                     </TabsTrigger>
-                    <TabsTrigger value="meeting" className="flex items-center gap-2">
+                    <TabsTrigger 
+                      value="meeting" 
+                      className="flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                    >
                       <Calendar className="h-4 w-4" />
                       <span className="hidden sm:inline">
                         {language === 'en' ? 'Meeting' : 'মিটিং'}
@@ -278,73 +292,78 @@ const Contact = () => {
                   </TabsList>
 
                   {/* Contact Form */}
-                  <TabsContent value="contact">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>
+                  <TabsContent value="contact" className="mt-0">
+                    <Card className="border-border/40 shadow-card">
+                      <CardHeader className="pb-6">
+                        <CardTitle className="text-xl font-semibold">
                           {language === 'en' ? 'Send us a Message' : 'আমাদের একটি বার্তা পাঠান'}
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-muted-foreground">
                           {language === 'en'
                             ? "Have a question? We'd love to hear from you."
                             : 'প্রশ্ন আছে? আমরা আপনার কাছ থেকে শুনতে চাই।'}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <form onSubmit={handleContactSubmit} className="space-y-4">
-                          <div className="grid gap-4 sm:grid-cols-2">
+                        <form onSubmit={handleContactSubmit} className="space-y-5">
+                          <div className="grid gap-5 sm:grid-cols-2">
                             <div className="space-y-2">
-                              <Label htmlFor="contact-name">{t('contact.form.name')} *</Label>
+                              <Label htmlFor="contact-name" className="text-sm font-medium">{t('contact.form.name')} *</Label>
                               <Input 
                                 id="contact-name" 
                                 value={contactForm.name}
                                 onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                                placeholder={language === 'en' ? 'John Doe' : 'আপনার নাম'}
                                 required 
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="contact-email">{t('contact.form.email')} *</Label>
+                              <Label htmlFor="contact-email" className="text-sm font-medium">{t('contact.form.email')} *</Label>
                               <Input 
                                 id="contact-email" 
                                 type="email" 
                                 value={contactForm.email}
                                 onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                                placeholder={language === 'en' ? 'john@example.com' : 'example@email.com'}
                                 required 
                               />
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="contact-phone">{t('contact.form.phone')}</Label>
+                            <Label htmlFor="contact-phone" className="text-sm font-medium">{t('contact.form.phone')}</Label>
                             <Input 
                               id="contact-phone" 
                               type="tel" 
                               value={contactForm.phone}
                               onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                              placeholder={language === 'en' ? '+880 1XXX-XXXXXX' : '+880 1XXX-XXXXXX'}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="contact-subject">
+                            <Label htmlFor="contact-subject" className="text-sm font-medium">
                               {language === 'en' ? 'Subject' : 'বিষয়'} *
                             </Label>
                             <Input 
                               id="contact-subject" 
                               value={contactForm.subject}
                               onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                              placeholder={language === 'en' ? 'How can we help?' : 'আমরা কিভাবে সাহায্য করতে পারি?'}
                               required 
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="contact-message">{t('contact.form.message')} *</Label>
+                            <Label htmlFor="contact-message" className="text-sm font-medium">{t('contact.form.message')} *</Label>
                             <Textarea 
                               id="contact-message" 
                               rows={4} 
                               value={contactForm.message}
                               onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                              placeholder={language === 'en' ? 'Tell us more about your inquiry...' : 'আপনার প্রশ্ন সম্পর্কে বিস্তারিত বলুন...'}
                               required 
                             />
                           </div>
-                          <Button type="submit" className="w-full" disabled={isSubmitting}>
-                            <Send className="mr-2 h-4 w-4" />
+                          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                            <Send className="h-4 w-4" />
                             {isSubmitting 
                               ? (language === 'en' ? 'Sending...' : 'পাঠানো হচ্ছে...') 
                               : t('common.send')}
@@ -355,67 +374,71 @@ const Contact = () => {
                   </TabsContent>
 
                   {/* Quote Form */}
-                  <TabsContent value="quote">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>
+                  <TabsContent value="quote" className="mt-0">
+                    <Card className="border-border/40 shadow-card">
+                      <CardHeader className="pb-6">
+                        <CardTitle className="text-xl font-semibold">
                           {language === 'en' ? 'Request a Quote' : 'কোটেশনের অনুরোধ'}
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-muted-foreground">
                           {language === 'en'
                             ? 'Tell us about your project and we will provide a detailed quote.'
                             : 'আপনার প্রকল্প সম্পর্কে বলুন এবং আমরা একটি বিস্তারিত কোটেশন প্রদান করব।'}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <form onSubmit={handleQuoteSubmit} className="space-y-4">
-                          <div className="grid gap-4 sm:grid-cols-2">
+                        <form onSubmit={handleQuoteSubmit} className="space-y-5">
+                          <div className="grid gap-5 sm:grid-cols-2">
                             <div className="space-y-2">
-                              <Label htmlFor="quote-name">{t('contact.form.name')} *</Label>
+                              <Label htmlFor="quote-name" className="text-sm font-medium">{t('contact.form.name')} *</Label>
                               <Input 
                                 id="quote-name" 
                                 value={quoteForm.name}
                                 onChange={(e) => setQuoteForm({ ...quoteForm, name: e.target.value })}
+                                placeholder={language === 'en' ? 'John Doe' : 'আপনার নাম'}
                                 required 
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="quote-email">{t('contact.form.email')} *</Label>
+                              <Label htmlFor="quote-email" className="text-sm font-medium">{t('contact.form.email')} *</Label>
                               <Input 
                                 id="quote-email" 
                                 type="email" 
                                 value={quoteForm.email}
                                 onChange={(e) => setQuoteForm({ ...quoteForm, email: e.target.value })}
+                                placeholder={language === 'en' ? 'john@example.com' : 'example@email.com'}
                                 required 
                               />
                             </div>
                           </div>
-                          <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="grid gap-5 sm:grid-cols-2">
                             <div className="space-y-2">
-                              <Label htmlFor="quote-phone">{t('contact.form.phone')}</Label>
+                              <Label htmlFor="quote-phone" className="text-sm font-medium">{t('contact.form.phone')}</Label>
                               <Input 
                                 id="quote-phone" 
                                 type="tel" 
                                 value={quoteForm.phone}
                                 onChange={(e) => setQuoteForm({ ...quoteForm, phone: e.target.value })}
+                                placeholder={language === 'en' ? '+880 1XXX-XXXXXX' : '+880 1XXX-XXXXXX'}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="quote-company">
+                              <Label htmlFor="quote-company" className="text-sm font-medium">
                                 {language === 'en' ? 'Company' : 'কোম্পানি'}
                               </Label>
                               <Input 
                                 id="quote-company" 
                                 value={quoteForm.company}
                                 onChange={(e) => setQuoteForm({ ...quoteForm, company: e.target.value })}
+                                placeholder={language === 'en' ? 'Your Company' : 'আপনার কোম্পানি'}
                               />
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="quote-service">{t('contact.form.service')} *</Label>
+                            <Label htmlFor="quote-service" className="text-sm font-medium">{t('contact.form.service')} *</Label>
                             <select
                               id="quote-service"
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2.5 text-base ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                               value={quoteForm.service}
                               onChange={(e) => setQuoteForm({ ...quoteForm, service: e.target.value })}
                               required
@@ -429,7 +452,7 @@ const Contact = () => {
                             </select>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="quote-budget">
+                            <Label htmlFor="quote-budget" className="text-sm font-medium">
                               {language === 'en' ? 'Estimated Budget' : 'আনুমানিক বাজেট'}
                             </Label>
                             <Input 
@@ -440,7 +463,7 @@ const Contact = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="quote-details">
+                            <Label htmlFor="quote-details" className="text-sm font-medium">
                               {language === 'en' ? 'Project Details' : 'প্রকল্পের বিবরণ'} *
                             </Label>
                             <Textarea 
@@ -448,11 +471,12 @@ const Contact = () => {
                               rows={4} 
                               value={quoteForm.details}
                               onChange={(e) => setQuoteForm({ ...quoteForm, details: e.target.value })}
+                              placeholder={language === 'en' ? 'Describe your project requirements...' : 'আপনার প্রকল্পের প্রয়োজনীয়তা বর্ণনা করুন...'}
                               required 
                             />
                           </div>
-                          <Button type="submit" className="w-full" disabled={isSubmitting}>
-                            <FileText className="mr-2 h-4 w-4" />
+                          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                            <FileText className="h-4 w-4" />
                             {isSubmitting 
                               ? (language === 'en' ? 'Submitting...' : 'জমা দেওয়া হচ্ছে...') 
                               : t('common.getQuote')}
@@ -463,66 +487,70 @@ const Contact = () => {
                   </TabsContent>
 
                   {/* Meeting Form */}
-                  <TabsContent value="meeting">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>
+                  <TabsContent value="meeting" className="mt-0">
+                    <Card className="border-border/40 shadow-card">
+                      <CardHeader className="pb-6">
+                        <CardTitle className="text-xl font-semibold">
                           {language === 'en' ? 'Book a Meeting' : 'মিটিং বুক করুন'}
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-muted-foreground">
                           {language === 'en'
                             ? 'Schedule a consultation with our team.'
                             : 'আমাদের দলের সাথে একটি পরামর্শ সিডিউল করুন।'}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <form onSubmit={handleMeetingSubmit} className="space-y-4">
-                          <div className="grid gap-4 sm:grid-cols-2">
+                        <form onSubmit={handleMeetingSubmit} className="space-y-5">
+                          <div className="grid gap-5 sm:grid-cols-2">
                             <div className="space-y-2">
-                              <Label htmlFor="meeting-name">{t('contact.form.name')} *</Label>
+                              <Label htmlFor="meeting-name" className="text-sm font-medium">{t('contact.form.name')} *</Label>
                               <Input 
                                 id="meeting-name" 
                                 value={meetingForm.name}
                                 onChange={(e) => setMeetingForm({ ...meetingForm, name: e.target.value })}
+                                placeholder={language === 'en' ? 'John Doe' : 'আপনার নাম'}
                                 required 
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="meeting-email">{t('contact.form.email')} *</Label>
+                              <Label htmlFor="meeting-email" className="text-sm font-medium">{t('contact.form.email')} *</Label>
                               <Input 
                                 id="meeting-email" 
                                 type="email" 
                                 value={meetingForm.email}
                                 onChange={(e) => setMeetingForm({ ...meetingForm, email: e.target.value })}
+                                placeholder={language === 'en' ? 'john@example.com' : 'example@email.com'}
                                 required 
                               />
                             </div>
                           </div>
-                          <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="grid gap-5 sm:grid-cols-2">
                             <div className="space-y-2">
-                              <Label htmlFor="meeting-phone">{t('contact.form.phone')} *</Label>
+                              <Label htmlFor="meeting-phone" className="text-sm font-medium">{t('contact.form.phone')} *</Label>
                               <Input 
                                 id="meeting-phone" 
                                 type="tel" 
                                 value={meetingForm.phone}
                                 onChange={(e) => setMeetingForm({ ...meetingForm, phone: e.target.value })}
+                                placeholder={language === 'en' ? '+880 1XXX-XXXXXX' : '+880 1XXX-XXXXXX'}
                                 required 
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="meeting-company">
+                              <Label htmlFor="meeting-company" className="text-sm font-medium">
                                 {language === 'en' ? 'Company' : 'কোম্পানি'}
                               </Label>
                               <Input 
                                 id="meeting-company" 
                                 value={meetingForm.company}
                                 onChange={(e) => setMeetingForm({ ...meetingForm, company: e.target.value })}
+                                placeholder={language === 'en' ? 'Your Company' : 'আপনার কোম্পানি'}
                               />
                             </div>
                           </div>
-                          <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="grid gap-5 sm:grid-cols-2">
                             <div className="space-y-2">
-                              <Label htmlFor="meeting-date">
+                              <Label htmlFor="meeting-date" className="text-sm font-medium">
                                 {language === 'en' ? 'Preferred Date' : 'পছন্দের তারিখ'} *
                               </Label>
                               <Input 
@@ -534,7 +562,7 @@ const Contact = () => {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="meeting-time">
+                              <Label htmlFor="meeting-time" className="text-sm font-medium">
                                 {language === 'en' ? 'Preferred Time' : 'পছন্দের সময়'} *
                               </Label>
                               <Input 
@@ -547,18 +575,19 @@ const Contact = () => {
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="meeting-topic">
+                            <Label htmlFor="meeting-topic" className="text-sm font-medium">
                               {language === 'en' ? 'Meeting Topic' : 'মিটিংয়ের বিষয়'} *
                             </Label>
                             <Input 
                               id="meeting-topic" 
                               value={meetingForm.topic}
                               onChange={(e) => setMeetingForm({ ...meetingForm, topic: e.target.value })}
+                              placeholder={language === 'en' ? 'What would you like to discuss?' : 'আপনি কি আলোচনা করতে চান?'}
                               required 
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="meeting-notes">
+                            <Label htmlFor="meeting-notes" className="text-sm font-medium">
                               {language === 'en' ? 'Additional Notes' : 'অতিরিক্ত নোট'}
                             </Label>
                             <Textarea 
@@ -566,10 +595,11 @@ const Contact = () => {
                               rows={3} 
                               value={meetingForm.notes}
                               onChange={(e) => setMeetingForm({ ...meetingForm, notes: e.target.value })}
+                              placeholder={language === 'en' ? 'Any additional information...' : 'অতিরিক্ত তথ্য...'}
                             />
                           </div>
-                          <Button type="submit" className="w-full" disabled={isSubmitting}>
-                            <Calendar className="mr-2 h-4 w-4" />
+                          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                            <Calendar className="h-4 w-4" />
                             {isSubmitting 
                               ? (language === 'en' ? 'Booking...' : 'বুক করা হচ্ছে...') 
                               : (language === 'en' ? 'Book Meeting' : 'মিটিং বুক করুন')}
