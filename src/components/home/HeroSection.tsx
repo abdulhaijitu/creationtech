@@ -100,7 +100,7 @@ const HeroSection = () => {
       </svg>
       
       <div className="container-custom relative">
-        <div className="grid min-h-[calc(100vh-5rem)] items-center gap-8 py-12 lg:min-h-[780px] lg:grid-cols-2 lg:gap-16 lg:py-20">
+        <div className="grid min-h-[calc(100vh-5rem)] items-center gap-8 py-8 lg:min-h-[700px] lg:grid-cols-2 lg:gap-16 lg:py-12">
           {/* Left: Text + CTA */}
           <div className="flex flex-col justify-center text-center lg:text-left">
             {/* Badge */}
