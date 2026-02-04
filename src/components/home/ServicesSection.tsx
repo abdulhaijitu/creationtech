@@ -57,7 +57,7 @@ const ServicesSection = () => {
   const currentService = services.find((s) => s.id === activeService) || services[0];
 
   return (
-    <section className="py-16 lg:py-20 bg-gradient-to-br from-primary/[0.02] via-background to-primary/[0.04] relative overflow-hidden">
+    <section className="pt-10 pb-16 lg:pt-12 lg:pb-20 bg-gradient-to-br from-primary/[0.02] via-background to-primary/[0.04] relative overflow-hidden">
       <div className="container-custom relative">
         {/* Two Column Layout */}
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
