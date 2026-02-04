@@ -3,6 +3,7 @@ import { useTestimonials } from '@/hooks/useTestimonials';
 import { Card, CardContent } from '@/components/ui/card';
 import { Quote } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import ScrollReveal from '@/components/common/ScrollReveal';
 
 const TestimonialsSection = () => {
   const { language } = useLanguage();
@@ -32,7 +33,7 @@ const TestimonialsSection = () => {
     <section className="section-padding bg-section-alt">
       <div className="container-custom">
         {/* Section Header */}
-        <div className="mx-auto mb-16 max-w-2xl text-center">
+        <ScrollReveal className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="mb-5 text-3xl font-bold tracking-tight sm:text-4xl">
             {language === 'en' ? 'What Our Clients Say' : 'আমাদের ক্লায়েন্টরা কী বলেন'}
           </h2>
@@ -41,46 +42,44 @@ const TestimonialsSection = () => {
               ? 'Trusted by businesses across industries'
               : 'বিভিন্ন শিল্পের ব্যবসায়ীদের বিশ্বস্ত অংশীদার'}
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Testimonials Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {testimonials.map((testimonial, index) => (
-            <Card
-              key={testimonial.id}
-              className="group card-interactive border-border/40 hover:border-border/60"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardContent className="p-7">
-                <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8">
-                  <Quote className="h-5 w-5 text-primary/60" />
-                </div>
-                <blockquote className="mb-6 text-muted-foreground leading-relaxed">
-                  "{language === 'en' ? testimonial.quote_en : (testimonial.quote_bn || testimonial.quote_en)}"
-                </blockquote>
-                <div className="flex items-center gap-4">
-                  {testimonial.avatar_url ? (
-                    <img
-                      src={testimonial.avatar_url}
-                      alt={testimonial.name_en}
-                      className="h-12 w-12 rounded-full object-cover ring-2 ring-border/50"
-                    />
-                  ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-base font-semibold text-primary ring-2 ring-primary/20">
-                      {testimonial.company?.charAt(0) || testimonial.name_en.charAt(0)}
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {language === 'en' ? testimonial.name_en : (testimonial.name_bn || testimonial.name_en)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {language === 'en' ? testimonial.role_en : (testimonial.role_bn || testimonial.role_en)}
-                    </p>
+            <ScrollReveal key={testimonial.id} delay={index * 100} animation="fade-up">
+              <Card className="group h-full card-interactive border-border/40 hover:border-border/60">
+                <CardContent className="p-7">
+                  <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/8">
+                    <Quote className="h-5 w-5 text-primary/60" />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  <blockquote className="mb-6 text-muted-foreground leading-relaxed">
+                    "{language === 'en' ? testimonial.quote_en : (testimonial.quote_bn || testimonial.quote_en)}"
+                  </blockquote>
+                  <div className="flex items-center gap-4">
+                    {testimonial.avatar_url ? (
+                      <img
+                        src={testimonial.avatar_url}
+                        alt={testimonial.name_en}
+                        className="h-12 w-12 rounded-full object-cover ring-2 ring-border/50"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-base font-semibold text-primary ring-2 ring-primary/20">
+                        {testimonial.company?.charAt(0) || testimonial.name_en.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        {language === 'en' ? testimonial.name_en : (testimonial.name_bn || testimonial.name_en)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {language === 'en' ? testimonial.role_en : (testimonial.role_bn || testimonial.role_en)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </ScrollReveal>
           ))}
         </div>
       </div>

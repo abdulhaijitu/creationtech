@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, MessageSquare, FileText, Calendar } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ScrollReveal from '@/components/common/ScrollReveal';
 
 const CTASection = () => {
   const { t, language } = useLanguage();
@@ -45,40 +46,46 @@ const CTASection = () => {
       
       <div className="container-custom relative">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-5 text-3xl font-bold text-primary-foreground sm:text-4xl" style={{ letterSpacing: '-0.02em' }}>
-            {language === 'en'
-              ? "Let's Build Something Great Together"
-              : 'আসুন একসাথে দারুণ কিছু তৈরি করি'}
-          </h2>
-          <p className="mb-14 text-lg text-primary-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            {language === 'en'
-              ? 'From discovery to delivery — we partner with you every step of the way.'
-              : 'আবিষ্কার থেকে ডেলিভারি পর্যন্ত — প্রতিটি ধাপে আমরা আপনার সাথে আছি।'}
-          </p>
+          <ScrollReveal>
+            <h2 className="mb-5 text-3xl font-bold text-primary-foreground sm:text-4xl" style={{ letterSpacing: '-0.02em' }}>
+              {language === 'en'
+                ? "Let's Build Something Great Together"
+                : 'আসুন একসাথে দারুণ কিছু তৈরি করি'}
+            </h2>
+          </ScrollReveal>
+          
+          <ScrollReveal delay={100}>
+            <p className="mb-14 text-lg text-primary-foreground/70 max-w-2xl mx-auto leading-relaxed">
+              {language === 'en'
+                ? 'From discovery to delivery — we partner with you every step of the way.'
+                : 'আবিষ্কার থেকে ডেলিভারি পর্যন্ত — প্রতিটি ধাপে আমরা আপনার সাথে আছি।'}
+            </p>
+          </ScrollReveal>
 
           <div className="grid gap-5 sm:grid-cols-3 sm:gap-6">
             {actions.map((action, index) => {
               const Icon = action.icon;
               return (
-                <Link
-                  key={index}
-                  to={action.href}
-                  className="group flex flex-col items-center rounded-2xl bg-primary-foreground/5 p-7 text-center backdrop-blur-sm transition-all duration-250 hover:bg-primary-foreground/10 border border-primary-foreground/10 hover:border-primary-foreground/20"
-                >
-                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-lg">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="mb-2.5 text-lg font-semibold text-primary-foreground">
-                    {language === 'en' ? action.titleEn : action.titleBn}
-                  </h3>
-                  <p className="mb-5 text-sm text-primary-foreground/60 leading-relaxed">
-                    {language === 'en' ? action.descEn : action.descBn}
-                  </p>
-                  <span className="inline-flex items-center text-sm font-medium text-accent">
-                    {language === 'en' ? 'Get Started' : 'শুরু করুন'}
-                    <ArrowRight className="ml-1.5 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-                  </span>
-                </Link>
+                <ScrollReveal key={index} delay={200 + index * 100} animation="scale-in">
+                  <Link
+                    to={action.href}
+                    className="group flex h-full flex-col items-center rounded-2xl bg-primary-foreground/5 p-7 text-center backdrop-blur-sm transition-all duration-250 hover:bg-primary-foreground/10 border border-primary-foreground/10 hover:border-primary-foreground/20"
+                  >
+                    <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-lg">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="mb-2.5 text-lg font-semibold text-primary-foreground">
+                      {language === 'en' ? action.titleEn : action.titleBn}
+                    </h3>
+                    <p className="mb-5 text-sm text-primary-foreground/60 leading-relaxed">
+                      {language === 'en' ? action.descEn : action.descBn}
+                    </p>
+                    <span className="inline-flex items-center text-sm font-medium text-accent mt-auto">
+                      {language === 'en' ? 'Get Started' : 'শুরু করুন'}
+                      <ArrowRight className="ml-1.5 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                    </span>
+                  </Link>
+                </ScrollReveal>
               );
             })}
           </div>

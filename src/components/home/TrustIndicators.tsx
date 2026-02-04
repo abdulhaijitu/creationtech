@@ -1,6 +1,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePageContent } from '@/hooks/usePageContent';
 import CountUp from '@/components/common/CountUp';
+import ScrollReveal from '@/components/common/ScrollReveal';
 
 const defaultStats = [
   { value: 10, suffix: '+', keyEn: 'Years Experience', keyBn: 'বছরের অভিজ্ঞতা' },
@@ -45,33 +46,32 @@ const TrustIndicators = () => {
     <section className="section-padding-sm bg-section-light">
       <div className="container-custom">
         {/* Trust Statement */}
-        <div className="mb-12 text-center">
+        <ScrollReveal className="mb-12 text-center">
           <p className="text-lg text-muted-foreground leading-relaxed">
             {language === 'en' 
               ? 'Trusted by startups and enterprises across Bangladesh and beyond'
               : 'বাংলাদেশ এবং বিশ্বব্যাপী স্টার্টআপ ও এন্টারপ্রাইজের বিশ্বস্ত অংশীদার'}
           </p>
-        </div>
+        </ScrollReveal>
         
         {/* Stats Grid */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="flex flex-col items-center text-center"
-            >
-              <div className="mb-3 text-4xl font-bold text-primary sm:text-5xl" style={{ letterSpacing: '-0.02em' }}>
-                <CountUp end={stat.value} suffix={stat.suffix} />
+            <ScrollReveal key={index} delay={index * 100} animation="scale-in">
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-3 text-4xl font-bold text-primary sm:text-5xl" style={{ letterSpacing: '-0.02em' }}>
+                  <CountUp end={stat.value} suffix={stat.suffix} />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  {language === 'en' ? stat.keyEn : stat.keyBn}
+                </p>
               </div>
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                {language === 'en' ? stat.keyEn : stat.keyBn}
-              </p>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
         
         {/* Process Steps */}
-        <div className="mt-14 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <ScrollReveal delay={400} className="mt-14 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           {processSteps.map((step, index) => (
             <div key={index} className="flex items-center gap-3 sm:gap-4">
               <span className="flex items-center gap-2.5 rounded-full bg-primary/8 px-4 py-2 text-sm font-medium text-primary">
@@ -83,7 +83,7 @@ const TrustIndicators = () => {
               )}
             </div>
           ))}
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );
