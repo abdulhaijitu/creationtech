@@ -3,14 +3,21 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
 import CountUp from '@/components/common/CountUp';
 
-// Placeholder partner logos - replace with actual client logos
+// Partner logo imports
+import raceLogo from '@/assets/partners/race-logo.png';
+import rioLogo from '@/assets/partners/rio-logo.png';
+import skyviewLogo from '@/assets/partners/skyview-logo.png';
+import speedtechLogo from '@/assets/partners/speedtech-logo.png';
+import dataflowLogo from '@/assets/partners/dataflow-logo.png';
+import techvisionLogo from '@/assets/partners/techvision-logo.png';
+
 const partners = [
-  { name: 'Race Online', initials: 'RACE' },
-  { name: 'Rio International', initials: 'RIO' },
-  { name: 'SkyView Online', initials: 'SKY' },
-  { name: 'SpeedTech', initials: 'ST' },
-  { name: 'TechVision', initials: 'TV' },
-  { name: 'DataFlow', initials: 'DF' },
+  { name: 'Race Online', logo: raceLogo },
+  { name: 'Rio International', logo: rioLogo },
+  { name: 'SkyView', logo: skyviewLogo },
+  { name: 'SpeedTech', logo: speedtechLogo },
+  { name: 'DataFlow', logo: dataflowLogo },
+  { name: 'TechVision', logo: techvisionLogo },
 ];
 
 const PartnersSection = () => {
@@ -51,12 +58,12 @@ const PartnersSection = () => {
           {/* Right Side - Partner Logos */}
           <div className="lg:col-span-3">
             <div className="relative overflow-hidden">
-              {/* Fade edges for scroll effect */}
-              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-8 bg-gradient-to-r from-muted/30 to-transparent lg:w-12" />
-              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-muted/30 to-transparent lg:w-12" />
+              {/* Fade edges for scroll effect on mobile */}
+              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-6 bg-gradient-to-r from-muted/30 to-transparent lg:hidden" />
+              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-6 bg-gradient-to-l from-muted/30 to-transparent lg:hidden" />
               
               {/* Logo carousel container */}
-              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide lg:overflow-visible lg:flex-wrap lg:justify-end lg:gap-3">
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:overflow-visible lg:flex-wrap lg:justify-end lg:gap-4">
                 {partners.map((partner, index) => (
                   <ScrollReveal 
                     key={index} 
@@ -66,13 +73,16 @@ const PartnersSection = () => {
                     className="flex-shrink-0"
                   >
                     <div
-                      className="group flex h-14 min-w-[120px] items-center justify-center rounded-xl border border-border/60 bg-background px-6 shadow-sm transition-all duration-200 hover:scale-105 hover:border-primary/30 hover:shadow-md lg:h-16 lg:min-w-[140px]"
+                      className="group flex h-16 min-w-[140px] items-center justify-center rounded-xl border border-border/60 bg-background px-5 shadow-sm transition-all duration-200 hover:scale-105 hover:border-primary/30 hover:shadow-md lg:h-[72px] lg:min-w-[160px]"
                       title={partner.name}
                     >
-                      {/* Placeholder logo - grayscale by default, color on hover */}
-                      <span className="text-base font-bold tracking-wide text-muted-foreground/60 transition-colors duration-200 group-hover:text-foreground lg:text-lg">
-                        {partner.initials}
-                      </span>
+                      {/* Logo image - grayscale by default, color on hover */}
+                      <img 
+                        src={partner.logo} 
+                        alt={partner.name}
+                        className="h-10 w-auto max-w-[100px] object-contain grayscale transition-all duration-300 group-hover:grayscale-0 lg:h-12 lg:max-w-[120px]"
+                        loading="lazy"
+                      />
                     </div>
                   </ScrollReveal>
                 ))}
