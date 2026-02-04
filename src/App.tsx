@@ -20,6 +20,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Refund from "./pages/Refund";
 import Cookies from "./pages/Cookies";
+import Products from "./pages/Products";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -59,6 +60,7 @@ const App = () => (
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/careers" element={<Careers />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/products" element={<Products />} />
                 
                 {/* Legal Pages */}
                 <Route path="/terms" element={<Terms />} />
