@@ -1,229 +1,279 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Code2, Cloud, Cpu, CreditCard } from 'lucide-react';
+import { ArrowRight, Users, Package, Award, Clock, Brain, Cpu, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import CountUp from '@/components/common/CountUp';
+import heroOffice1 from '@/assets/hero-office-1.jpg';
+import heroOffice2 from '@/assets/hero-office-2.jpg';
+import heroOffice3 from '@/assets/hero-office-3.jpg';
 
-const serviceChips = [
+const stats = [
   { 
-    icon: Code2, 
-    en: 'Web Application Development', 
-    bn: 'ওয়েব অ্যাপ্লিকেশন ডেভেলপমেন্ট' 
+    value: 10, 
+    suffix: 'M+', 
+    label: 'USERS',
+    labelBn: 'ইউজার',
+    icon: Users 
   },
   { 
-    icon: Cpu, 
-    en: 'AI & Automation Solutions', 
-    bn: 'AI ও অটোমেশন সলিউশন' 
+    value: 12, 
+    suffix: '+', 
+    label: 'PRODUCTS',
+    labelBn: 'প্রোডাক্ট',
+    icon: Package 
   },
   { 
-    icon: Cloud, 
-    en: 'Cloud & Backend Systems', 
-    bn: 'ক্লাউড ও ব্যাকএন্ড সিস্টেম' 
+    value: 100, 
+    suffix: '+', 
+    label: 'TALENTS',
+    labelBn: 'ট্যালেন্ট',
+    icon: Award 
   },
   { 
-    icon: CreditCard, 
-    en: 'Payment & Business Tools', 
-    bn: 'পেমেন্ট ও বিজনেস টুলস' 
+    value: 10, 
+    suffix: '+', 
+    label: 'EXPERIENCE',
+    labelBn: 'অভিজ্ঞতা',
+    icon: Clock 
   },
 ];
 
 const HeroSection = () => {
   const { language } = useLanguage();
 
+  const badge = language === 'en' 
+    ? 'DIGITIZE YOUR IMAGINATION'
+    : 'আপনার কল্পনাকে ডিজিটাইজ করুন';
+
   const headline = language === 'en' 
-    ? 'Future-ready Technology Solutions for Modern Businesses'
-    : 'আধুনিক ব্যবসার জন্য ভবিষ্যত-প্রস্তুত প্রযুক্তি সমাধান';
+    ? 'Innovative AI-Powered Software Development Company in Bangladesh'
+    : 'বাংলাদেশের উদ্ভাবনী AI-চালিত সফটওয়্যার ডেভেলপমেন্ট কোম্পানি';
 
   const subheadline = language === 'en'
-    ? 'We build scalable web, AI-powered systems, and automation-driven products.'
-    : 'আমরা স্কেলযোগ্য ওয়েব, AI-চালিত সিস্টেম এবং অটোমেশন-ভিত্তিক পণ্য তৈরি করি।';
+    ? 'We build AI-driven, scalable software solutions for modern businesses and industries across B2B and B2C sectors.'
+    : 'আমরা B2B এবং B2C সেক্টরে আধুনিক ব্যবসা ও শিল্পের জন্য AI-চালিত, স্কেলযোগ্য সফটওয়্যার সমাধান তৈরি করি।';
 
-  const ctaPrimary = language === 'en' ? 'Start Your Project' : 'আপনার প্রজেক্ট শুরু করুন';
-  const ctaSecondary = language === 'en' ? 'Explore Services' : 'সার্ভিস দেখুন';
+  const ctaPrimary = language === 'en' ? 'Company Deck' : 'কোম্পানি ডেক';
+  const ctaSecondary = language === 'en' ? 'Our Products' : 'আমাদের প্রোডাক্ট';
 
   return (
-    <section className="relative overflow-hidden gradient-hero">
+    <section className="relative overflow-hidden bg-[#0a1628]">
       {/* Animated gradient background */}
       <div className="absolute inset-0">
+        {/* Gradient overlays */}
         <div 
-          className="absolute inset-0 opacity-[0.08] animate-gradient-shift"
+          className="absolute inset-0 opacity-60"
           style={{
-            backgroundImage: `radial-gradient(ellipse 80% 50% at 20% 40%, rgba(255,255,255,0.5) 0%, transparent 50%),
-                             radial-gradient(ellipse 60% 40% at 80% 60%, rgba(255,255,255,0.4) 0%, transparent 50%)`
-          }} 
-        />
-        {/* Tech grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
-                             linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)`,
-            backgroundSize: '48px 48px'
+            background: `radial-gradient(ellipse 80% 60% at 70% 40%, rgba(20, 184, 166, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse 60% 50% at 20% 80%, rgba(6, 78, 59, 0.2) 0%, transparent 50%)`
           }}
         />
-        {/* Floating nodes - CSS only */}
-        <div className="absolute top-1/4 right-1/4 h-2 w-2 rounded-full bg-white/20 animate-float-slow" />
-        <div className="absolute top-1/3 right-1/3 h-1.5 w-1.5 rounded-full bg-white/15 animate-float-medium" />
-        <div className="absolute bottom-1/3 left-1/4 h-2.5 w-2.5 rounded-full bg-white/10 animate-float-slow" style={{ animationDelay: '1s' }} />
+        {/* Subtle grid pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                             linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px'
+          }}
+        />
+        {/* Animated noise texture */}
+        <div className="absolute inset-0 opacity-[0.015] bg-noise" />
       </div>
+
+      {/* AI Network Lines - Decorative */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" aria-hidden="true">
+        <defs>
+          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(20, 184, 166, 0.5)" />
+            <stop offset="100%" stopColor="rgba(20, 184, 166, 0)" />
+          </linearGradient>
+        </defs>
+        {/* Connecting lines */}
+        <line x1="50%" y1="30%" x2="70%" y2="20%" stroke="url(#lineGradient)" strokeWidth="1" className="animate-pulse-slow" />
+        <line x1="55%" y1="50%" x2="75%" y2="45%" stroke="url(#lineGradient)" strokeWidth="1" className="animate-pulse-slow" style={{ animationDelay: '1s' }} />
+        <line x1="60%" y1="70%" x2="80%" y2="75%" stroke="url(#lineGradient)" strokeWidth="1" className="animate-pulse-slow" style={{ animationDelay: '2s' }} />
+        {/* Floating nodes */}
+        <circle cx="70%" cy="20%" r="3" fill="rgba(20, 184, 166, 0.4)" className="animate-float-slow" />
+        <circle cx="75%" cy="45%" r="2" fill="rgba(20, 184, 166, 0.3)" className="animate-float-medium" />
+        <circle cx="80%" cy="75%" r="2.5" fill="rgba(20, 184, 166, 0.35)" className="animate-float-slow" style={{ animationDelay: '1.5s' }} />
+      </svg>
       
       <div className="container-custom relative">
-        <div className="grid min-h-[calc(100vh-5rem)] items-center gap-12 py-16 lg:min-h-[720px] lg:grid-cols-2 lg:gap-16 lg:py-24">
+        <div className="grid min-h-[calc(100vh-5rem)] items-center gap-8 py-12 lg:min-h-[780px] lg:grid-cols-2 lg:gap-16 lg:py-20">
           {/* Left: Text + CTA */}
           <div className="flex flex-col justify-center text-center lg:text-left">
             {/* Badge */}
-            <div 
-              className="mb-6 inline-flex items-center justify-center gap-2.5 self-center rounded-full border border-primary-foreground/15 bg-primary-foreground/5 px-4 py-1.5 text-sm text-primary-foreground/90 backdrop-blur-sm lg:self-start hero-animate hero-animate-delay-0"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
-              </span>
-              <span className="font-medium">
-                {language === 'en' ? 'Trusted by 100+ businesses' : '১০০+ ব্যবসা বিশ্বস্ত'}
+            <div className="mb-6 hero-animate hero-animate-delay-0">
+              <span className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-teal-400 backdrop-blur-sm sm:text-sm">
+                <Sparkles className="h-3.5 w-3.5" />
+                {badge}
               </span>
             </div>
 
             {/* Headline */}
             <h1 
-              className="mb-6 text-3xl font-bold leading-[1.1] tracking-tight text-primary-foreground sm:text-4xl md:text-5xl lg:text-[3.5rem] hero-animate hero-animate-delay-1"
-              style={{ letterSpacing: '-0.03em' }}
+              className="mb-6 text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem] hero-animate hero-animate-delay-1"
+              style={{ letterSpacing: '-0.02em' }}
             >
               {headline}
             </h1>
 
             {/* Subheadline */}
-            <p 
-              className="mb-8 max-w-xl text-base leading-relaxed text-primary-foreground/75 sm:text-lg lg:text-xl hero-animate hero-animate-delay-2 mx-auto lg:mx-0"
-            >
+            <p className="mb-10 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg hero-animate hero-animate-delay-2 mx-auto lg:mx-0">
               {subheadline}
             </p>
 
-            {/* Service Chips */}
-            <div className="mb-10 flex flex-wrap justify-center gap-2 lg:justify-start hero-animate hero-animate-delay-3">
-              {serviceChips.map((chip, index) => (
-                <div
-                  key={index}
-                  className="group flex items-center gap-2 rounded-full border border-primary-foreground/10 bg-primary-foreground/5 px-3.5 py-2 text-xs font-medium text-primary-foreground/85 backdrop-blur-sm transition-all duration-200 hover:scale-[1.03] hover:bg-primary-foreground/10 hover:shadow-lg sm:text-sm"
-                >
-                  <chip.icon className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-6 sm:h-4 sm:w-4" />
-                  <span>{language === 'en' ? chip.en : chip.bn}</span>
-                </div>
-              ))}
-            </div>
-
             {/* CTA Buttons */}
-            <div 
-              className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4 lg:justify-start hero-animate hero-animate-delay-4"
-            >
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-4 lg:justify-start hero-animate hero-animate-delay-3">
               <Button
                 size="lg"
-                variant="accent"
                 asChild
-                className="hero-cta-primary min-w-[180px] shadow-lg"
+                className="min-w-[160px] bg-teal-500 text-white shadow-lg shadow-teal-500/25 hover:bg-teal-400 hover:shadow-xl hover:shadow-teal-500/30 hover:-translate-y-0.5 active:scale-[0.96] transition-all duration-200"
               >
-                <Link to="/contact?type=quote">
+                <Link to="/about">
                   {ctaPrimary}
-                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 asChild
-                className="hero-cta-secondary min-w-[180px] border-primary-foreground/20 bg-primary-foreground/5 text-primary-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/30"
+                className="min-w-[160px] border-white/20 bg-white/5 text-white hover:bg-white/10 hover:border-white/30 active:scale-[0.96] transition-all duration-200 group"
               >
-                <Link to="/services">{ctaSecondary}</Link>
+                <Link to="/products">
+                  {ctaSecondary}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
               </Button>
             </div>
           </div>
 
-          {/* Right: Animated Tech Visual */}
-          <div className="relative hidden lg:flex lg:items-center lg:justify-center">
-            <div className="relative w-full max-w-lg hero-animate hero-animate-delay-2">
-              {/* Main visual container */}
-              <div className="relative">
-                {/* Background glow */}
-                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-white/10 to-transparent blur-2xl" />
-                
-                {/* Floating UI Cards */}
-                <div className="relative space-y-4">
-                  {/* Code block card */}
-                  <div className="tech-card tech-card-1 ml-8 rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-5 backdrop-blur-md">
-                    <div className="mb-3 flex items-center gap-2">
-                      <div className="flex gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
-                        <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
-                        <span className="h-2.5 w-2.5 rounded-full bg-green-400/70" />
-                      </div>
-                      <span className="ml-2 text-xs text-primary-foreground/50">api.ts</span>
-                    </div>
-                    <div className="font-mono text-xs text-primary-foreground/70 space-y-1">
-                      <div><span className="text-blue-300">const</span> <span className="text-green-300">response</span> = <span className="text-yellow-300">await</span></div>
-                      <div className="pl-4"><span className="text-purple-300">fetch</span>(<span className="text-orange-300">'/api/data'</span>);</div>
-                      <div><span className="text-blue-300">return</span> response.<span className="text-purple-300">json</span>();</div>
-                    </div>
-                  </div>
+          {/* Right: AI Visual Collage */}
+          <div className="relative hidden lg:block">
+            <div className="relative w-full max-w-[560px] mx-auto hero-animate hero-animate-delay-2">
+              {/* Stat Card - Top Left */}
+              <div className="absolute -left-4 top-8 z-20 hero-card hero-card-delay-0">
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-900/40 p-5 backdrop-blur-md shadow-xl shadow-teal-900/20 hover:border-teal-500/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-float-slow min-w-[120px]">
+                  <Brain className="h-5 w-5 text-teal-400/70 mb-2" />
+                  <span className="text-2xl font-bold text-white">
+                    <CountUp end={stats[0].value} duration={2000} />{stats[0].suffix}
+                  </span>
+                  <span className="text-xs text-white/50 uppercase tracking-wider mt-1">
+                    {language === 'en' ? stats[0].label : stats[0].labelBn}
+                  </span>
+                </div>
+              </div>
 
-                  {/* Dashboard card */}
-                  <div className="tech-card tech-card-2 mr-12 rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-5 backdrop-blur-md">
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-sm font-medium text-primary-foreground/80">Analytics</span>
-                      <span className="text-xs text-green-400">+24.5%</span>
-                    </div>
-                    <div className="flex items-end gap-1 h-12">
-                      {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
-                        <div 
-                          key={i} 
-                          className="flex-1 rounded-t bg-gradient-to-t from-primary-foreground/30 to-primary-foreground/10 transition-all duration-300"
-                          style={{ height: `${h}%` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
+              {/* Main Image Card - Top Right */}
+              <div className="ml-auto w-[280px] hero-card hero-card-delay-1">
+                <div className="overflow-hidden rounded-3xl border border-white/10 shadow-2xl hover:border-white/20 hover:-translate-y-1 transition-all duration-300 animate-float-medium" style={{ animationDelay: '0.5s' }}>
+                  <img 
+                    src={heroOffice1} 
+                    alt="AI-powered tech workspace" 
+                    className="w-full h-[180px] object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
 
-                  {/* System node card */}
-                  <div className="tech-card tech-card-3 ml-16 rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-5 backdrop-blur-md">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary-foreground/20 to-primary-foreground/5 flex items-center justify-center">
-                          <Cloud className="h-5 w-5 text-primary-foreground/70" />
-                        </div>
-                        <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-primary/50" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-primary-foreground/80">Cloud Connected</p>
-                        <p className="text-xs text-primary-foreground/50">3 services active</p>
-                      </div>
-                    </div>
+              {/* Middle Row */}
+              <div className="flex items-center gap-4 mt-4">
+                {/* Second Image */}
+                <div className="w-[200px] hero-card hero-card-delay-2">
+                  <div className="overflow-hidden rounded-2xl border border-white/10 shadow-xl hover:border-white/20 hover:-translate-y-1 transition-all duration-300 animate-float-slow" style={{ animationDelay: '1s' }}>
+                    <img 
+                      src={heroOffice2} 
+                      alt="Team collaboration" 
+                      className="w-full h-[200px] object-cover"
+                      loading="lazy"
+                    />
                   </div>
                 </div>
 
-                {/* Connection lines - decorative */}
-                <svg className="absolute inset-0 h-full w-full pointer-events-none opacity-20" aria-hidden="true">
-                  <line x1="60" y1="80" x2="120" y2="140" stroke="currentColor" strokeWidth="1" className="text-primary-foreground" />
-                  <line x1="200" y1="160" x2="140" y2="220" stroke="currentColor" strokeWidth="1" className="text-primary-foreground" />
-                </svg>
+                {/* Stat Cards Column */}
+                <div className="flex flex-col gap-4 flex-1">
+                  {/* Products Stat */}
+                  <div className="hero-card hero-card-delay-3">
+                    <div className="flex flex-col items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-900/40 p-4 backdrop-blur-md shadow-xl shadow-teal-900/20 hover:border-teal-500/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-float-medium" style={{ animationDelay: '0.3s' }}>
+                      <Package className="h-4 w-4 text-teal-400/70 mb-1" />
+                      <span className="text-xl font-bold text-white">
+                        <CountUp end={stats[1].value} duration={2000} />{stats[1].suffix}
+                      </span>
+                      <span className="text-[10px] text-white/50 uppercase tracking-wider">
+                        {language === 'en' ? stats[1].label : stats[1].labelBn}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Talents Stat */}
+                  <div className="hero-card hero-card-delay-4">
+                    <div className="flex flex-col items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-900/40 p-4 backdrop-blur-md shadow-xl shadow-teal-900/20 hover:border-teal-500/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-float-slow" style={{ animationDelay: '0.8s' }}>
+                      <Award className="h-4 w-4 text-teal-400/70 mb-1" />
+                      <span className="text-xl font-bold text-white">
+                        <CountUp end={stats[2].value} duration={2500} />{stats[2].suffix}
+                      </span>
+                      <span className="text-[10px] text-white/50 uppercase tracking-wider">
+                        {language === 'en' ? stats[2].label : stats[2].labelBn}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Bottom Row */}
+              <div className="flex items-end gap-4 mt-4">
+                {/* Third Image */}
+                <div className="w-[180px] hero-card hero-card-delay-5">
+                  <div className="overflow-hidden rounded-2xl border border-white/10 shadow-xl hover:border-white/20 hover:-translate-y-1 transition-all duration-300 animate-float-medium" style={{ animationDelay: '1.5s' }}>
+                    <img 
+                      src={heroOffice3} 
+                      alt="Modern tech team" 
+                      className="w-full h-[120px] object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+
+                {/* Experience Stat - Bottom Right */}
+                <div className="flex-1 hero-card hero-card-delay-6">
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-900/40 p-5 backdrop-blur-md shadow-xl shadow-teal-900/20 hover:border-teal-500/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-float-slow" style={{ animationDelay: '2s' }}>
+                    <Cpu className="h-5 w-5 text-teal-400/70 mb-2" />
+                    <span className="text-2xl font-bold text-white">
+                      <CountUp end={stats[3].value} duration={2000} />{stats[3].suffix}
+                    </span>
+                    <span className="text-xs text-white/50 uppercase tracking-wider mt-1">
+                      {language === 'en' ? stats[3].label : stats[3].labelBn}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
             </div>
+          </div>
+
+          {/* Mobile Stats Row */}
+          <div className="grid grid-cols-2 gap-4 lg:hidden hero-animate hero-animate-delay-4">
+            {stats.map((stat, index) => (
+              <div 
+                key={index}
+                className="flex flex-col items-center justify-center rounded-xl border border-teal-500/20 bg-teal-900/30 p-4 backdrop-blur-sm"
+              >
+                <stat.icon className="h-4 w-4 text-teal-400/70 mb-2" />
+                <span className="text-xl font-bold text-white">
+                  <CountUp end={stat.value} duration={2000} />{stat.suffix}
+                </span>
+                <span className="text-[10px] text-white/50 uppercase tracking-wider mt-1">
+                  {language === 'en' ? stat.label : stat.labelBn}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Wave transition */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg
-          viewBox="0 0 1440 80"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-auto w-full"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0 80L60 70C120 60 240 40 360 30C480 20 600 20 720 25C840 30 960 40 1080 45C1200 50 1320 50 1380 50L1440 50V80H1380C1320 80 1200 80 1080 80C960 80 840 80 720 80C600 80 480 80 360 80C240 80 120 80 60 80H0V80Z"
-            fill="hsl(var(--background))"
-          />
-        </svg>
-      </div>
+      {/* Bottom transition gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };
