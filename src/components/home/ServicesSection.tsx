@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePageContent } from '@/hooks/usePageContent';
+import ScrollReveal from '@/components/common/ScrollReveal';
 
 const services = [
   {
@@ -73,59 +74,58 @@ const ServicesSection = () => {
   return (
     <section className="section-padding bg-section-light">
       <div className="container-custom">
-        {/* Section Header - refined spacing and typography */}
-        <div className="mx-auto mb-16 max-w-2xl text-center">
+        {/* Section Header */}
+        <ScrollReveal className="mx-auto mb-16 max-w-2xl text-center">
           <h2 className="mb-5 text-3xl font-bold tracking-tight sm:text-4xl">
             {sectionTitle}
           </h2>
           <p className="text-lg leading-relaxed text-muted-foreground">
             {sectionSubtitle}
           </p>
-        </div>
+        </ScrollReveal>
 
-        {/* Services Grid - improved card styling */}
+        {/* Services Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {services.map((service, index) => {
             const Icon = service.icon;
             return (
-              <Card
-                key={index}
-                className="group card-interactive border-border/40 hover:border-border/60"
-              >
-                <CardHeader className="pb-4">
-                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/8 text-primary transition-all duration-250 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-md">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-lg font-semibold">
-                    {language === 'en' ? service.titleEn : service.titleBn}
-                  </CardTitle>
-                  <CardDescription className="leading-relaxed">
-                    {language === 'en' ? service.descEn : service.descBn}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Link
-                    to={service.href}
-                    className="inline-flex items-center text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80"
-                  >
-                    {t('common.learnMore')}
-                    <ArrowRight className="ml-1.5 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </Link>
-                </CardContent>
-              </Card>
+              <ScrollReveal key={index} delay={index * 80} duration={450}>
+                <Card className="group h-full card-interactive border-border/40 hover:border-border/60">
+                  <CardHeader className="pb-4">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/8 text-primary transition-all duration-250 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-md">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <CardTitle className="text-lg font-semibold">
+                      {language === 'en' ? service.titleEn : service.titleBn}
+                    </CardTitle>
+                    <CardDescription className="leading-relaxed">
+                      {language === 'en' ? service.descEn : service.descBn}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Link
+                      to={service.href}
+                      className="inline-flex items-center text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/80"
+                    >
+                      {t('common.learnMore')}
+                      <ArrowRight className="ml-1.5 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </Link>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
             );
           })}
         </div>
 
-        {/* View All Button - refined styling */}
-        <div className="mt-14 text-center">
+        {/* View All Button */}
+        <ScrollReveal delay={500} className="mt-14 text-center">
           <Button variant="outline" size="lg" asChild className="group">
             <Link to="/services">
               {t('common.viewAll')}
               <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </Button>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );
