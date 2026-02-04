@@ -2,6 +2,15 @@ import { Building2, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
 import CountUp from '@/components/common/CountUp';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+import { useRef } from 'react';
 
 // Partner logo imports
 import raceLogo from '@/assets/partners/race-logo.png';
@@ -22,6 +31,9 @@ const partners = [
 
 const PartnersSection = () => {
   const { language } = useLanguage();
+  const plugin = useRef(
+    Autoplay({ delay: 2500, stopOnInteraction: true })
+  );
 
   return (
     <section className="py-12 lg:py-16 bg-muted/30 border-y border-border/30">
@@ -55,39 +67,38 @@ const PartnersSection = () => {
             </div>
           </ScrollReveal>
 
-          {/* Right Side - Partner Logos */}
+          {/* Right Side - Partner Logos Carousel */}
           <div className="lg:col-span-3">
-            <div className="relative overflow-hidden">
-              {/* Fade edges for scroll effect on mobile */}
-              <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-6 bg-gradient-to-r from-muted/30 to-transparent lg:hidden" />
-              <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-6 bg-gradient-to-l from-muted/30 to-transparent lg:hidden" />
-              
-              {/* Logo carousel container */}
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:overflow-visible lg:flex-wrap lg:justify-end lg:gap-4">
-                {partners.map((partner, index) => (
-                  <ScrollReveal 
-                    key={index} 
-                    delay={index * 80} 
-                    animation="fade-in" 
-                    duration={400}
-                    className="flex-shrink-0"
-                  >
-                    <div
-                      className="group flex h-16 min-w-[140px] items-center justify-center rounded-xl border border-border/60 bg-background px-5 shadow-sm transition-all duration-200 hover:scale-105 hover:border-primary/30 hover:shadow-md lg:h-[72px] lg:min-w-[160px]"
-                      title={partner.name}
-                    >
-                      {/* Logo image - grayscale by default, color on hover */}
-                      <img 
-                        src={partner.logo} 
-                        alt={partner.name}
-                        className="h-10 w-auto max-w-[100px] object-contain grayscale transition-all duration-300 group-hover:grayscale-0 lg:h-12 lg:max-w-[120px]"
-                        loading="lazy"
-                      />
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </div>
+            <ScrollReveal animation="fade-in">
+              <Carousel
+                opts={{
+                  align: 'start',
+                  loop: true,
+                }}
+                plugins={[plugin.current]}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-3">
+                  {partners.map((partner, index) => (
+                    <CarouselItem key={index} className="pl-3 basis-1/3 sm:basis-1/4 lg:basis-1/3 xl:basis-1/4">
+                      <div
+                        className="group flex h-16 items-center justify-center rounded-xl border border-border/60 bg-background px-4 shadow-sm transition-all duration-200 hover:scale-105 hover:border-primary/30 hover:shadow-md lg:h-[72px]"
+                        title={partner.name}
+                      >
+                        <img 
+                          src={partner.logo} 
+                          alt={partner.name}
+                          className="h-10 w-auto max-w-[90px] object-contain grayscale transition-all duration-300 group-hover:grayscale-0 lg:h-12 lg:max-w-[100px]"
+                          loading="lazy"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden sm:flex -left-4 h-8 w-8 border-border/60 bg-background/80 backdrop-blur-sm hover:bg-background" />
+                <CarouselNext className="hidden sm:flex -right-4 h-8 w-8 border-border/60 bg-background/80 backdrop-blur-sm hover:bg-background" />
+              </Carousel>
+            </ScrollReveal>
           </div>
         </div>
       </div>
