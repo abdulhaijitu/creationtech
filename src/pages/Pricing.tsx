@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { Check, ArrowRight, HelpCircle } from 'lucide-react';
+import { Check, ArrowRight, HelpCircle, Sparkles } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -109,64 +109,93 @@ const Pricing = () => {
         />
       </Helmet>
       <Layout>
-        {/* Hero */}
-        <section className="gradient-hero py-20 lg:py-28">
-          <div className="container-custom text-center">
-            <h1 className="mb-4 text-4xl font-bold text-primary-foreground sm:text-5xl">
-              {heroTitle}
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80">
-              {heroSubtitle}
-            </p>
+        {/* Hero Section */}
+        <section className="relative overflow-hidden gradient-hero section-padding">
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 opacity-[0.03]">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+              backgroundSize: '32px 32px'
+            }} />
+          </div>
+          
+          <div className="container-custom relative">
+            <div className="mx-auto max-w-3xl text-center">
+              <Badge variant="secondary" className="mb-6 bg-white/10 text-primary-foreground border-white/20 backdrop-blur-sm">
+                <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                {language === 'en' ? 'Transparent Pricing' : 'স্বচ্ছ মূল্য'}
+              </Badge>
+              
+              <h1 className="mb-6 text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl">
+                {heroTitle}
+              </h1>
+              
+              <p className="text-lg leading-relaxed text-primary-foreground/80 sm:text-xl">
+                {heroSubtitle}
+              </p>
+            </div>
           </div>
         </section>
 
         {/* Pricing Plans */}
-        <section className="section-padding">
+        <section className="section-padding bg-section-light">
           <div className="container-custom">
             <div className="grid gap-8 lg:grid-cols-3">
               {pricingPlans.map((plan, index) => (
                 <Card
                   key={index}
-                  className={`relative ${plan.popular ? 'border-2 border-accent shadow-lg' : ''}`}
+                  className={`group relative transition-all duration-300 hover:shadow-card-hover ${
+                    plan.popular 
+                      ? 'border-2 border-primary shadow-lg ring-1 ring-primary/10 scale-[1.02] lg:scale-105' 
+                      : 'border-border/40 hover:border-border/60'
+                  }`}
                 >
                   {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-accent text-accent-foreground">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-primary text-primary-foreground shadow-md px-4 py-1">
+                        <Sparkles className="mr-1.5 h-3 w-3" />
                         {language === 'en' ? 'Most Popular' : 'সবচেয়ে জনপ্রিয়'}
                       </Badge>
                     </div>
                   )}
-                  <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl">
+                  
+                  <CardHeader className="text-center pb-4 pt-8">
+                    <CardTitle className="text-2xl font-bold">
                       {language === 'en' ? plan.nameEn : plan.nameBn}
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="mt-2 text-muted-foreground">
                       {language === 'en' ? plan.descEn : plan.descBn}
                     </CardDescription>
-                    <div className="mt-4 text-3xl font-bold text-primary">
-                      {language === 'en' ? plan.priceEn : plan.priceBn}
+                    <div className="mt-6">
+                      <span className="text-4xl font-bold text-foreground">
+                        {language === 'en' ? plan.priceEn : plan.priceBn}
+                      </span>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-4">
-                    <ul className="mb-6 space-y-3">
+                  
+                  <CardContent className="pt-2 pb-8">
+                    <ul className="mb-8 space-y-4">
                       {plan.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent" />
-                          <span className="text-sm">
+                        <li key={i} className="flex items-start gap-3">
+                          <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <Check className="h-3 w-3 text-primary" />
+                          </span>
+                          <span className="text-sm text-muted-foreground">
                             {language === 'en' ? feature.en : feature.bn}
                           </span>
                         </li>
                       ))}
                     </ul>
+                    
                     <Button
                       className="w-full"
                       variant={plan.popular ? 'default' : 'outline'}
+                      size="lg"
                       asChild
                     >
                       <Link to="/contact?type=quote">
                         {t('common.getQuote')}
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
                   </CardContent>
@@ -177,22 +206,35 @@ const Pricing = () => {
         </section>
 
         {/* FAQs */}
-        <section className="section-padding bg-section-alt">
+        <section className="section-padding">
           <div className="container-custom">
-            <h2 className="mb-12 text-center text-3xl font-bold">
-              {language === 'en' ? 'Frequently Asked Questions' : 'সাধারণ প্রশ্নাবলী'}
-            </h2>
-            <div className="mx-auto max-w-3xl space-y-6">
+            <div className="mx-auto mb-14 max-w-2xl text-center">
+              <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                {language === 'en' ? 'Frequently Asked Questions' : 'সাধারণ প্রশ্নাবলী'}
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                {language === 'en' 
+                  ? 'Everything you need to know about our pricing and process'
+                  : 'আমাদের মূল্য এবং প্রক্রিয়া সম্পর্কে আপনার জানা দরকার সবকিছু'}
+              </p>
+            </div>
+            
+            <div className="mx-auto max-w-3xl space-y-4">
               {faqs.map((faq, index) => (
-                <Card key={index}>
+                <Card 
+                  key={index} 
+                  className="border-border/40 transition-all duration-200 hover:border-border/60 hover:shadow-card"
+                >
                   <CardContent className="p-6">
-                    <div className="flex items-start gap-3">
-                      <HelpCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+                    <div className="flex items-start gap-4">
+                      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/8">
+                        <HelpCircle className="h-5 w-5 text-primary" />
+                      </span>
                       <div>
-                        <h3 className="mb-2 font-semibold">
+                        <h3 className="mb-2 text-base font-semibold text-foreground">
                           {language === 'en' ? faq.questionEn : faq.questionBn}
                         </h3>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm leading-relaxed text-muted-foreground">
                           {language === 'en' ? faq.answerEn : faq.answerBn}
                         </p>
                       </div>
@@ -204,18 +246,48 @@ const Pricing = () => {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="section-padding">
-          <div className="container-custom text-center">
-            <h2 className="mb-4 text-3xl font-bold">
-              {ctaTitle}
-            </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-              {ctaContent}
-            </p>
-            <Button size="lg" asChild>
-              <Link to="/contact">{t('common.contactUs')}</Link>
-            </Button>
+        {/* CTA Section */}
+        <section className="relative overflow-hidden gradient-hero section-padding">
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 opacity-[0.03]">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+              backgroundSize: '32px 32px'
+            }} />
+          </div>
+          
+          <div className="container-custom relative">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="mb-5 text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl">
+                {ctaTitle}
+              </h2>
+              <p className="mb-8 text-lg leading-relaxed text-primary-foreground/80">
+                {ctaContent}
+              </p>
+              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Button 
+                  size="lg" 
+                  variant="secondary"
+                  className="min-w-[180px] bg-white text-primary hover:bg-white/90"
+                  asChild
+                >
+                  <Link to="/contact">
+                    {t('common.contactUs')}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="min-w-[180px] border-white/30 text-primary-foreground hover:bg-white/10"
+                  asChild
+                >
+                  <Link to="/contact?tab=meeting">
+                    {t('common.bookMeeting')}
+                  </Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </section>
       </Layout>
