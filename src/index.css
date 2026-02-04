@@ -307,6 +307,188 @@
   }
 }
 
+/* Hero Section Animations */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-12px) translateX(4px);
+  }
+}
+
+@keyframes floatMedium {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-8px) translateX(-6px);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.12;
+  }
+}
+
+@keyframes techCardFloat1 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(0.5deg);
+  }
+}
+
+@keyframes techCardFloat2 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(-0.5deg);
+  }
+}
+
+@keyframes techCardFloat3 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.3deg);
+  }
+}
+
+/* Hero animate classes */
+.hero-animate {
+  opacity: 0;
+  animation: heroFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.hero-animate-delay-0 { animation-delay: 0ms; }
+.hero-animate-delay-1 { animation-delay: 80ms; }
+.hero-animate-delay-2 { animation-delay: 160ms; }
+.hero-animate-delay-3 { animation-delay: 240ms; }
+.hero-animate-delay-4 { animation-delay: 320ms; }
+
+/* Floating animations */
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: floatMedium 4s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  animation: gradientShift 8s ease-in-out infinite;
+}
+
+/* Tech cards */
+.tech-card {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tech-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 28px hsl(0 0% 0% / 0.15);
+}
+
+.tech-card-1 {
+  animation: techCardFloat1 5s ease-in-out infinite;
+}
+
+.tech-card-2 {
+  animation: techCardFloat2 6s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.tech-card-3 {
+  animation: techCardFloat3 5.5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+/* Hero CTA buttons */
+.hero-cta-primary {
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 4px 14px hsl(var(--accent) / 0.35);
+}
+
+.hero-cta-primary:hover {
+  box-shadow: 0 6px 20px hsl(var(--accent) / 0.45);
+  transform: translateY(-1px);
+}
+
+.hero-cta-primary:active {
+  transform: scale(0.96);
+}
+
+.hero-cta-secondary {
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-cta-secondary:hover {
+  transform: translateY(-1px);
+}
+
+.hero-cta-secondary:active {
+  transform: scale(0.96);
+}
+
+/* Reduce animations on mobile for performance */
+@media (max-width: 768px) {
+  .tech-card-1,
+  .tech-card-2,
+  .tech-card-3 {
+    animation: none;
+  }
+  
+  .animate-float-slow,
+  .animate-float-medium {
+    animation: none;
+  }
+  
+  .hero-animate {
+    animation-duration: 0.35s;
+  }
+}
+
+/* Prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-animate,
+  .tech-card,
+  .tech-card-1,
+  .tech-card-2,
+  .tech-card-3,
+  .animate-float-slow,
+  .animate-float-medium,
+  .animate-gradient-shift {
+    animation: none;
+    opacity: 1;
+  }
+  
+  .hero-cta-primary:hover,
+  .hero-cta-primary:active,
+  .hero-cta-secondary:hover,
+  .hero-cta-secondary:active {
+    transform: none;
+  }
+}
+
 /* Smooth scrollbar - modern touch */
 ::-webkit-scrollbar {
   width: 10px;
