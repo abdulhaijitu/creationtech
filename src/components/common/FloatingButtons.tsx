@@ -19,8 +19,7 @@ const FloatingButtons = () => {
   };
 
   const openWhatsApp = () => {
-    // Replace with your WhatsApp number
-    const phoneNumber = '8801XXXXXXXXX'; // Update this
+    const phoneNumber = '8801833876434';
     const message = encodeURIComponent('Hello! I would like to know more about your services.');
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
@@ -43,7 +42,7 @@ const FloatingButtons = () => {
 
       {/* WhatsApp Button */}
       <a
-        href="https://wa.me/8801XXXXXXXXX" // Update this
+        href="https://wa.me/8801833876434"
         onClick={(e) => {
           e.preventDefault();
           openWhatsApp();
