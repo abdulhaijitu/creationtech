@@ -45,9 +45,6 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Topbar - Hides on scroll */}
-      <Topbar isVisible={!isScrolled} />
-
       {/* Main Navbar */}
       <nav
         className={cn(
