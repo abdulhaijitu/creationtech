@@ -43,7 +43,13 @@ const Header = () => {
 
   const simpleNavItems = [
     { href: '/', label: 'Home' },
-    { href: '/products', label: 'Products' },
+  ];
+
+  const productsItems = [
+    { href: '/products#isp-manager', label: 'ISP Manager', description: 'Complete ISP billing and customer management solution.' },
+    { href: '/products#somity-app', label: 'Somity App', description: 'Digital platform for cooperative society management.' },
+    { href: '/products#restaurant-app', label: 'Restaurant App', description: 'Modern POS and order management for restaurants.' },
+    { href: '/products', label: 'View All Products', description: 'Explore our complete product lineup.' },
   ];
 
   const servicesItems = [
@@ -146,6 +152,37 @@ const Header = () => {
                     </Link>
                   </NavigationMenuItem>
                 ))}
+
+                {/* Products Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger
+                    className={cn(
+                      'bg-transparent px-4 py-2 text-sm font-medium',
+                      isDropdownActive(productsItems) || location.pathname === '/products'
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                    )}
+                  >
+                    Products
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid w-[400px] gap-3 p-4 md:grid-cols-1">
+                      {productsItems.map((item) => (
+                        <NavigationMenuLink key={item.href} asChild>
+                          <Link
+                            to={item.href}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="text-sm font-medium leading-none">{item.label}</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              {item.description}
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
                 {/* Services Dropdown */}
                 <NavigationMenuItem>
@@ -288,6 +325,21 @@ const Header = () => {
                                 ? 'bg-primary/10 text-primary'
                                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                             )}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+
+                        {/* Products Section */}
+                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Products
+                        </div>
+                        {productsItems.map((item) => (
+                          <Link
+                            key={item.href}
+                            to={item.href}
+                            onClick={() => setIsSheetOpen(false)}
+                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
                           >
                             {item.label}
                           </Link>
