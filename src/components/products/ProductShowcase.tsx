@@ -95,15 +95,15 @@ const ProductShowcase = () => {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product, index) => (
             <ScrollReveal key={product.slug} delay={200 + index * 100} animation="fade-in">
-              <div className="group h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
+              <div className="group h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10">
                 {/* Product Image */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                   <OptimizedImage
                     src={product.image}
                     alt={language === 'en' ? product.titleEn : product.titleBn}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 </div>
 
                 {/* Card Content */}
@@ -129,14 +129,14 @@ const ProductShowcase = () => {
                   </ul>
 
                   {/* CTAs */}
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button asChild className="group/btn flex-1 active:scale-[0.96]">
+                  <div className="flex flex-col gap-3 lg:flex-row">
+                    <Button asChild className="group/btn w-full lg:flex-1 transition-all duration-200 active:scale-[0.96]">
                       <Link to={`/products/${product.slug}`}>
                         {language === 'en' ? 'View Details' : 'বিস্তারিত দেখুন'}
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
                       </Link>
                     </Button>
-                    <Button variant="outline" asChild className="flex-1 active:scale-[0.96]">
+                    <Button variant="outline" asChild className="w-full lg:flex-1 transition-all duration-200 active:scale-[0.96]">
                       <Link to="/contact?type=meeting">
                         <Play className="mr-2 h-4 w-4" />
                         {language === 'en' ? 'Request Demo' : 'ডেমো রিকোয়েস্ট'}
