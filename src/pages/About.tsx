@@ -1,9 +1,19 @@
 import { Helmet } from 'react-helmet-async';
-import { Target, Eye, Users, Award, Heart } from 'lucide-react';
+import { Target, Eye, Users, Award, Heart, Linkedin, Twitter, Sparkles } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCMSContent } from '@/hooks/useCMSContent';
+import ScrollReveal from '@/components/common/ScrollReveal';
+import CountUp from '@/components/common/CountUp';
+import { cn } from '@/lib/utils';
+
+// Images
+import aboutOfficeImg from '@/assets/about-office.jpg';
+import ceoImg from '@/assets/team/ceo.jpg';
+import ctoImg from '@/assets/team/cto.jpg';
+import headEngineeringImg from '@/assets/team/head-engineering.jpg';
+import headDesignImg from '@/assets/team/head-design.jpg';
 
 const values = [
   {
@@ -36,6 +46,56 @@ const values = [
   },
 ];
 
+const teamMembers = [
+  {
+    id: 'ceo',
+    nameEn: 'Rafiq Ahmed',
+    nameBn: 'রফিক আহমেদ',
+    roleEn: 'CEO & Founder',
+    roleBn: 'সিইও ও প্রতিষ্ঠাতা',
+    image: ceoImg,
+    linkedin: '#',
+    twitter: '#',
+  },
+  {
+    id: 'cto',
+    nameEn: 'Fatima Rahman',
+    nameBn: 'ফাতিমা রহমান',
+    roleEn: 'Chief Technology Officer',
+    roleBn: 'চিফ টেকনোলজি অফিসার',
+    image: ctoImg,
+    linkedin: '#',
+    twitter: '#',
+  },
+  {
+    id: 'head-engineering',
+    nameEn: 'Karim Hassan',
+    nameBn: 'করিম হাসান',
+    roleEn: 'Head of Engineering',
+    roleBn: 'হেড অব ইঞ্জিনিয়ারিং',
+    image: headEngineeringImg,
+    linkedin: '#',
+    twitter: '#',
+  },
+  {
+    id: 'head-design',
+    nameEn: 'Nusrat Jahan',
+    nameBn: 'নুসরাত জাহান',
+    roleEn: 'Head of Design',
+    roleBn: 'হেড অব ডিজাইন',
+    image: headDesignImg,
+    linkedin: '#',
+    twitter: '#',
+  },
+];
+
+const stats = [
+  { value: 10, suffix: '+', labelEn: 'Years Experience', labelBn: 'বছরের অভিজ্ঞতা' },
+  { value: 500, suffix: '+', labelEn: 'Projects Delivered', labelBn: 'প্রজেক্ট সম্পন্ন' },
+  { value: 100, suffix: '+', labelEn: 'Team Members', labelBn: 'টিম মেম্বার' },
+  { value: 15, suffix: '+', labelEn: 'Countries Served', labelBn: 'দেশে সেবা' },
+];
+
 const timeline = [
   { year: '2015', titleEn: 'Company Founded', titleBn: 'কোম্পানি প্রতিষ্ঠা', descEn: 'Started with a vision to transform businesses through technology.', descBn: 'প্রযুক্তির মাধ্যমে ব্যবসা রূপান্তরের দৃষ্টিভঙ্গি নিয়ে শুরু।' },
   { year: '2017', titleEn: 'First Major Client', titleBn: 'প্রথম বড় ক্লায়েন্ট', descEn: 'Secured enterprise contract, expanding our service offerings.', descBn: 'এন্টারপ্রাইজ চুক্তি সুরক্ষিত করে সেবার পরিধি বাড়ানো।' },
@@ -48,7 +108,6 @@ const About = () => {
   const { t, language } = useLanguage();
   const { getSection, getSectionText, getMetaTitle, getMetaDescription } = useCMSContent({ pageSlug: 'about' });
 
-  // CMS content with fallbacks
   const heroSection = getSection('hero', {
     title: language === 'en' ? 'About Us' : 'আমাদের সম্পর্কে',
     content: language === 'en' ? 'Learn about our journey and mission' : 'আমাদের যাত্রা এবং মিশন সম্পর্কে জানুন',
@@ -66,7 +125,7 @@ const About = () => {
     'mission',
     'content',
     language === 'en'
-      ? 'To empower businesses with innovative technology solutions that drive growth, efficiency, and competitive advantage. We are committed to delivering excellence in every project while building lasting partnerships based on trust and mutual success.'
+      ? 'To empower businesses with innovative technology solutions that drive growth, efficiency, and competitive advantage.'
       : 'উদ্ভাবনী প্রযুক্তি সমাধান দিয়ে ব্যবসাগুলিকে ক্ষমতায়ন করা যা বৃদ্ধি, দক্ষতা এবং প্রতিযোগিতামূলক সুবিধা চালিত করে।'
   );
 
@@ -74,8 +133,8 @@ const About = () => {
     'vision',
     'content',
     language === 'en'
-      ? 'To be the leading IT solutions provider in Bangladesh and Southeast Asia, recognized for our innovation, quality, and commitment to client success. We envision a future where every business, regardless of size, can leverage technology to achieve their full potential.'
-      : 'বাংলাদেশ এবং দক্ষিণ-পূর্ব এশিয়ায় শীর্ষস্থানীয় আইটি সলিউশন প্রদানকারী হওয়া, আমাদের উদ্ভাবন, গুণমান এবং ক্লায়েন্ট সাফল্যের প্রতিশ্রুতির জন্য স্বীকৃত।'
+      ? 'To be the leading IT solutions provider in Bangladesh and Southeast Asia, recognized for innovation and quality.'
+      : 'বাংলাদেশ এবং দক্ষিণ-পূর্ব এশিয়ায় শীর্ষস্থানীয় আইটি সলিউশন প্রদানকারী হওয়া।'
   );
 
   return (
@@ -89,92 +148,190 @@ const About = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="gradient-hero py-24 lg:py-32">
-          <div className="container-custom text-center">
-            <h1 className="mb-5 text-4xl font-bold text-primary-foreground sm:text-5xl animate-fade-up" style={{ letterSpacing: '-0.03em' }}>
-              {heroSection.title || t('about.title')}
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/75 leading-relaxed animate-fade-up animation-delay-100">
-              {heroSection.content || t('about.subtitle')}
-            </p>
+        <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 lg:py-24">
+          <div className="absolute inset-0">
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-white/5 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-accent/10 blur-3xl" />
           </div>
-        </section>
-
-        {/* Story */}
-        <section className="section-padding">
-          <div className="container-narrow">
-            <div className="text-center">
-              <h2 className="mb-8 text-3xl font-bold tracking-tight sm:text-4xl">
-                {getSectionText('story', 'title', language === 'en' ? 'Our Story' : 'আমাদের গল্প')}
-              </h2>
-              <div className="space-y-6">
-                {storyContent.split('\n\n').map((paragraph, idx) => (
-                  <p key={idx} className="text-lg text-muted-foreground leading-relaxed">
-                    {paragraph}
+          
+          <div className="container-custom relative">
+            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div className="text-center lg:text-left">
+                <ScrollReveal animation="fade-up">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+                    <Sparkles className="h-4 w-4" />
+                    {language === 'en' ? 'About Creation Tech' : 'Creation Tech সম্পর্কে'}
+                  </div>
+                </ScrollReveal>
+                
+                <ScrollReveal animation="fade-up" delay={100}>
+                  <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
+                    {heroSection.title || t('about.title')}
+                  </h1>
+                </ScrollReveal>
+                
+                <ScrollReveal animation="fade-up" delay={150}>
+                  <p className="text-base text-white/70 leading-relaxed max-w-xl mx-auto lg:mx-0 sm:text-lg">
+                    {heroSection.content || t('about.subtitle')}
                   </p>
-                ))}
+                </ScrollReveal>
+                
+                <ScrollReveal animation="fade-up" delay={200}>
+                  <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                    {stats.map((stat, index) => (
+                      <div key={index} className="text-center lg:text-left">
+                        <div className="text-xl font-bold text-white sm:text-2xl">
+                          <CountUp end={stat.value} duration={2000} />{stat.suffix}
+                        </div>
+                        <div className="text-xs text-white/60 sm:text-sm">
+                          {language === 'en' ? stat.labelEn : stat.labelBn}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollReveal>
               </div>
+              
+              <ScrollReveal animation="fade-left" className="hidden lg:block">
+                <div className="relative">
+                  <div className="overflow-hidden rounded-2xl shadow-2xl">
+                    <img src={aboutOfficeImg} alt="Creation Tech Office" className="w-full h-auto object-cover" loading="lazy" />
+                  </div>
+                  <div className="absolute -inset-3 rounded-2xl border border-white/10 -z-10" />
+                </div>
+              </ScrollReveal>
             </div>
           </div>
         </section>
 
+        {/* Story */}
+        <section className="py-12 lg:py-16">
+          <div className="container-narrow">
+            <ScrollReveal animation="fade-up">
+              <h2 className="mb-6 text-center text-2xl font-bold tracking-tight sm:text-3xl">
+                {getSectionText('story', 'title', language === 'en' ? 'Our Story' : 'আমাদের গল্প')}
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal animation="fade-up" delay={100}>
+              <div className="space-y-5">
+                {storyContent.split('\n\n').map((paragraph, idx) => (
+                  <p key={idx} className="text-base text-muted-foreground leading-relaxed text-center">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </ScrollReveal>
+          </div>
+        </section>
+
         {/* Mission & Vision */}
-        <section className="section-padding bg-section-alt">
+        <section className="py-12 lg:py-16 bg-muted/30">
           <div className="container-custom">
-            <div className="grid gap-8 lg:grid-cols-2">
-              <Card className="border-0 bg-primary text-primary-foreground shadow-lg">
-                <CardContent className="p-8 lg:p-10">
-                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-foreground/15">
-                    <Target className="h-7 w-7" />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ScrollReveal animation="fade-right">
+                <Card className="h-full border-0 bg-primary text-primary-foreground shadow-xl">
+                  <CardContent className="p-6 lg:p-8">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-foreground/15">
+                      <Target className="h-5 w-5" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-bold">{getSectionText('mission', 'title', t('about.mission'))}</h3>
+                    <p className="text-primary-foreground/80 leading-relaxed text-sm">{missionContent}</p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
+              <ScrollReveal animation="fade-left" delay={100}>
+                <Card className="h-full border-0 bg-accent text-accent-foreground shadow-xl">
+                  <CardContent className="p-6 lg:p-8">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-accent-foreground/15">
+                      <Eye className="h-5 w-5" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-bold">{getSectionText('vision', 'title', t('about.vision'))}</h3>
+                    <p className="text-accent-foreground/80 leading-relaxed text-sm">{visionContent}</p>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+
+        {/* Team Section */}
+        <section className="py-12 lg:py-16">
+          <div className="container-custom">
+            <ScrollReveal animation="fade-up">
+              <div className="text-center mb-10">
+                <span className="inline-block mb-2 text-xs font-semibold uppercase tracking-widest text-primary/80">
+                  {language === 'en' ? 'OUR TEAM' : 'আমাদের টিম'}
+                </span>
+                <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                  {language === 'en' ? 'Meet the Leadership' : 'নেতৃত্বের সাথে পরিচিত হোন'}
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground max-w-xl mx-auto">
+                  {language === 'en' 
+                    ? 'Passionate professionals driving innovation and excellence.'
+                    : 'উদ্ভাবন এবং শ্রেষ্ঠত্ব চালিত করা উত্সাহী পেশাদাররা।'}
+                </p>
+              </div>
+            </ScrollReveal>
+            
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+              {teamMembers.map((member, index) => (
+                <ScrollReveal key={member.id} animation="fade-up" delay={index * 80}>
+                  <div className={cn(
+                    'group relative overflow-hidden rounded-2xl bg-card border border-border/50',
+                    'shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1'
+                  )}>
+                    <div className="relative aspect-square overflow-hidden">
+                      <img
+                        src={member.image}
+                        alt={language === 'en' ? member.nameEn : member.nameBn}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                        <div className="flex gap-2">
+                          <a href={member.linkedin} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors" aria-label="LinkedIn">
+                            <Linkedin className="h-4 w-4" />
+                          </a>
+                          <a href={member.twitter} className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground hover:bg-primary hover:text-primary-foreground transition-colors" aria-label="Twitter">
+                            <Twitter className="h-4 w-4" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 text-center">
+                      <h3 className="font-semibold text-foreground text-sm">{language === 'en' ? member.nameEn : member.nameBn}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">{language === 'en' ? member.roleEn : member.roleBn}</p>
+                    </div>
                   </div>
-                  <h3 className="mb-4 text-2xl font-bold">
-                    {getSectionText('mission', 'title', t('about.mission'))}
-                  </h3>
-                  <p className="text-primary-foreground/80 leading-relaxed">
-                    {missionContent}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="border-0 bg-accent text-accent-foreground shadow-lg">
-                <CardContent className="p-8 lg:p-10">
-                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent-foreground/15">
-                    <Eye className="h-7 w-7" />
-                  </div>
-                  <h3 className="mb-4 text-2xl font-bold">
-                    {getSectionText('vision', 'title', t('about.vision'))}
-                  </h3>
-                  <p className="text-accent-foreground/80 leading-relaxed">
-                    {visionContent}
-                  </p>
-                </CardContent>
-              </Card>
+                </ScrollReveal>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Values */}
-        <section className="section-padding">
+        <section className="py-12 lg:py-16 bg-muted/30">
           <div className="container-custom">
-            <h2 className="mb-14 text-center text-3xl font-bold tracking-tight sm:text-4xl">
-              {language === 'en' ? 'Our Values' : 'আমাদের মূল্যবোধ'}
-            </h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+            <ScrollReveal animation="fade-up">
+              <h2 className="mb-8 text-center text-2xl font-bold tracking-tight sm:text-3xl">
+                {language === 'en' ? 'Our Values' : 'আমাদের মূল্যবোধ'}
+              </h2>
+            </ScrollReveal>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
               {values.map((value, index) => {
                 const Icon = value.icon;
                 return (
-                  <Card key={index} className="text-center card-interactive border-border/40 hover:border-border/60">
-                    <CardContent className="p-7">
-                      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/8 text-primary">
-                        <Icon className="h-7 w-7" />
-                      </div>
-                      <h3 className="mb-3 text-lg font-semibold">
-                        {language === 'en' ? value.titleEn : value.titleBn}
-                      </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {language === 'en' ? value.descEn : value.descBn}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <ScrollReveal key={index} animation="fade-up" delay={index * 80}>
+                    <Card className="h-full text-center border-border/40 hover:border-primary/30 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                      <CardContent className="p-5">
+                        <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <h3 className="mb-2 text-sm font-semibold">{language === 'en' ? value.titleEn : value.titleBn}</h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{language === 'en' ? value.descEn : value.descBn}</p>
+                      </CardContent>
+                    </Card>
+                  </ScrollReveal>
                 );
               })}
             </div>
@@ -182,37 +339,32 @@ const About = () => {
         </section>
 
         {/* Timeline */}
-        <section className="section-padding bg-section-alt">
+        <section className="py-12 lg:py-16">
           <div className="container-custom">
-            <h2 className="mb-14 text-center text-3xl font-bold tracking-tight sm:text-4xl">
-              {language === 'en' ? 'Our Journey' : 'আমাদের যাত্রা'}
-            </h2>
+            <ScrollReveal animation="fade-up">
+              <h2 className="mb-8 text-center text-2xl font-bold tracking-tight sm:text-3xl">
+                {language === 'en' ? 'Our Journey' : 'আমাদের যাত্রা'}
+              </h2>
+            </ScrollReveal>
             <div className="relative mx-auto max-w-3xl">
               <div className="absolute left-4 top-0 h-full w-0.5 bg-border/60 md:left-1/2 md:-ml-px" />
               {timeline.map((item, index) => (
-                <div
-                  key={index}
-                  className={`relative mb-10 flex items-start md:items-center ${
-                    index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                  }`}
-                >
-                  <div className="absolute left-4 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shadow-sm md:left-1/2 md:-ml-4">
-                    {item.year.slice(-2)}
+                <ScrollReveal key={index} animation="fade-up" delay={index * 80}>
+                  <div className={`relative mb-6 flex items-start md:items-center ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+                    <div className="absolute left-4 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm md:left-1/2 md:-ml-3.5">
+                      {item.year.slice(-2)}
+                    </div>
+                    <div className={`ml-14 md:ml-0 md:w-1/2 ${index % 2 === 0 ? 'md:pr-8 md:text-right' : 'md:pl-8'}`}>
+                      <Card className="border-border/40 hover:border-primary/30 hover:shadow-md transition-all duration-300">
+                        <CardContent className="p-4">
+                          <span className="text-xs font-bold text-primary">{item.year}</span>
+                          <h3 className="font-semibold mt-0.5 text-sm">{language === 'en' ? item.titleEn : item.titleBn}</h3>
+                          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{language === 'en' ? item.descEn : item.descBn}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
-                  <div className={`ml-16 md:ml-0 md:w-1/2 ${index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
-                    <Card className="card-interactive border-border/40">
-                      <CardContent className="p-5">
-                        <span className="text-sm font-bold text-primary">{item.year}</span>
-                        <h3 className="font-semibold mt-1">
-                          {language === 'en' ? item.titleEn : item.titleBn}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                          {language === 'en' ? item.descEn : item.descBn}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
