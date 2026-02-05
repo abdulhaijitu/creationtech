@@ -17,6 +17,14 @@ export interface Product {
   display_order: number | null;
 }
 
+// Helper to get product image URL
+export const getProductImageUrl = (product: Product): string | null => {
+  if (product.media && product.media.length > 0) {
+    return product.media[0]?.url || null;
+  }
+  return null;
+};
+
 export const useProducts = () => {
   return useQuery({
     queryKey: ['public-products'],
