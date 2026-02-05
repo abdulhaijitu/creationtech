@@ -117,7 +117,7 @@ const Blog = () => {
         <section className="gradient-hero py-24 lg:py-32">
           <div className="container-custom text-center">
             <h1 className="mb-5 text-4xl font-bold text-primary-foreground sm:text-5xl animate-fade-up" style={{ letterSpacing: '-0.03em' }}>
-              {t('blog.title')}
+              {language === 'en' ? 'Software Development Insights' : 'সফটওয়্যার ডেভেলপমেন্ট ইনসাইটস'}
             </h1>
             <p className="mx-auto max-w-2xl text-lg text-primary-foreground/75 leading-relaxed animate-fade-up animation-delay-100">
               {t('blog.subtitle')}

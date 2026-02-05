@@ -66,7 +66,7 @@ const Contact = () => {
             </ScrollReveal>
             <ScrollReveal animation="fade-up" delay={100}>
               <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
-                {language === 'en' ? "Let's Build Something Great Together" : 'আসুন একসাথে দুর্দান্ত কিছু তৈরি করি'}
+                {language === 'en' ? 'Hire Software Development Company in Bangladesh' : 'বাংলাদেশে সফটওয়্যার ডেভেলপমেন্ট কোম্পানি নিয়োগ করুন'}
               </h1>
             </ScrollReveal>
             <ScrollReveal animation="fade-up" delay={150}>

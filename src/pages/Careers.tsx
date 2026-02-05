@@ -140,7 +140,7 @@ const Careers = () => {
               </Badge>
               
               <h1 className="mb-6 text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl">
-                {t('careers.title')}
+                {language === 'en' ? 'Software Developer Jobs in Bangladesh' : 'বাংলাদেশে সফটওয়্যার ডেভেলপার চাকরি'}
               </h1>
               
               <p className="mb-8 text-lg leading-relaxed text-primary-foreground/80 sm:text-xl">

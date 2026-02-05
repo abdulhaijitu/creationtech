@@ -37,7 +37,7 @@ const ProductHero = () => {
             style={{ letterSpacing: '-0.02em' }}
           >
             <span className="bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text">
-              {language === 'en' ? 'CreationOS' : 'ক্রিয়েশনওএস'}
+              {language === 'en' ? 'Business Management Software Solutions' : 'বিজনেস ম্যানেজমেন্ট সফটওয়্যার সমাধান'}
             </span>
           </h1>
           
