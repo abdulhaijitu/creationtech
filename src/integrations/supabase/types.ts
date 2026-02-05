@@ -47,6 +47,47 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance: {
+        Row: {
+          check_in: string | null
+          check_out: string | null
+          created_at: string
+          date: string
+          employee_id: string
+          id: string
+          notes: string | null
+          status: string
+        }
+        Insert: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string
+          date: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          status?: string
+        }
+        Update: {
+          check_in?: string | null
+          check_out?: string | null
+          created_at?: string
+          date?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_categories: {
         Row: {
           created_at: string
@@ -252,6 +293,101 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      departments: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      employees: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          created_at: string
+          department_id: string | null
+          designation: string | null
+          documents: Json | null
+          email: string | null
+          emergency_contact: string | null
+          employee_id: string
+          full_name: string
+          id: string
+          join_date: string | null
+          notes: string | null
+          phone: string | null
+          salary: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          department_id?: string | null
+          designation?: string | null
+          documents?: Json | null
+          email?: string | null
+          emergency_contact?: string | null
+          employee_id: string
+          full_name: string
+          id?: string
+          join_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          salary?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          department_id?: string | null
+          designation?: string | null
+          documents?: Json | null
+          email?: string | null
+          emergency_contact?: string | null
+          employee_id?: string
+          full_name?: string
+          id?: string
+          join_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          salary?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoice_items: {
         Row: {
@@ -1053,6 +1189,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_employee_id: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_proposal_number: { Args: never; Returns: string }
       generate_quotation_number: { Args: never; Returns: string }
