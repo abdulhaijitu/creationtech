@@ -22,6 +22,26 @@ import {
    FileSignature,
    UsersRound,
    Clock,
+   CreditCard,
+   TrendingUp,
+   ShieldCheck,
+   StickyNote,
+   Package,
+   Monitor,
+   Server,
+   Utensils,
+   Home,
+   Globe,
+   Layers,
+   BookOpen,
+   ListTodo,
+   Bell,
+   Activity,
+   Cog,
+   Wallet,
+   Smartphone,
+   UserCog,
+   Sliders,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,59 +55,76 @@ interface AdminLayoutProps {
 // Navigation structure with clear grouping
 const navGroups = [
   {
-    label: 'Overview',
+     label: '📊 Dashboard',
     items: [
-      { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+       { label: 'Overview', href: '/admin', icon: LayoutDashboard },
     ],
   },
   {
-    label: 'Sales',
+     label: '💼 Sales & Clients',
     items: [
-      { label: 'Invoices', href: '/admin/invoices', icon: Receipt },
-      { label: 'Clients', href: '/admin/clients', icon: UserCircle },
+       { label: 'Leads', href: '/admin/leads', icon: MessageSquare },
        { label: 'Quotations', href: '/admin/quotations', icon: ClipboardList },
        { label: 'Proposals', href: '/admin/proposals', icon: FileSignature },
+      { label: 'Invoices', href: '/admin/invoices', icon: Receipt },
+      { label: 'Clients', href: '/admin/clients', icon: UserCircle },
     ],
   },
   {
-    label: 'Content',
+     label: '🧾 Finance',
     items: [
-      { label: 'Business Info', href: '/admin/business-info', icon: Building2 },
-      { label: 'Pages', href: '/admin/pages', icon: FileCode },
-      { label: 'Services', href: '/admin/services', icon: Briefcase },
-      { label: 'Portfolio', href: '/admin/portfolio', icon: FolderOpen },
-      { label: 'Testimonials', href: '/admin/testimonials', icon: Quote },
-      { label: 'Blog', href: '/admin/blog', icon: FileText },
+       { label: 'Payments', href: '/admin/payments', icon: CreditCard },
+       { label: 'Revenue Report', href: '/admin/revenue', icon: TrendingUp },
     ],
   },
   {
-    label: 'Leads',
+     label: '🧑‍💼 HR & Team',
     items: [
-      { label: 'Contacts', href: '/admin/leads/contacts', icon: MessageSquare },
-      { label: 'Quotes', href: '/admin/leads/quotes', icon: FileQuestion },
-      { label: 'Meetings', href: '/admin/leads/meetings', icon: Calendar },
+       { label: 'Employees', href: '/admin/employees', icon: UsersRound },
+       { label: 'Roles & Permissions', href: '/admin/roles', icon: ShieldCheck },
+       { label: 'Attendance', href: '/admin/attendance', icon: Clock },
+       { label: 'Internal Notes', href: '/admin/notes', icon: StickyNote },
     ],
   },
   {
-    label: 'Careers',
+     label: '🧩 Products',
     items: [
-      { label: 'Jobs & Applications', href: '/admin/careers', icon: Users },
+       { label: 'All Products', href: '/admin/products', icon: Package },
+       { label: 'ISP Manager', href: '/admin/products/isp-manager', icon: Server },
+       { label: 'Somity App', href: '/admin/products/somity-app', icon: Monitor },
+       { label: 'Restaurant App', href: '/admin/products/restaurant-app', icon: Utensils },
+    ],
+  },
+  {
+     label: '🌐 Frontend Control',
+    items: [
+       { label: 'Home Page', href: '/admin/pages/home', icon: Home },
+       { label: 'Products Page', href: '/admin/pages/products', icon: Package },
+       { label: 'Services Page', href: '/admin/pages/services', icon: Briefcase },
+       { label: 'Companies Page', href: '/admin/pages/companies', icon: Building2 },
+       { label: 'Resources Page', href: '/admin/pages/resources', icon: BookOpen },
+       { label: 'Other Pages', href: '/admin/pages', icon: FileCode },
     ],
   },
    {
-     label: 'HR',
+     label: '🛠️ Operations',
      items: [
-       { label: 'Employees', href: '/admin/employees', icon: UsersRound },
-       { label: 'Attendance', href: '/admin/attendance', icon: Clock },
+       { label: 'Tasks / Follow-ups', href: '/admin/tasks', icon: ListTodo },
+       { label: 'Notifications', href: '/admin/notifications', icon: Bell },
+       { label: 'Activity Logs', href: '/admin/activity-logs', icon: Activity },
      ],
    },
-  {
-    label: 'Settings',
-    adminOnly: true,
-    items: [
-      { label: 'Users', href: '/admin/users', icon: Users },
-    ],
-  },
+   {
+     label: '⚙️ Settings',
+     adminOnly: true,
+     items: [
+       { label: 'General Settings', href: '/admin/settings', icon: Cog },
+       { label: 'Payment Gateway', href: '/admin/settings/payment', icon: Wallet },
+       { label: 'SMS Settings', href: '/admin/settings/sms', icon: Smartphone },
+       { label: 'User Management', href: '/admin/users', icon: UserCog },
+       { label: 'System Preferences', href: '/admin/settings/system', icon: Sliders },
+     ],
+   },
 ];
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
@@ -124,10 +161,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-4 border-b border-sidebar-border">
             <Link to="/admin" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
-                <span className="text-sm font-bold text-sidebar-primary-foreground">CT</span>
+             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-sm">
+               <span className="text-sm font-bold text-primary-foreground">CT</span>
               </div>
-              <span className="font-semibold">Admin Panel</span>
+             <div className="flex flex-col">
+               <span className="text-sm font-semibold leading-tight">Creation Tech</span>
+               <span className="text-[10px] text-sidebar-foreground/60">Admin Panel</span>
+             </div>
             </Link>
             <button
               onClick={() => setIsSidebarOpen(false)}
