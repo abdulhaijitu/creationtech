@@ -526,7 +526,7 @@ import { getStatusColor } from '@/lib/status-colors';
              {/* Client Info */}
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2 md:col-span-2">
-                <Label>Select Existing Client (Optional)</Label>
+                <Label>Select Client</Label>
                 <Select 
                   value={formData.client_id} 
                   onValueChange={(clientId) => {
@@ -542,9 +542,10 @@ import { getStatusColor } from '@/lib/status-colors';
                       });
                     }
                   }}
+                  required
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a client or enter details below" />
+                    <SelectValue placeholder="Select a client" />
                   </SelectTrigger>
                   <SelectContent>
                     {clients?.map((client) => (
@@ -555,14 +556,6 @@ import { getStatusColor } from '@/lib/status-colors';
                   </SelectContent>
                 </Select>
               </div>
-               <div className="space-y-2">
-                 <Label>Client Name *</Label>
-                 <Input
-                   value={formData.client_name}
-                   onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                   required
-                 />
-               </div>
                <div className="space-y-2">
                  <Label>Email</Label>
                  <Input
