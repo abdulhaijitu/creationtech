@@ -51,6 +51,25 @@ import AdminClients from "./pages/admin/AdminClients";
  import AdminLeads from "./pages/admin/AdminLeads";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
  import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
+ import AdminPayments from "./pages/admin/AdminPayments";
+ import AdminRevenue from "./pages/admin/AdminRevenue";
+ import AdminRoles from "./pages/admin/AdminRoles";
+ import AdminNotes from "./pages/admin/AdminNotes";
+ import AdminProducts from "./pages/admin/AdminProducts";
+ import AdminProductDetail from "./pages/admin/AdminProductDetail";
+ import AdminTasks from "./pages/admin/AdminTasks";
+ import AdminNotifications from "./pages/admin/AdminNotifications";
+ import AdminActivityLogs from "./pages/admin/AdminActivityLogs";
+ import AdminSettings from "./pages/admin/AdminSettings";
+ import AdminPaymentGateway from "./pages/admin/AdminPaymentGateway";
+ import AdminSMSSettings from "./pages/admin/AdminSMSSettings";
+ import AdminSystemPreferences from "./pages/admin/AdminSystemPreferences";
+ import AdminCMSHome from "./pages/admin/AdminCMSHome";
+ import AdminCMSProducts from "./pages/admin/AdminCMSProducts";
+ import AdminCMSServices from "./pages/admin/AdminCMSServices";
+ import AdminCMSCompanies from "./pages/admin/AdminCMSCompanies";
+ import AdminCMSResources from "./pages/admin/AdminCMSResources";
+ import AdminCMSOther from "./pages/admin/AdminCMSOther";
 
 const queryClient = new QueryClient();
 
@@ -231,177 +250,169 @@ const App = () => (
                    }
                  />
  
-                 {/* Finance */}
-                 <Route
-                   path="/admin/payments"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Payments" description="Track and manage payment transactions" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/revenue"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Revenue Report" description="View revenue analytics and reports" />
-                     </ProtectedRoute>
-                   }
-                 />
+                  {/* Finance */}
+                  <Route
+                    path="/admin/payments"
+                    element={
+                      <ProtectedRoute>
+                        <AdminPayments />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/revenue"
+                    element={
+                      <ProtectedRoute>
+                        <AdminRevenue />
+                      </ProtectedRoute>
+                    }
+                  />
  
-                 {/* HR */}
-                 <Route
-                   path="/admin/roles"
-                   element={
-                     <ProtectedRoute requiredRole="admin">
-                       <AdminPlaceholder title="Roles & Permissions" description="Manage user roles and access permissions" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/notes"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Internal Notes" description="Team notes and internal communications" />
-                     </ProtectedRoute>
-                   }
-                 />
+                  {/* HR */}
+                  <Route
+                    path="/admin/roles"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AdminRoles />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/notes"
+                    element={
+                      <ProtectedRoute>
+                        <AdminNotes />
+                      </ProtectedRoute>
+                    }
+                  />
  
-                 {/* Products */}
-                 <Route
-                   path="/admin/products"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="All Products" description="Manage product catalog" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/products/isp-manager"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="ISP Manager" description="Manage ISP Manager product settings" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/products/somity-app"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Somity App" description="Manage Somity App product settings" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/products/restaurant-app"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Restaurant App" description="Manage Restaurant App product settings" />
-                     </ProtectedRoute>
-                   }
-                 />
+                  {/* Products */}
+                  <Route
+                    path="/admin/products"
+                    element={
+                      <ProtectedRoute>
+                        <AdminProducts />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/products/:slug"
+                    element={
+                      <ProtectedRoute>
+                        <AdminProductDetail />
+                      </ProtectedRoute>
+                    }
+                  />
  
-                 {/* Frontend Control */}
-                 <Route
-                   path="/admin/pages/home"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Home Page" description="Customize home page content" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/pages/products"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Products Page" description="Customize products page content" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/pages/services"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Services Page" description="Customize services page content" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/pages/companies"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Companies Page" description="Customize companies page content" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/pages/resources"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Resources Page" description="Customize resources page content" />
-                     </ProtectedRoute>
-                   }
-                 />
+                  {/* Frontend Control (CMS) */}
+                  <Route
+                    path="/admin/pages/home"
+                    element={
+                      <ProtectedRoute>
+                        <AdminCMSHome />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/pages/products"
+                    element={
+                      <ProtectedRoute>
+                        <AdminCMSProducts />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/pages/services"
+                    element={
+                      <ProtectedRoute>
+                        <AdminCMSServices />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/pages/companies"
+                    element={
+                      <ProtectedRoute>
+                        <AdminCMSCompanies />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/pages/resources"
+                    element={
+                      <ProtectedRoute>
+                        <AdminCMSResources />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/pages/other"
+                    element={
+                      <ProtectedRoute>
+                        <AdminCMSOther />
+                      </ProtectedRoute>
+                    }
+                  />
  
-                 {/* Operations */}
-                 <Route
-                   path="/admin/tasks"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Tasks / Follow-ups" description="Manage tasks and follow-up items" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/notifications"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Notifications" description="View and manage notifications" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/activity-logs"
-                   element={
-                     <ProtectedRoute>
-                       <AdminPlaceholder title="Activity Logs" description="View system activity logs" />
-                     </ProtectedRoute>
-                   }
-                 />
+                  {/* Operations */}
+                  <Route
+                    path="/admin/tasks"
+                    element={
+                      <ProtectedRoute>
+                        <AdminTasks />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/notifications"
+                    element={
+                      <ProtectedRoute>
+                        <AdminNotifications />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/activity-logs"
+                    element={
+                      <ProtectedRoute>
+                        <AdminActivityLogs />
+                      </ProtectedRoute>
+                    }
+                  />
  
-                 {/* Settings */}
-                 <Route
-                   path="/admin/settings"
-                   element={
-                     <ProtectedRoute requiredRole="admin">
-                       <AdminPlaceholder title="General Settings" description="Configure general system settings" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/settings/payment"
-                   element={
-                     <ProtectedRoute requiredRole="admin">
-                       <AdminPlaceholder title="Payment Gateway" description="Configure payment gateway settings" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/settings/sms"
-                   element={
-                     <ProtectedRoute requiredRole="admin">
-                       <AdminPlaceholder title="SMS Settings" description="Configure SMS gateway settings" />
-                     </ProtectedRoute>
-                   }
-                 />
-                 <Route
-                   path="/admin/settings/system"
-                   element={
-                     <ProtectedRoute requiredRole="admin">
-                       <AdminPlaceholder title="System Preferences" description="Configure system preferences" />
-                     </ProtectedRoute>
-                   }
-                 />
+                  {/* Settings */}
+                  <Route
+                    path="/admin/settings"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AdminSettings />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/settings/payment"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AdminPaymentGateway />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/settings/sms"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AdminSMSSettings />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/settings/system"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <AdminSystemPreferences />
+                      </ProtectedRoute>
+                    }
+                  />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
