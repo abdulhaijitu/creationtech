@@ -13,8 +13,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
  import { toast } from 'sonner';
-import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save } from 'lucide-react';
+import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
  
  interface Product {
@@ -33,6 +44,7 @@ type ViewMode = 'list' | 'create';
    const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name_en: '',
     name_bn: '',
@@ -68,6 +80,22 @@ type ViewMode = 'list' | 'create';
      onError: () => toast.error('Failed to update status'),
    });
  
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success('Product deleted successfully');
+      setDeletingId(null);
+    },
+    onError: () => {
+      toast.error('Failed to delete product');
+      setDeletingId(null);
+    },
+  });
+
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const { error } = await supabase.from('products').insert({
@@ -331,6 +359,30 @@ type ViewMode = 'list' | 'create';
                      <Button variant="ghost" size="sm" asChild>
                        <a href={`/products/${product.slug}`} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
                      </Button>
+                      <AlertDialog open={deletingId === product.id} onOpenChange={(open) => !open && setDeletingId(null)}>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" onClick={() => setDeletingId(product.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{product.name_en}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteMutation.mutate(product.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                    </TableCell>
                  </TableRow>
                ))}
