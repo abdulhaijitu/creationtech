@@ -140,11 +140,13 @@ const About = () => {
   return (
     <>
       <Helmet>
-        <title>{getMetaTitle('About Us - Creation Tech | Our Story & Mission')}</title>
+        <title>{getMetaTitle('Trusted Software Company in Bangladesh | About Creation Tech')}</title>
         <meta
           name="description"
-          content={getMetaDescription("Learn about Creation Tech's journey, mission, vision, and the values that drive us to deliver exceptional IT solutions to businesses worldwide.")}
+          content={getMetaDescription("Creation Tech is a trusted software company in Bangladesh serving enterprise clients with custom software development, technology partnerships, and digital solutions since 2014.")}
         />
+        <meta name="keywords" content="trusted software company Bangladesh, software clients Bangladesh, technology partners, enterprise software provider" />
+        <link rel="canonical" href="https://creationtechbd.com/about" />
       </Helmet>
       <Layout>
         {/* Hero */}

@@ -40,11 +40,13 @@ const Contact = () => {
   return (
     <>
       <Helmet>
-        <title>Contact Us - Creation Tech | Get in Touch</title>
+        <title>Hire Software Development Company in Bangladesh | Contact Creation Tech</title>
         <meta
           name="description"
-          content="Contact Creation Tech for IT solutions, quotes, or to schedule a meeting. We're here to help with your technology needs."
+          content="Hire expert software developers in Bangladesh. Get a custom software development quote, discuss your project requirements, and start your digital transformation journey."
         />
+        <meta name="keywords" content="hire software development company, software development quote, hire developers Bangladesh, custom software pricing" />
+        <link rel="canonical" href="https://creationtechbd.com/contact" />
       </Helmet>
       <Layout>
         {/* Hero Section */}

@@ -68,11 +68,13 @@
    return (
      <>
        <Helmet>
-         <title>Restaurant App - Modern POS & Order Management | Creation Tech</title>
+          <title>Restaurant Management Software - POS & Billing System | Creation Tech</title>
          <meta
            name="description"
-           content="Restaurant App is a modern POS and order management system for restaurants, cafes, and food businesses. Streamline operations and delight customers."
+            content="Complete restaurant management software with POS system, online food ordering, and restaurant billing. Streamline operations for restaurants and cafes in Bangladesh."
          />
+          <meta name="keywords" content="restaurant management software, POS system for restaurants, online food ordering system, restaurant billing software" />
+          <link rel="canonical" href="https://creationtechbd.com/products/restaurant-app" />
        </Helmet>
        <Layout>
          {/* Hero Section */}
@@ -87,10 +89,10 @@
                      <span>Restaurant Solution</span>
                    </div>
                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-                     Restaurant App
+                      Restaurant Management Software
                    </h1>
                    <p className="text-xl text-muted-foreground max-w-lg">
-                     The all-in-one POS and restaurant management system that helps you serve customers better.
+                      Complete POS system and restaurant billing software for restaurants, cafes, and food businesses.
                    </p>
                    <div className="flex flex-wrap gap-4 pt-4">
                      <Button size="lg" asChild>

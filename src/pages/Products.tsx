@@ -16,17 +16,19 @@ const Products = () => {
       <Helmet>
         <title>
           {language === 'en'
-            ? 'Our Products - Creation Tech'
-            : 'আমাদের প্রোডাক্টস - Creation Tech'}
+            ? 'Business Management Software Solutions | Creation Tech'
+            : 'বিজনেস ম্যানেজমেন্ট সফটওয়্যার সমাধান | Creation Tech'}
         </title>
         <meta
           name="description"
           content={
             language === 'en'
-              ? 'Discover our cutting-edge technology products designed to transform your business with automation, analytics, and cloud solutions.'
-              : 'আমাদের অত্যাধুনিক প্রযুক্তি পণ্যগুলি আবিষ্কার করুন যা অটোমেশন, অ্যানালিটিক্স এবং ক্লাউড সলিউশন দিয়ে আপনার ব্যবসাকে রূপান্তরিত করতে পারে।'
+              ? 'Explore our business management software solutions including ISP management software, cooperative management system, and restaurant management software for enterprise automation.'
+              : 'আমাদের বিজনেস ম্যানেজমেন্ট সফটওয়্যার সমাধান দেখুন - ISP ম্যানেজমেন্ট, সমবায় ম্যানেজমেন্ট সিস্টেম, এবং রেস্তোরাঁ ম্যানেজমেন্ট সফটওয়্যার।'
           }
         />
+        <meta name="keywords" content="business management software, ISP management software, cooperative management system, restaurant management software" />
+        <link rel="canonical" href="https://creationtechbd.com/products" />
       </Helmet>
       <Layout>
         <ProductHero />

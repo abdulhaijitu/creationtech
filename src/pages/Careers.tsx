@@ -113,11 +113,13 @@ const Careers = () => {
   return (
     <>
       <Helmet>
-        <title>Careers - Creation Tech | Join Our Team</title>
+        <title>Software Developer Jobs in Bangladesh | Careers at Creation Tech</title>
         <meta
           name="description"
-          content="Join Creation Tech's team of talented professionals. Explore current job openings and start your career with us."
+          content="Join Bangladesh's leading software company. Explore software developer jobs, UI/UX designer positions, and DevOps engineer careers at Creation Tech."
         />
+        <meta name="keywords" content="software developer jobs Bangladesh, IT jobs Dhaka, React developer jobs, DevOps engineer careers" />
+        <link rel="canonical" href="https://creationtechbd.com/careers" />
       </Helmet>
       <Layout>
         {/* Hero Section */}

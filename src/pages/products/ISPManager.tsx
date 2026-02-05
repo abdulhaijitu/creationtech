@@ -67,11 +67,13 @@
    return (
      <>
        <Helmet>
-         <title>ISP Manager - Complete ISP Billing & Management | Creation Tech</title>
+          <title>ISP Management Software - Internet Billing System | Creation Tech</title>
          <meta
            name="description"
-           content="ISP Manager is a comprehensive billing and customer management solution for Internet Service Providers. Automate billing, manage subscribers, and grow your ISP business."
+            content="Complete ISP management software with internet billing system, ISP client management, bandwidth control, and network management. Automate your ISP operations in Bangladesh."
          />
+          <meta name="keywords" content="ISP management software, internet billing system, ISP client management, network management software, bandwidth control" />
+          <link rel="canonical" href="https://creationtechbd.com/products/isp-manager" />
        </Helmet>
        <Layout>
          {/* Hero Section */}
@@ -86,10 +88,10 @@
                      <span>ISP Solution</span>
                    </div>
                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-                     ISP Manager
+                      ISP Management Software
                    </h1>
                    <p className="text-xl text-muted-foreground max-w-lg">
-                     The complete billing and customer management platform built specifically for Internet Service Providers.
+                      Complete internet billing system and network management software for ISPs in Bangladesh.
                    </p>
                    <div className="flex flex-wrap gap-4 pt-4">
                      <Button size="lg" asChild>

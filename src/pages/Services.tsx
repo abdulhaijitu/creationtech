@@ -131,11 +131,13 @@ const Services = () => {
   return (
     <>
       <Helmet>
-        <title>{getMetaTitle('Our Services - Creation Tech | IT Solutions & Development')}</title>
+        <title>{getMetaTitle('Custom Software Development Services | Creation Tech Bangladesh')}</title>
         <meta
           name="description"
-          content={getMetaDescription("Explore Creation Tech's comprehensive IT services including web development, mobile apps, cloud solutions, cybersecurity, and IT consulting.")}
+          content={getMetaDescription("Expert custom software development services including web application development, mobile app development, IT consulting, and enterprise software solutions in Bangladesh.")}
         />
+        <meta name="keywords" content="custom software development services, web application development, mobile app development company, IT consulting services, enterprise software solutions" />
+        <link rel="canonical" href="https://creationtechbd.com/services" />
       </Helmet>
       <Layout>
         {/* Hero */}

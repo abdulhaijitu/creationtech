@@ -68,11 +68,13 @@
    return (
      <>
        <Helmet>
-         <title>Somity App - Cooperative Society Management | Creation Tech</title>
+          <title>Somity Management Software - Cooperative & Microfinance System | Creation Tech</title>
          <meta
            name="description"
-           content="Somity App is a digital platform for cooperative society and microfinance management. Manage members, loans, savings, and collections efficiently."
+            content="Digital somity management software for cooperative societies and microfinance institutions. Manage members, loans, savings, and collections with our cooperative management system."
          />
+          <meta name="keywords" content="somity management software, cooperative management system, digital somity software, microfinance management app, samabay software" />
+          <link rel="canonical" href="https://creationtechbd.com/products/somity-app" />
        </Helmet>
        <Layout>
          {/* Hero Section */}
@@ -87,10 +89,10 @@
                      <span>Cooperative Solution</span>
                    </div>
                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-                     Somity App
+                      Somity Management Software
                    </h1>
                    <p className="text-xl text-muted-foreground max-w-lg">
-                     The complete digital platform for cooperative societies, microfinance institutions, and savings groups.
+                      Complete cooperative management system for somities, samabay, and microfinance organizations in Bangladesh.
                    </p>
                    <div className="flex flex-wrap gap-4 pt-4">
                      <Button size="lg" asChild>
