@@ -260,11 +260,7 @@ const AdminServices = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        service.is_active
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}
+                      className={`text-xs px-2 py-1 rounded-full ${service.is_active ? 'bg-success-muted text-success-muted-foreground' : 'bg-neutral-muted text-neutral-muted-foreground'}`}
                     >
                       {service.is_active ? 'Active' : 'Inactive'}
                     </span>

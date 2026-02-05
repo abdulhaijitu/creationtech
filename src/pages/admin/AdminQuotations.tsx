@@ -61,12 +61,7 @@
    created_at: string;
  }
  
- const statusColors: Record<string, string> = {
-   pending: 'bg-yellow-100 text-yellow-700',
-   approved: 'bg-green-100 text-green-700',
-   rejected: 'bg-red-100 text-red-700',
-   converted: 'bg-blue-100 text-blue-700',
- };
+import { getStatusColor } from '@/lib/status-colors';
  
  const AdminQuotations = () => {
    const { toast } = useToast();
@@ -429,7 +424,7 @@
                      <div className="flex-1 min-w-0">
                        <div className="flex items-center gap-2 mb-1">
                          <h3 className="font-medium">{quotation.quotation_number}</h3>
-                         <Badge className={statusColors[quotation.status]} variant="secondary">
+                          <Badge className={getStatusColor(quotation.status)} variant="secondary">
                            {quotation.status}
                          </Badge>
                        </div>

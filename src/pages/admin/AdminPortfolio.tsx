@@ -217,7 +217,7 @@ const AdminPortfolio = () => {
                     <p className="text-sm text-muted-foreground">/{project.slug}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-1 rounded-full ${project.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                    <span className={`text-xs px-2 py-1 rounded-full ${project.is_active ? 'bg-success-muted text-success-muted-foreground' : 'bg-neutral-muted text-neutral-muted-foreground'}`}>
                       {project.is_active ? 'Active' : 'Inactive'}
                     </span>
                     <Button variant="ghost" size="icon" onClick={() => openEditDialog(project)}><Pencil className="h-4 w-4" /></Button>

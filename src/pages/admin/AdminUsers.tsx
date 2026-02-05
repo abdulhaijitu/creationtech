@@ -34,6 +34,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { getRoleColor } from '@/lib/status-colors';
 
 interface UserWithRole {
   id: string;
@@ -43,12 +44,6 @@ interface UserWithRole {
   role_id: string | null;
   created_at: string;
 }
-
-const roleColors: Record<string, string> = {
-  admin: 'bg-red-100 text-red-700',
-  manager: 'bg-blue-100 text-blue-700',
-  developer: 'bg-green-100 text-green-700',
-};
 
 const AdminUsers = () => {
   const { toast } = useToast();
@@ -258,7 +253,7 @@ const AdminUsers = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     {user.role ? (
-                      <Badge className={roleColors[user.role]} variant="secondary">
+                      <Badge className={getRoleColor(user.role)} variant="secondary">
                         {user.role}
                       </Badge>
                     ) : (

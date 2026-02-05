@@ -54,10 +54,10 @@
    });
  
    const getActionColor = (action: string) => {
-     if (action.includes('create') || action.includes('add')) return 'bg-green-500/10 text-green-600';
-     if (action.includes('update') || action.includes('edit')) return 'bg-blue-500/10 text-blue-600';
-     if (action.includes('delete') || action.includes('remove')) return 'bg-red-500/10 text-red-600';
-     if (action.includes('login') || action.includes('logout')) return 'bg-purple-500/10 text-purple-600';
+    if (action.includes('create') || action.includes('add')) return 'bg-success-muted text-success-muted-foreground';
+    if (action.includes('update') || action.includes('edit')) return 'bg-info-muted text-info-muted-foreground';
+    if (action.includes('delete') || action.includes('remove')) return 'bg-destructive/10 text-destructive';
+    if (action.includes('login') || action.includes('logout')) return 'bg-accent/10 text-accent';
      return 'bg-muted text-muted-foreground';
    };
  

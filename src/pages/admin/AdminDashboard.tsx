@@ -154,30 +154,30 @@ const AdminDashboard = () => {
       title: 'Total Revenue',
       value: `৳${stats.totalRevenue.toLocaleString()}`,
       icon: DollarSign,
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10',
+      color: 'text-success',
+      bgColor: 'bg-success-muted',
     },
     {
       title: 'Pending Revenue',
       value: `৳${stats.pendingRevenue.toLocaleString()}`,
       icon: Clock,
-      color: 'text-amber-500',
-      bgColor: 'bg-amber-500/10',
+      color: 'text-warning',
+      bgColor: 'bg-warning-muted',
     },
     {
       title: 'Total Invoices',
       value: stats.totalInvoices,
       subtext: `${stats.paidInvoices} paid`,
       icon: Receipt,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
+      color: 'text-info',
+      bgColor: 'bg-info-muted',
     },
     {
       title: 'Pending Invoices',
       value: stats.pendingInvoices,
       icon: FileQuestion,
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10',
+      color: 'text-accent',
+      bgColor: 'bg-accent/10',
     },
   ];
 
@@ -188,8 +188,8 @@ const AdminDashboard = () => {
       new: stats.newContacts,
       icon: MessageSquare,
       href: '/admin/leads/contacts',
-      color: 'text-sky-500',
-      bgColor: 'bg-sky-500/10',
+      color: 'text-info',
+      bgColor: 'bg-info-muted',
     },
     {
       title: 'Quote Requests',
@@ -197,8 +197,8 @@ const AdminDashboard = () => {
       new: stats.newQuotes,
       icon: FileQuestion,
       href: '/admin/leads/quotes',
-      color: 'text-emerald-500',
-      bgColor: 'bg-emerald-500/10',
+      color: 'text-success',
+      bgColor: 'bg-success-muted',
     },
     {
       title: 'Meeting Requests',
@@ -206,8 +206,8 @@ const AdminDashboard = () => {
       new: stats.newMeetings,
       icon: Calendar,
       href: '/admin/leads/meetings',
-      color: 'text-violet-500',
-      bgColor: 'bg-violet-500/10',
+      color: 'text-accent',
+      bgColor: 'bg-accent/10',
     },
     {
       title: 'Job Applications',
@@ -215,8 +215,8 @@ const AdminDashboard = () => {
       new: stats.newApplications,
       icon: Users,
       href: '/admin/careers',
-      color: 'text-orange-500',
-      bgColor: 'bg-orange-500/10',
+      color: 'text-warning',
+      bgColor: 'bg-warning-muted',
     },
   ];
 
@@ -238,9 +238,9 @@ const AdminDashboard = () => {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'paid': return 'text-green-600 bg-green-50';
-      case 'new': return 'text-blue-600 bg-blue-50';
-      case 'sent': return 'text-amber-600 bg-amber-50';
+      case 'paid': return 'text-success-muted-foreground bg-success-muted';
+      case 'new': return 'text-info-muted-foreground bg-info-muted';
+      case 'sent': return 'text-warning-muted-foreground bg-warning-muted';
       default: return 'text-muted-foreground bg-muted';
     }
   };

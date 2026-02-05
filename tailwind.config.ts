@@ -56,6 +56,54 @@ export default {
           light: "hsl(var(--section-light))",
           alt: "hsl(var(--section-alt))",
         },
+        // Status & Semantic Colors
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+          muted: "hsl(var(--success-muted))",
+          "muted-foreground": "hsl(var(--success-muted-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+          muted: "hsl(var(--warning-muted))",
+          "muted-foreground": "hsl(var(--warning-muted-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+          muted: "hsl(var(--info-muted))",
+          "muted-foreground": "hsl(var(--info-muted-foreground))",
+        },
+        neutral: {
+          DEFAULT: "hsl(var(--neutral))",
+          foreground: "hsl(var(--neutral-foreground))",
+          muted: "hsl(var(--neutral-muted))",
+          "muted-foreground": "hsl(var(--neutral-muted-foreground))",
+        },
+        // Role Colors
+        role: {
+          admin: "hsl(var(--role-admin))",
+          "admin-muted": "hsl(var(--role-admin-muted))",
+          "admin-foreground": "hsl(var(--role-admin-foreground))",
+          manager: "hsl(var(--role-manager))",
+          "manager-muted": "hsl(var(--role-manager-muted))",
+          "manager-foreground": "hsl(var(--role-manager-foreground))",
+          developer: "hsl(var(--role-developer))",
+          "developer-muted": "hsl(var(--role-developer-muted))",
+          "developer-foreground": "hsl(var(--role-developer-foreground))",
+        },
+        // Chart Colors
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
+        },
+        hero: {
+          background: "hsl(var(--hero-background))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

@@ -65,13 +65,7 @@
    created_at: string;
  }
  
- const statusColors: Record<string, string> = {
-   draft: 'bg-muted text-muted-foreground',
-   sent: 'bg-blue-500/10 text-blue-600',
-   paid: 'bg-green-500/10 text-green-600',
-   overdue: 'bg-red-500/10 text-red-600',
-   cancelled: 'bg-gray-500/10 text-gray-600',
- };
+import { getStatusColor } from '@/lib/status-colors';
  
  const AdminInvoices = () => {
    const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -422,7 +416,7 @@
                        onValueChange={(status) => updateStatusMutation.mutate({ id: invoice.id, status })}
                      >
                        <SelectTrigger className="w-[120px] h-8">
-                         <Badge className={statusColors[invoice.status]}>{invoice.status}</Badge>
+                          <Badge className={getStatusColor(invoice.status)}>{invoice.status}</Badge>
                        </SelectTrigger>
                        <SelectContent>
                          <SelectItem value="draft">Draft</SelectItem>

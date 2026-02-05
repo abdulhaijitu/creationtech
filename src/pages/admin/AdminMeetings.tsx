@@ -45,12 +45,7 @@ interface MeetingRequest {
   created_at: string;
 }
 
-const statusColors: Record<string, string> = {
-  new: 'bg-blue-100 text-blue-700',
-  confirmed: 'bg-green-100 text-green-700',
-  completed: 'bg-gray-100 text-gray-700',
-  cancelled: 'bg-red-100 text-red-700',
-};
+import { getStatusColor } from '@/lib/status-colors';
 
 const AdminMeetings = () => {
   const { toast } = useToast();
@@ -230,7 +225,7 @@ const AdminMeetings = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium truncate">{meeting.full_name}</h3>
-                        <Badge className={statusColors[meeting.status]} variant="secondary">
+                        <Badge className={getStatusColor(meeting.status)} variant="secondary">
                           {meeting.status}
                         </Badge>
                       </div>

@@ -82,7 +82,7 @@ const HeroSection = () => {
   const ctaSecondary = language === 'en' ? 'Our Products' : 'আমাদের প্রোডাক্ট';
 
   return (
-    <section className="relative overflow-hidden bg-[#0a1628]">
+    <section className="relative overflow-hidden bg-hero-background">
       {/* Animated gradient background */}
       <div className="absolute inset-0">
         {/* Primary gradient orbs */}

@@ -57,12 +57,7 @@
    created_at: string;
  }
  
- const statusColors: Record<string, string> = {
-   active: 'bg-green-100 text-green-700',
-   inactive: 'bg-gray-100 text-gray-700',
-   on_leave: 'bg-yellow-100 text-yellow-700',
-   terminated: 'bg-red-100 text-red-700',
- };
+import { getStatusColor } from '@/lib/status-colors';
  
  const AdminEmployees = () => {
    const { toast } = useToast();
@@ -385,7 +380,7 @@
                              <div className="flex items-center gap-2 mb-1">
                                <h3 className="font-medium">{employee.full_name}</h3>
                                <Badge variant="outline">{employee.employee_id}</Badge>
-                               <Badge className={statusColors[employee.status]} variant="secondary">
+                                <Badge className={getStatusColor(employee.status)} variant="secondary">
                                  {employee.status.replace('_', ' ')}
                                </Badge>
                              </div>
