@@ -1,6 +1,7 @@
  import { useEffect, useState } from 'react';
- import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight } from 'lucide-react';
+ import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
+ import { generatePDF, DocumentData } from '@/utils/pdfGenerator';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import { Card, CardContent } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -441,6 +442,47 @@
                        </div>
                      </div>
                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          title="Download PDF"
+                          onClick={async () => {
+                            const { data: quotationItems } = await supabase
+                              .from('quotation_items')
+                              .select('*')
+                              .eq('quotation_id', quotation.id)
+                              .order('display_order');
+                            
+                            const pdfData: DocumentData = {
+                              documentNumber: quotation.quotation_number,
+                              documentType: 'Quotation',
+                              clientName: quotation.client_name,
+                              clientEmail: quotation.client_email,
+                              clientPhone: quotation.client_phone,
+                              clientAddress: quotation.client_address,
+                              issueDate: quotation.issue_date,
+                              validUntil: quotation.valid_until,
+                              items: (quotationItems || []).map(item => ({
+                                description: item.description,
+                                quantity: Number(item.quantity),
+                                unit_price: Number(item.unit_price),
+                                amount: Number(item.amount),
+                              })),
+                              subtotal: Number(quotation.subtotal),
+                              taxRate: Number(quotation.tax_rate || 0),
+                              taxAmount: Number(quotation.tax_amount || 0),
+                              discountAmount: Number(quotation.discount_amount || 0),
+                              total: Number(quotation.total),
+                              notes: quotation.notes,
+                              terms: quotation.terms,
+                              status: quotation.status,
+                            };
+                            generatePDF(pdfData);
+                            toast({ title: 'PDF downloaded successfully' });
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-1" /> PDF
+                        </Button>
                        <Button variant="outline" size="sm" onClick={() => openEditDialog(quotation)}>
                          <Eye className="h-4 w-4 mr-1" /> View
                        </Button>
