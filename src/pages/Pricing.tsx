@@ -188,7 +188,7 @@
  
              <ScrollReveal animation="fade-up" delay={100}>
                <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
-                 {heroTitle}
+                  {language === 'en' ? 'Software Development Pricing' : 'সফটওয়্যার ডেভেলপমেন্ট মূল্য'}
                </h1>
              </ScrollReveal>
  

@@ -168,7 +168,7 @@ const About = () => {
                 
                 <ScrollReveal animation="fade-up" delay={100}>
                   <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
-                    {heroSection.title || t('about.title')}
+                    {language === 'en' ? 'Trusted Software Company in Bangladesh' : 'বাংলাদেশের বিশ্বস্ত সফটওয়্যার কোম্পানি'}
                   </h1>
                 </ScrollReveal>
                 
