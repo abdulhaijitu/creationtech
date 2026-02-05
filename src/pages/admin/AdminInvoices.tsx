@@ -32,8 +32,9 @@
  import { Label } from '@/components/ui/label';
  import { Textarea } from '@/components/ui/textarea';
  import { useToast } from '@/hooks/use-toast';
- import { Plus, Pencil, Trash2, Eye, FileText, Search, X } from 'lucide-react';
+ import { Plus, Pencil, Trash2, Eye, FileText, Search, X, Download } from 'lucide-react';
  import { format } from 'date-fns';
+ import { generatePDF, DocumentData, LineItem } from '@/utils/pdfGenerator';
  
  interface InvoiceItem {
    id?: string;
@@ -434,7 +435,48 @@
                    </TableCell>
                    <TableCell className="text-right">
                      <div className="flex justify-end gap-2">
-                       <Button variant="ghost" size="icon" onClick={() => handleEdit(invoice)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Download PDF"
+                          onClick={async () => {
+                            const { data: invoiceItems } = await supabase
+                              .from('invoice_items')
+                              .select('*')
+                              .eq('invoice_id', invoice.id)
+                              .order('display_order');
+                            
+                            const pdfData: DocumentData = {
+                              documentNumber: invoice.invoice_number,
+                              documentType: 'Invoice',
+                              clientName: invoice.client_name,
+                              clientEmail: invoice.client_email,
+                              clientPhone: invoice.client_phone,
+                              clientAddress: invoice.client_address,
+                              issueDate: invoice.issue_date,
+                              dueDate: invoice.due_date,
+                              items: (invoiceItems || []).map(item => ({
+                                description: item.description,
+                                quantity: Number(item.quantity),
+                                unit_price: Number(item.unit_price),
+                                amount: Number(item.amount),
+                              })),
+                              subtotal: Number(invoice.subtotal),
+                              taxRate: Number(invoice.tax_rate),
+                              taxAmount: Number(invoice.tax_amount),
+                              discountAmount: Number(invoice.discount_amount),
+                              total: Number(invoice.total),
+                              notes: invoice.notes,
+                              terms: invoice.terms,
+                              status: invoice.status,
+                            };
+                            generatePDF(pdfData);
+                            toast({ title: 'PDF downloaded successfully' });
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" title="Edit" onClick={() => handleEdit(invoice)}>
                          <Pencil className="h-4 w-4" />
                        </Button>
                        <Button
