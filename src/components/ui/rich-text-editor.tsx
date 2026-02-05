@@ -91,35 +91,38 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
 
   return (
     <div className={cn('rounded-md border border-input bg-background', className)}>
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-1 border-b border-border p-2">
+      {/* Compact Toolbar */}
+      <div className="flex flex-wrap gap-0.5 border-b border-border p-1.5">
         {/* Text formatting */}
         <Toggle
           size="sm"
           pressed={editor.isActive('bold')}
           onPressedChange={() => editor.chain().focus().toggleBold().run()}
           aria-label="Bold"
+          className="h-7 w-7 p-0"
         >
-          <Bold className="h-4 w-4" />
+          <Bold className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive('italic')}
           onPressedChange={() => editor.chain().focus().toggleItalic().run()}
           aria-label="Italic"
+          className="h-7 w-7 p-0"
         >
-          <Italic className="h-4 w-4" />
+          <Italic className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive('strike')}
           onPressedChange={() => editor.chain().focus().toggleStrike().run()}
           aria-label="Strikethrough"
+          className="h-7 w-7 p-0"
         >
-          <Strikethrough className="h-4 w-4" />
+          <Strikethrough className="h-3.5 w-3.5" />
         </Toggle>
 
-        <div className="mx-1 h-6 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border self-center" />
 
         {/* Headings */}
         <Toggle
@@ -127,35 +130,39 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
           pressed={editor.isActive('heading', { level: 1 })}
           onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           aria-label="Heading 1"
+          className="h-7 w-7 p-0"
         >
-          <Heading1 className="h-4 w-4" />
+          <Heading1 className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive('heading', { level: 2 })}
           onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           aria-label="Heading 2"
+          className="h-7 w-7 p-0"
         >
-          <Heading2 className="h-4 w-4" />
+          <Heading2 className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive('heading', { level: 3 })}
           onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           aria-label="Heading 3"
+          className="h-7 w-7 p-0"
         >
-          <Heading3 className="h-4 w-4" />
+          <Heading3 className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive('paragraph')}
           onPressedChange={() => editor.chain().focus().setParagraph().run()}
           aria-label="Paragraph"
+          className="h-7 w-7 p-0"
         >
-          <Pilcrow className="h-4 w-4" />
+          <Pilcrow className="h-3.5 w-3.5" />
         </Toggle>
 
-        <div className="mx-1 h-6 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border self-center" />
 
         {/* Lists */}
         <Toggle
@@ -163,27 +170,30 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
           pressed={editor.isActive('bulletList')}
           onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
           aria-label="Bullet List"
+          className="h-7 w-7 p-0"
         >
-          <List className="h-4 w-4" />
+          <List className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive('orderedList')}
           onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
           aria-label="Ordered List"
+          className="h-7 w-7 p-0"
         >
-          <ListOrdered className="h-4 w-4" />
+          <ListOrdered className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive('blockquote')}
           onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
           aria-label="Quote"
+          className="h-7 w-7 p-0"
         >
-          <Quote className="h-4 w-4" />
+          <Quote className="h-3.5 w-3.5" />
         </Toggle>
 
-        <div className="mx-1 h-6 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border self-center" />
 
         {/* Alignment */}
         <Toggle
@@ -191,27 +201,30 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
           pressed={editor.isActive({ textAlign: 'left' })}
           onPressedChange={() => editor.chain().focus().setTextAlign('left').run()}
           aria-label="Align Left"
+          className="h-7 w-7 p-0"
         >
-          <AlignLeft className="h-4 w-4" />
+          <AlignLeft className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive({ textAlign: 'center' })}
           onPressedChange={() => editor.chain().focus().setTextAlign('center').run()}
           aria-label="Align Center"
+          className="h-7 w-7 p-0"
         >
-          <AlignCenter className="h-4 w-4" />
+          <AlignCenter className="h-3.5 w-3.5" />
         </Toggle>
         <Toggle
           size="sm"
           pressed={editor.isActive({ textAlign: 'right' })}
           onPressedChange={() => editor.chain().focus().setTextAlign('right').run()}
           aria-label="Align Right"
+          className="h-7 w-7 p-0"
         >
-          <AlignRight className="h-4 w-4" />
+          <AlignRight className="h-3.5 w-3.5" />
         </Toggle>
 
-        <div className="mx-1 h-6 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border self-center" />
 
         {/* Link */}
         <Toggle
@@ -219,8 +232,9 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
           pressed={editor.isActive('link')}
           onPressedChange={setLink}
           aria-label="Add Link"
+          className="h-7 w-7 p-0"
         >
-          <LinkIcon className="h-4 w-4" />
+          <LinkIcon className="h-3.5 w-3.5" />
         </Toggle>
 
         {/* Clear formatting */}
@@ -229,12 +243,12 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
           variant="ghost"
           size="sm"
           onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
-          className="h-8 w-8 p-0"
+          className="h-7 w-7 p-0"
         >
-          <RemoveFormatting className="h-4 w-4" />
+          <RemoveFormatting className="h-3.5 w-3.5" />
         </Button>
 
-        <div className="mx-1 h-6 w-px bg-border" />
+        <div className="mx-0.5 h-5 w-px bg-border self-center" />
 
         {/* Undo/Redo */}
         <Button
@@ -243,9 +257,9 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
           size="sm"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="h-8 w-8 p-0"
+          className="h-7 w-7 p-0"
         >
-          <Undo className="h-4 w-4" />
+          <Undo className="h-3.5 w-3.5" />
         </Button>
         <Button
           type="button"
@@ -253,9 +267,9 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
           size="sm"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="h-8 w-8 p-0"
+          className="h-7 w-7 p-0"
         >
-          <Redo className="h-4 w-4" />
+          <Redo className="h-3.5 w-3.5" />
         </Button>
       </div>
 

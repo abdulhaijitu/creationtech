@@ -287,7 +287,7 @@ import RichTextEditor from '@/components/ui/rich-text-editor';
                         content={item.description}
                         onChange={(value) => updateItem(index, 'description', value)}
                         placeholder="Item description with formatting..."
-                        className="min-h-[120px]"
+                        className="[&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
                       />
                     </div>
                    <div className="grid grid-cols-3 gap-2">
@@ -325,7 +325,7 @@ import RichTextEditor from '@/components/ui/rich-text-editor';
                         content={item.description}
                         onChange={(value) => updateItem(index, 'description', value)}
                         placeholder="Item description with formatting..."
-                        className="min-h-[100px]"
+                        className="[&_.ProseMirror]:min-h-[50px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
                       />
                    </div>
                    <div className="col-span-2">
