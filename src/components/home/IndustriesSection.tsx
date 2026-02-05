@@ -12,6 +12,7 @@ import {
   Building2,
   Plane,
 } from 'lucide-react';
+import industriesVisual from '@/assets/industries-ai-visual.jpg';
 
 const industries = [
   {
@@ -127,51 +128,15 @@ const IndustriesSection = () => {
                 {/* Visual Block */}
                 <div className="relative mt-auto">
                   <div className="relative overflow-hidden rounded-2xl">
-                    {/* Image placeholder with gradient */}
-                    <div className="aspect-[16/10] bg-gradient-to-br from-teal-900/40 via-slate-800/60 to-slate-900/80 relative">
-                      {/* Tech pattern overlay */}
-                      <div 
-                        className="absolute inset-0 opacity-30"
-                        style={{
-                          backgroundImage: `
-                            linear-gradient(rgba(20, 184, 166, 0.1) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(20, 184, 166, 0.1) 1px, transparent 1px)
-                          `,
-                          backgroundSize: '30px 30px'
-                        }}
-                      />
-                      
-                      {/* Floating tech icons */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="relative w-full h-full">
-                          {/* Central hexagon pattern simulation */}
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 sm:w-40 sm:h-40">
-                            <div className="absolute inset-0 rounded-xl border border-teal-500/30 rotate-45 animate-float-slow" />
-                            <div className="absolute inset-2 rounded-xl border border-teal-400/20 rotate-12 animate-float-medium" style={{ animationDelay: '0.5s' }} />
-                            <div className="absolute inset-4 rounded-xl bg-teal-500/10 backdrop-blur-sm flex items-center justify-center">
-                              <span className="text-teal-400 font-bold text-lg sm:text-xl">AI</span>
-                            </div>
-                          </div>
-
-                          {/* Floating icons */}
-                          <div className="absolute top-4 left-4 p-2 rounded-lg bg-teal-500/20 backdrop-blur-sm animate-float-slow">
-                            <Factory className="h-4 w-4 text-teal-400/80" />
-                          </div>
-                          <div className="absolute top-8 right-8 p-2 rounded-lg bg-teal-500/20 backdrop-blur-sm animate-float-medium" style={{ animationDelay: '1s' }}>
-                            <Radio className="h-4 w-4 text-teal-400/80" />
-                          </div>
-                          <div className="absolute bottom-8 left-8 p-2 rounded-lg bg-teal-500/20 backdrop-blur-sm animate-float-slow" style={{ animationDelay: '1.5s' }}>
-                            <Truck className="h-4 w-4 text-teal-400/80" />
-                          </div>
-                          <div className="absolute bottom-4 right-4 p-2 rounded-lg bg-teal-500/20 backdrop-blur-sm animate-float-medium" style={{ animationDelay: '0.8s' }}>
-                            <Building2 className="h-4 w-4 text-teal-400/80" />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/80 via-transparent to-transparent" />
-                    </div>
+                    {/* AI/Tech Visual Image */}
+                    <img 
+                      src={industriesVisual} 
+                      alt="AI and Technology visualization representing industry solutions"
+                      className="aspect-[16/10] w-full object-cover"
+                      loading="lazy"
+                    />
+                    {/* Gradient overlay for blend */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/60 via-transparent to-[#0a1628]/20" />
                   </div>
                 </div>
               </div>
