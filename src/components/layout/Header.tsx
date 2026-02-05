@@ -44,7 +44,15 @@ const Header = () => {
   const simpleNavItems = [
     { href: '/', label: 'Home' },
     { href: '/products', label: 'Products' },
-    { href: '/services', label: 'Services' },
+  ];
+
+  const servicesItems = [
+    { href: '/services#software', label: 'Custom Software Development', description: 'Tailored solutions for your unique business needs.' },
+    { href: '/services#mobile', label: 'Mobile App Development', description: 'iOS and Android apps that users love.' },
+    { href: '/services#design', label: 'Product Design', description: 'User-centric design for digital products.' },
+    { href: '/services#consulting', label: 'IT Consulting', description: 'Strategic guidance for technology decisions.' },
+    { href: '/services#cloud', label: 'Cloud Solutions', description: 'Scalable infrastructure and cloud migration.' },
+    { href: '/services#support', label: 'Maintenance & Support', description: 'Ongoing support to keep your systems running.' },
   ];
 
   const companiesItems = [
@@ -138,6 +146,37 @@ const Header = () => {
                     </Link>
                   </NavigationMenuItem>
                 ))}
+
+                {/* Services Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger
+                    className={cn(
+                      'bg-transparent px-4 py-2 text-sm font-medium',
+                      isDropdownActive(servicesItems) || location.pathname === '/services'
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                    )}
+                  >
+                    Services
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid w-[500px] gap-3 p-4 md:grid-cols-2">
+                      {servicesItems.map((item) => (
+                        <NavigationMenuLink key={item.href} asChild>
+                          <Link
+                            to={item.href}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="text-sm font-medium leading-none">{item.label}</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              {item.description}
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
 
                 {/* Companies Dropdown */}
                 <NavigationMenuItem>
@@ -249,6 +288,21 @@ const Header = () => {
                                 ? 'bg-primary/10 text-primary'
                                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                             )}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+
+                        {/* Services Section */}
+                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Services
+                        </div>
+                        {servicesItems.map((item) => (
+                          <Link
+                            key={item.href}
+                            to={item.href}
+                            onClick={() => setIsSheetOpen(false)}
+                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
                           >
                             {item.label}
                           </Link>
