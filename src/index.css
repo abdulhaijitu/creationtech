@@ -258,6 +258,23 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Safe area for mobile devices with notches/home indicators */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Reduced motion support - critical for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   /* Typography hierarchy - modern, confident */
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight text-foreground;
@@ -417,6 +434,13 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* Shimmer animation for skeleton loaders */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
 
