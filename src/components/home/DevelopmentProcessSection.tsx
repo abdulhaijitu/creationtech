@@ -157,17 +157,25 @@ import { cn } from '@/lib/utils';
               )} />
               
               <div className="relative rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl p-8 shadow-2xl overflow-hidden h-full flex flex-col">
-               {/* Background Image */}
-               <div className="absolute inset-0">
+               {/* Background Image - Top portion */}
+               <div className="absolute top-0 left-0 right-0 h-48 overflow-hidden rounded-t-2xl">
                  <img 
                    src={developmentProcessImg} 
                    alt="Development Process" 
-                   className="w-full h-full object-cover opacity-15"
+                   className="w-full h-full object-cover"
                  />
-                 <div className="absolute inset-0 bg-gradient-to-t from-card via-card/95 to-card/80" />
+                 <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
                 </div>
+               
+               {/* Animated background pattern for rest */}
+               <div className="absolute inset-0 opacity-5 pointer-events-none">
+                 <div className="absolute inset-0" style={{
+                   backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+                   backgroundSize: '24px 24px'
+                 }} />
+               </div>
                 
-                <div className="relative flex-1 flex flex-col">
+                <div className="relative flex-1 flex flex-col pt-36">
                   {/* Step indicator */}
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-4">
