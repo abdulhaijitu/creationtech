@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
  import { ClipboardList, Palette, Code, Bug, Rocket, Headphones, CheckCircle2, ArrowRight } from 'lucide-react';
  
+ import developmentProcessImg from '@/assets/development-process.jpg';
+ 
  const processSteps = [
    {
      number: '01',
@@ -155,12 +157,14 @@ import { cn } from '@/lib/utils';
               )} />
               
               <div className="relative rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl p-8 shadow-2xl overflow-hidden h-full flex flex-col">
-                {/* Animated background pattern */}
-                <div className="absolute inset-0 opacity-5">
-                  <div className="absolute inset-0" style={{
-                    backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-                    backgroundSize: '24px 24px'
-                  }} />
+               {/* Background Image */}
+               <div className="absolute inset-0">
+                 <img 
+                   src={developmentProcessImg} 
+                   alt="Development Process" 
+                   className="w-full h-full object-cover opacity-15"
+                 />
+                 <div className="absolute inset-0 bg-gradient-to-t from-card via-card/95 to-card/80" />
                 </div>
                 
                 <div className="relative flex-1 flex flex-col">
