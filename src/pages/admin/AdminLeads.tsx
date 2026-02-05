@@ -73,15 +73,7 @@
    created_at: string;
  }
  
- const statusColors: Record<string, string> = {
-   new: 'bg-blue-500/10 text-blue-600',
-   contacted: 'bg-yellow-500/10 text-yellow-600',
-   in_progress: 'bg-purple-500/10 text-purple-600',
-   closed: 'bg-green-500/10 text-green-600',
-   confirmed: 'bg-green-500/10 text-green-600',
-   cancelled: 'bg-red-500/10 text-red-600',
-   completed: 'bg-green-500/10 text-green-600',
- };
+import { getStatusColor } from '@/lib/status-colors';
  
  const AdminLeads = () => {
    const { toast } = useToast();
@@ -180,7 +172,7 @@
            <div className="flex-1 min-w-0">
              <div className="flex items-center gap-2 mb-1">
                <h3 className="font-medium truncate">{item.full_name}</h3>
-               <Badge className={statusColors[item.status]} variant="secondary">
+                <Badge className={getStatusColor(item.status)} variant="secondary">
                  {item.status?.replace('_', ' ')}
                </Badge>
              </div>
@@ -238,12 +230,12 @@
                    <p className="text-sm text-muted-foreground">Contact Messages</p>
                    <p className="text-2xl font-bold">{contacts.length}</p>
                  </div>
-                 <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                   <MessageSquare className="h-6 w-6 text-blue-600" />
+                <div className="h-12 w-12 rounded-full bg-info-muted flex items-center justify-center">
+                  <MessageSquare className="h-6 w-6 text-info" />
                  </div>
                </div>
                {newContactsCount > 0 && (
-                 <Badge variant="secondary" className="mt-2 bg-blue-500/10 text-blue-600">{newContactsCount} new</Badge>
+                <Badge variant="secondary" className="mt-2 bg-info-muted text-info">{newContactsCount} new</Badge>
                )}
              </CardContent>
            </Card>
@@ -254,12 +246,12 @@
                    <p className="text-sm text-muted-foreground">Quote Requests</p>
                    <p className="text-2xl font-bold">{quotes.length}</p>
                  </div>
-                 <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                   <FileQuestion className="h-6 w-6 text-green-600" />
+                <div className="h-12 w-12 rounded-full bg-success-muted flex items-center justify-center">
+                  <FileQuestion className="h-6 w-6 text-success" />
                  </div>
                </div>
                {newQuotesCount > 0 && (
-                 <Badge variant="secondary" className="mt-2 bg-green-500/10 text-green-600">{newQuotesCount} new</Badge>
+                <Badge variant="secondary" className="mt-2 bg-success-muted text-success">{newQuotesCount} new</Badge>
                )}
              </CardContent>
            </Card>
@@ -270,12 +262,12 @@
                    <p className="text-sm text-muted-foreground">Meeting Requests</p>
                    <p className="text-2xl font-bold">{meetings.length}</p>
                  </div>
-                 <div className="h-12 w-12 rounded-full bg-purple-500/10 flex items-center justify-center">
-                   <CalendarDays className="h-6 w-6 text-purple-600" />
+                <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
+                  <CalendarDays className="h-6 w-6 text-accent" />
                  </div>
                </div>
                {newMeetingsCount > 0 && (
-                 <Badge variant="secondary" className="mt-2 bg-purple-500/10 text-purple-600">{newMeetingsCount} new</Badge>
+                <Badge variant="secondary" className="mt-2 bg-accent/10 text-accent">{newMeetingsCount} new</Badge>
                )}
              </CardContent>
            </Card>

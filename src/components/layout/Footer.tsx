@@ -54,8 +54,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="relative bg-slate-900 text-white overflow-hidden">
-      {/* Note: Using slate-900 for footer dark background as it provides better contrast than foreground token */}
+    <footer className="relative bg-foreground text-background overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl" />

@@ -242,7 +242,7 @@ const AdminPages = () => {
                   <div className="space-y-1">
                     <CardTitle className="text-lg flex items-center gap-2">
                       {section.is_active ? (
-                        <Eye className="h-4 w-4 text-green-600" />
+                      <Eye className="h-4 w-4 text-success" />
                       ) : (
                         <EyeOff className="h-4 w-4 text-muted-foreground" />
                       )}

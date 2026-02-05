@@ -44,12 +44,7 @@ interface QuoteRequest {
   created_at: string;
 }
 
-const statusColors: Record<string, string> = {
-  new: 'bg-blue-100 text-blue-700',
-  contacted: 'bg-yellow-100 text-yellow-700',
-  in_progress: 'bg-purple-100 text-purple-700',
-  closed: 'bg-green-100 text-green-700',
-};
+import { getStatusColor } from '@/lib/status-colors';
 
 const AdminQuotes = () => {
   const { toast } = useToast();
@@ -219,7 +214,7 @@ const AdminQuotes = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-medium truncate">{quote.full_name}</h3>
-                        <Badge className={statusColors[quote.status]} variant="secondary">
+                        <Badge className={getStatusColor(quote.status)} variant="secondary">
                           {quote.status.replace('_', ' ')}
                         </Badge>
                       </div>

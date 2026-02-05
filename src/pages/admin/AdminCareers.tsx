@@ -61,13 +61,7 @@ interface JobApplication {
   created_at: string;
 }
 
-const statusColors: Record<string, string> = {
-  new: 'bg-blue-100 text-blue-700',
-  reviewed: 'bg-yellow-100 text-yellow-700',
-  shortlisted: 'bg-green-100 text-green-700',
-  rejected: 'bg-red-100 text-red-700',
-  hired: 'bg-purple-100 text-purple-700',
-};
+import { getStatusColor } from '@/lib/status-colors';
 
 const AdminCareers = () => {
   const { toast } = useToast();
@@ -250,7 +244,7 @@ const AdminCareers = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs px-2 py-1 rounded-full ${job.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                      <span className={`text-xs px-2 py-1 rounded-full ${job.is_active ? 'bg-success-muted text-success-muted-foreground' : 'bg-neutral-muted text-neutral-muted-foreground'}`}>
                         {job.is_active ? 'Active' : 'Inactive'}
                       </span>
                       <Button variant="ghost" size="icon" onClick={() => openEditJobDialog(job)}><Pencil className="h-4 w-4" /></Button>
@@ -290,7 +284,7 @@ const AdminCareers = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-medium">{app.full_name}</h3>
-                        <Badge className={statusColors[app.status]} variant="secondary">{app.status}</Badge>
+                        <Badge className={getStatusColor(app.status)} variant="secondary">{app.status}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{app.email}</p>
                       <p className="text-sm font-medium mt-1">Applied for: {app.position}</p>

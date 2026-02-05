@@ -51,13 +51,7 @@
    notes: string | null;
  }
  
- const statusColors: Record<string, string> = {
-   present: 'bg-green-100 text-green-700',
-   absent: 'bg-red-100 text-red-700',
-   late: 'bg-yellow-100 text-yellow-700',
-   half_day: 'bg-orange-100 text-orange-700',
-   on_leave: 'bg-blue-100 text-blue-700',
- };
+import { getStatusColor } from '@/lib/status-colors';
  
  const AdminAttendance = () => {
    const { toast } = useToast();
@@ -221,25 +215,25 @@
            </Card>
            <Card>
              <CardContent className="pt-4">
-               <div className="text-2xl font-bold text-green-600">{stats.present}</div>
+              <div className="text-2xl font-bold text-success">{stats.present}</div>
                <p className="text-xs text-muted-foreground">Present</p>
              </CardContent>
            </Card>
            <Card>
              <CardContent className="pt-4">
-               <div className="text-2xl font-bold text-red-600">{stats.absent}</div>
+              <div className="text-2xl font-bold text-destructive">{stats.absent}</div>
                <p className="text-xs text-muted-foreground">Absent</p>
              </CardContent>
            </Card>
            <Card>
              <CardContent className="pt-4">
-               <div className="text-2xl font-bold text-yellow-600">{stats.late}</div>
+              <div className="text-2xl font-bold text-warning">{stats.late}</div>
                <p className="text-xs text-muted-foreground">Late</p>
              </CardContent>
            </Card>
            <Card>
              <CardContent className="pt-4">
-               <div className="text-2xl font-bold text-blue-600">{stats.onLeave}</div>
+              <div className="text-2xl font-bold text-info">{stats.onLeave}</div>
                <p className="text-xs text-muted-foreground">On Leave</p>
              </CardContent>
            </Card>
@@ -312,7 +306,7 @@
                          <TableCell className="text-muted-foreground">{employee.employee_id}</TableCell>
                          <TableCell>
                            {att ? (
-                             <Badge className={statusColors[att.status]} variant="secondary">
+                              <Badge className={getStatusColor(att.status)} variant="secondary">
                                {att.status.replace('_', ' ')}
                              </Badge>
                            ) : (
@@ -326,7 +320,7 @@
                              <Button
                                variant="ghost"
                                size="icon"
-                               className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                              className="h-8 w-8 text-success hover:text-success hover:bg-success-muted"
                                onClick={() => quickMarkAttendance(employee.id, 'present')}
                                title="Mark Present"
                              >
@@ -335,7 +329,7 @@
                              <Button
                                variant="ghost"
                                size="icon"
-                               className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                                onClick={() => quickMarkAttendance(employee.id, 'absent')}
                                title="Mark Absent"
                              >

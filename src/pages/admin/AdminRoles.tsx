@@ -11,6 +11,7 @@
  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
  import { toast } from 'sonner';
  import { Shield, Users, Settings } from 'lucide-react';
+import { getRoleSolidColor } from '@/lib/status-colors';
  
  interface Permission {
    id: string;
@@ -41,10 +42,10 @@
    { key: 'settings', label: 'Settings' },
  ];
  
- const ROLES: { key: 'admin' | 'manager' | 'developer'; label: string; description: string; color: string }[] = [
-   { key: 'admin', label: 'Admin', description: 'Full system access', color: 'bg-red-500' },
-   { key: 'manager', label: 'Manager', description: 'Can manage content without delete', color: 'bg-blue-500' },
-   { key: 'developer', label: 'Developer', description: 'Read-only access', color: 'bg-green-500' },
+const ROLES: { key: 'admin' | 'manager' | 'developer'; label: string; description: string }[] = [
+  { key: 'admin', label: 'Admin', description: 'Full system access' },
+  { key: 'manager', label: 'Manager', description: 'Can manage content without delete' },
+  { key: 'developer', label: 'Developer', description: 'Read-only access' },
  ];
  
  const AdminRoles = () => {
@@ -94,7 +95,7 @@
            <Card key={role.key} className={`cursor-pointer transition-all ${activeRole === role.key ? 'ring-2 ring-primary' : ''}`} onClick={() => setActiveRole(role.key)}>
              <CardHeader className="pb-2">
                <div className="flex items-center gap-3">
-                 <div className={`p-2 rounded-lg ${role.key === 'admin' ? 'bg-destructive' : role.key === 'manager' ? 'bg-primary' : 'bg-secondary'}`}><Shield className="h-5 w-5 text-primary-foreground" /></div>
+                  <div className={`p-2 rounded-lg ${getRoleSolidColor(role.key)}`}><Shield className="h-5 w-5" /></div>
                  <div>
                    <CardTitle className="text-lg">{role.label}</CardTitle>
                    <CardDescription>{role.description}</CardDescription>
@@ -111,7 +112,7 @@
              <Settings className="h-5 w-5" />
              Permission Matrix for {ROLES.find((r) => r.key === activeRole)?.label}
            </CardTitle>
-           {activeRole === 'admin' && <CardDescription className="text-amber-600">Admin permissions are locked and cannot be modified</CardDescription>}
+          {activeRole === 'admin' && <CardDescription className="text-warning-muted-foreground">Admin permissions are locked and cannot be modified</CardDescription>}
          </CardHeader>
          <CardContent>
            {isLoading ? (

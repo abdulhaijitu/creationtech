@@ -68,10 +68,10 @@
  
    const getTypeColor = (type: string) => {
      switch (type) {
-       case 'success': return 'bg-green-500/10 text-green-600';
-       case 'warning': return 'bg-yellow-500/10 text-yellow-600';
-       case 'error': return 'bg-red-500/10 text-red-600';
-       default: return 'bg-blue-500/10 text-blue-600';
+      case 'success': return 'bg-success-muted text-success-muted-foreground';
+      case 'warning': return 'bg-warning-muted text-warning-muted-foreground';
+      case 'error': return 'bg-destructive/10 text-destructive';
+      default: return 'bg-info-muted text-info-muted-foreground';
      }
    };
  
