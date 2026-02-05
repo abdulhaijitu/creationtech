@@ -20,6 +20,8 @@ import {
   UserCircle,
    ClipboardList,
    FileSignature,
+   UsersRound,
+   Clock,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -72,6 +74,13 @@ const navGroups = [
       { label: 'Jobs & Applications', href: '/admin/careers', icon: Users },
     ],
   },
+   {
+     label: 'HR',
+     items: [
+       { label: 'Employees', href: '/admin/employees', icon: UsersRound },
+       { label: 'Attendance', href: '/admin/attendance', icon: Clock },
+     ],
+   },
   {
     label: 'Settings',
     adminOnly: true,
