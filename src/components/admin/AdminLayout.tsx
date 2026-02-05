@@ -18,6 +18,8 @@ import {
   Quote,
   Receipt,
   UserCircle,
+   ClipboardList,
+   FileSignature,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -41,6 +43,8 @@ const navGroups = [
     items: [
       { label: 'Invoices', href: '/admin/invoices', icon: Receipt },
       { label: 'Clients', href: '/admin/clients', icon: UserCircle },
+       { label: 'Quotations', href: '/admin/quotations', icon: ClipboardList },
+       { label: 'Proposals', href: '/admin/proposals', icon: FileSignature },
     ],
   },
   {
