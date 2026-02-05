@@ -1,4 +1,4 @@
- import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
  import { supabase } from '@/integrations/supabase/client';
  import AdminLayout from '@/components/admin/AdminLayout';
@@ -25,7 +25,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
  import { toast } from 'sonner';
-import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save, Trash2, Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
  
  interface Product {
@@ -45,6 +45,9 @@ type ViewMode = 'list' | 'create';
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name_en: '',
     name_bn: '',
@@ -59,6 +62,63 @@ type ViewMode = 'list' | 'create';
     display_order: 0,
   });
  
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `new-product-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      setPreviewUrl(publicUrl);
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (previewUrl) {
+      try {
+        const urlParts = previewUrl.split('/');
+        const fileName = urlParts[urlParts.length - 1];
+        await supabase.storage.from('product-images').remove([fileName]);
+      } catch (error) {
+        console.error('Delete error:', error);
+      }
+    }
+    setPreviewUrl(null);
+    toast.success('Image removed');
+  };
+
    const { data: products, isLoading } = useQuery({
      queryKey: ['admin-products'],
      queryFn: async () => {
@@ -110,6 +170,7 @@ type ViewMode = 'list' | 'create';
         features: JSON.parse(data.features || '[]'),
         highlights: JSON.parse(data.highlights || '[]'),
         display_order: data.display_order,
+        media: previewUrl ? [{ type: 'image', url: previewUrl }] : [],
       });
       if (error) throw error;
     },
@@ -118,6 +179,7 @@ type ViewMode = 'list' | 'create';
       toast.success('Product created successfully');
       setViewMode('list');
       resetForm();
+      setPreviewUrl(null);
     },
     onError: (error) => {
       console.error(error);
@@ -139,6 +201,7 @@ type ViewMode = 'list' | 'create';
       highlights: '[]',
       display_order: products?.length || 0,
     });
+    setPreviewUrl(null);
   };
 
   const generateSlug = (name: string) => {
@@ -272,6 +335,68 @@ type ViewMode = 'list' | 'create';
                   placeholder="বিস্তারিত বর্ণনা"
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Product Image</CardTitle></CardHeader>
+            <CardContent>
+              {previewUrl ? (
+                <div className="relative group">
+                  <img
+                    src={previewUrl}
+                    alt="Product preview"
+                    className="w-full h-48 object-cover rounded-lg border"
+                  />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      <Upload className="h-4 w-4 mr-1" />
+                      Replace
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleRemoveImage}
+                      disabled={isUploading}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => !isUploading && fileInputRef.current?.click()}
+                  className="w-full h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-muted/50 transition-colors"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Click to upload image</span>
+                      <span className="text-xs text-muted-foreground">PNG, JPG up to 5MB</span>
+                    </>
+                  )}
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
             </CardContent>
           </Card>
 
