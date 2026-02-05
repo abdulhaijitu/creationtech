@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
-import Topbar from './Topbar';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/logo.png';
 import {
@@ -14,28 +13,59 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
+import Topbar from './Topbar';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isTopbarVisible, setIsTopbarVisible] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { t } = useLanguage();
   const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 50);
+      setIsTopbarVisible(scrollY < 10);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems = [
-    { key: 'nav.home', href: '/', label: 'Home' },
-    { key: 'nav.products', href: '/products', label: 'Products' },
-    { key: 'nav.services', href: '/services', label: 'Services' },
-    { key: 'nav.portfolio', href: '/portfolio', label: 'Companies' },
-    { key: 'nav.blog', href: '/blog', label: 'Resources' },
+  const simpleNavItems = [
+    { href: '/', label: 'Home' },
+    { href: '/products', label: 'Products' },
+    { href: '/services', label: 'Services' },
+  ];
+
+  const companiesItems = [
+    { href: '/about', label: 'About Us', description: 'Learn about our mission, vision, and values.' },
+    { href: '/about#overview', label: 'Company Overview', description: 'Modern software products designed for business tasks.' },
+    { href: '/about#leadership', label: 'Board of Directors', description: 'Meet the leadership team guiding our vision.' },
+    { href: '/about#advisory', label: 'Advisory Board', description: 'Strategic leaders shaping our future.' },
+    { href: '/about#concerns', label: 'Our Concerns', description: 'Product lines focused on reliability and outcomes.' },
+    { href: '/about#life', label: 'Life at CreationTech', description: 'A collaborative workplace where talent grows.' },
+    { href: '/about#partnerships', label: 'Partnerships Program', description: 'Share resources and grow business together.' },
+    { href: '/about#reviews', label: 'Client Reviews', description: 'Hear from clients who trust our service quality.' },
+    { href: '/careers', label: 'Careers', description: 'Explore career opportunities in a supportive environment.' },
+    { href: '/contact', label: 'Contact Us', description: 'Reach out for support, demos, or partnerships.' },
+  ];
+
+  const resourcesItems = [
+    { href: '/blog', label: 'News & Blogs', description: 'Stay updated with company news and industry insights.' },
+    { href: '/contact#faq', label: "FAQ's", description: 'Find answers to common product questions.' },
+    { href: '/contact#schedule', label: 'Schedule a Call', description: 'Book a session to discuss your project goals.' },
+    { href: '/sitemap', label: 'Sitemap', description: 'View a structured list of all pages.' },
+    { href: '/portfolio', label: 'Case Studies', description: 'Real examples of improved efficiency and growth.' },
   ];
 
   const isActive = (href: string) => {
@@ -43,8 +73,15 @@ const Header = () => {
     return location.pathname.startsWith(href);
   };
 
+  const isDropdownActive = (items: { href: string }[]) => {
+    return items.some(item => isActive(item.href));
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full">
+      {/* Topbar */}
+      <Topbar isVisible={isTopbarVisible} />
+
       {/* Main Navbar */}
       <nav
         className={cn(
@@ -75,31 +112,96 @@ const Header = () => {
             </Link>
 
             {/* Center - Desktop Navigation */}
-            <nav className="hidden lg:flex lg:items-center lg:gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.key}
-                  to={item.href}
-                  className={cn(
-                    'group relative px-4 py-2 text-sm font-medium transition-colors duration-200',
-                    isActive(item.href)
-                      ? 'text-primary'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {t(item.key) || item.label}
-                  {/* Active indicator */}
-                  <span
+            <NavigationMenu className="hidden lg:flex">
+              <NavigationMenuList className="gap-1">
+                {/* Simple nav items */}
+                {simpleNavItems.map((item) => (
+                  <NavigationMenuItem key={item.href}>
+                    <Link
+                      to={item.href}
+                      className={cn(
+                        'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
+                        isActive(item.href)
+                          ? 'text-primary'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      {item.label}
+                      <span
+                        className={cn(
+                          'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
+                          isActive(item.href)
+                            ? 'scale-x-100'
+                            : 'scale-x-0 group-hover:scale-x-100'
+                        )}
+                      />
+                    </Link>
+                  </NavigationMenuItem>
+                ))}
+
+                {/* Companies Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger
                     className={cn(
-                      'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
-                      isActive(item.href)
-                        ? 'scale-x-100'
-                        : 'scale-x-0 group-hover:scale-x-100'
+                      'bg-transparent px-4 py-2 text-sm font-medium',
+                      isDropdownActive(companiesItems)
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                     )}
-                  />
-                </Link>
-              ))}
-            </nav>
+                  >
+                    Companies
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid w-[600px] gap-3 p-4 md:grid-cols-2">
+                      {companiesItems.map((item) => (
+                        <NavigationMenuLink key={item.href} asChild>
+                          <Link
+                            to={item.href}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="text-sm font-medium leading-none">{item.label}</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              {item.description}
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Resources Dropdown */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger
+                    className={cn(
+                      'bg-transparent px-4 py-2 text-sm font-medium',
+                      isDropdownActive(resourcesItems)
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                    )}
+                  >
+                    Resources
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid w-[500px] gap-3 p-4 md:grid-cols-2">
+                      {resourcesItems.map((item) => (
+                        <NavigationMenuLink key={item.href} asChild>
+                          <Link
+                            to={item.href}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="text-sm font-medium leading-none">{item.label}</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              {item.description}
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
 
             {/* Right - CTA Button */}
             <div className="hidden lg:flex lg:items-center lg:gap-4">
@@ -136,9 +238,9 @@ const Header = () => {
                     {/* Navigation Links */}
                     <nav className="flex-1 overflow-y-auto py-4">
                       <div className="flex flex-col gap-1 px-4">
-                        {navItems.map((item) => (
+                        {simpleNavItems.map((item) => (
                           <Link
-                            key={item.key}
+                            key={item.href}
                             to={item.href}
                             onClick={() => setIsSheetOpen(false)}
                             className={cn(
@@ -148,7 +250,37 @@ const Header = () => {
                                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                             )}
                           >
-                            {t(item.key) || item.label}
+                            {item.label}
+                          </Link>
+                        ))}
+
+                        {/* Companies Section */}
+                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Companies
+                        </div>
+                        {companiesItems.slice(0, 5).map((item) => (
+                          <Link
+                            key={item.href}
+                            to={item.href}
+                            onClick={() => setIsSheetOpen(false)}
+                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+
+                        {/* Resources Section */}
+                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Resources
+                        </div>
+                        {resourcesItems.map((item) => (
+                          <Link
+                            key={item.href}
+                            to={item.href}
+                            onClick={() => setIsSheetOpen(false)}
+                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          >
+                            {item.label}
                           </Link>
                         ))}
                       </div>
