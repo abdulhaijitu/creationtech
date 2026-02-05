@@ -46,9 +46,9 @@ const Header = () => {
   ];
 
   const productsItems = [
-    { href: '/products#isp-manager', label: 'ISP Manager', description: 'Complete ISP billing and customer management solution.' },
-    { href: '/products#somity-app', label: 'Somity App', description: 'Digital platform for cooperative society management.' },
-    { href: '/products#restaurant-app', label: 'Restaurant App', description: 'Modern POS and order management for restaurants.' },
+    { href: '/products/isp-manager', label: 'ISP Manager', description: 'Complete ISP billing and customer management solution.' },
+    { href: '/products/somity-app', label: 'Somity App', description: 'Digital platform for cooperative society management.' },
+    { href: '/products/restaurant-app', label: 'Restaurant App', description: 'Modern POS and order management for restaurants.' },
     { href: '/products', label: 'View All Products', description: 'Explore our complete product lineup.' },
   ];
 

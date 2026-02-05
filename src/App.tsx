@@ -23,6 +23,11 @@ import Cookies from "./pages/Cookies";
 import Products from "./pages/Products";
 import NotFound from "./pages/NotFound";
 
+// Product pages
+import ISPManager from "./pages/products/ISPManager";
+import SomityApp from "./pages/products/SomityApp";
+import RestaurantApp from "./pages/products/RestaurantApp";
+
 // Admin pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -61,6 +66,9 @@ const App = () => (
                 <Route path="/careers" element={<Careers />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/products" element={<Products />} />
+                <Route path="/products/isp-manager" element={<ISPManager />} />
+                <Route path="/products/somity-app" element={<SomityApp />} />
+                <Route path="/products/restaurant-app" element={<RestaurantApp />} />
                 
                 {/* Legal Pages */}
                 <Route path="/terms" element={<Terms />} />
