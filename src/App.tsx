@@ -48,7 +48,9 @@ import AdminClients from "./pages/admin/AdminClients";
  import AdminProposals from "./pages/admin/AdminProposals";
  import AdminEmployees from "./pages/admin/AdminEmployees";
  import AdminAttendance from "./pages/admin/AdminAttendance";
+ import AdminLeads from "./pages/admin/AdminLeads";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
+ import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
 
 const queryClient = new QueryClient();
 
@@ -141,10 +143,10 @@ const App = () => (
                   }
                 />
                 <Route
-                  path="/admin/leads/contacts"
+                  path="/admin/leads"
                   element={
                     <ProtectedRoute>
-                      <AdminContacts />
+                      <AdminLeads />
                     </ProtectedRoute>
                   }
                 />
@@ -220,11 +222,183 @@ const App = () => (
                      </ProtectedRoute>
                    }
                  />
-                 <Route
+                <Route
                    path="/admin/attendance"
                    element={
                      <ProtectedRoute>
                        <AdminAttendance />
+                     </ProtectedRoute>
+                   }
+                 />
+ 
+                 {/* Finance */}
+                 <Route
+                   path="/admin/payments"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Payments" description="Track and manage payment transactions" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/revenue"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Revenue Report" description="View revenue analytics and reports" />
+                     </ProtectedRoute>
+                   }
+                 />
+ 
+                 {/* HR */}
+                 <Route
+                   path="/admin/roles"
+                   element={
+                     <ProtectedRoute requiredRole="admin">
+                       <AdminPlaceholder title="Roles & Permissions" description="Manage user roles and access permissions" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/notes"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Internal Notes" description="Team notes and internal communications" />
+                     </ProtectedRoute>
+                   }
+                 />
+ 
+                 {/* Products */}
+                 <Route
+                   path="/admin/products"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="All Products" description="Manage product catalog" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/products/isp-manager"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="ISP Manager" description="Manage ISP Manager product settings" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/products/somity-app"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Somity App" description="Manage Somity App product settings" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/products/restaurant-app"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Restaurant App" description="Manage Restaurant App product settings" />
+                     </ProtectedRoute>
+                   }
+                 />
+ 
+                 {/* Frontend Control */}
+                 <Route
+                   path="/admin/pages/home"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Home Page" description="Customize home page content" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/pages/products"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Products Page" description="Customize products page content" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/pages/services"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Services Page" description="Customize services page content" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/pages/companies"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Companies Page" description="Customize companies page content" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/pages/resources"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Resources Page" description="Customize resources page content" />
+                     </ProtectedRoute>
+                   }
+                 />
+ 
+                 {/* Operations */}
+                 <Route
+                   path="/admin/tasks"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Tasks / Follow-ups" description="Manage tasks and follow-up items" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/notifications"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Notifications" description="View and manage notifications" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/activity-logs"
+                   element={
+                     <ProtectedRoute>
+                       <AdminPlaceholder title="Activity Logs" description="View system activity logs" />
+                     </ProtectedRoute>
+                   }
+                 />
+ 
+                 {/* Settings */}
+                 <Route
+                   path="/admin/settings"
+                   element={
+                     <ProtectedRoute requiredRole="admin">
+                       <AdminPlaceholder title="General Settings" description="Configure general system settings" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/settings/payment"
+                   element={
+                     <ProtectedRoute requiredRole="admin">
+                       <AdminPlaceholder title="Payment Gateway" description="Configure payment gateway settings" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/settings/sms"
+                   element={
+                     <ProtectedRoute requiredRole="admin">
+                       <AdminPlaceholder title="SMS Settings" description="Configure SMS gateway settings" />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/settings/system"
+                   element={
+                     <ProtectedRoute requiredRole="admin">
+                       <AdminPlaceholder title="System Preferences" description="Configure system preferences" />
                      </ProtectedRoute>
                    }
                  />
