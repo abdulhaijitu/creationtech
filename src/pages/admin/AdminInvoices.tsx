@@ -35,6 +35,7 @@
  import { Plus, Pencil, Trash2, Eye, FileText, Search, X, Download } from 'lucide-react';
  import { format } from 'date-fns';
  import { generatePDF, DocumentData, LineItem } from '@/utils/pdfGenerator';
+ import ClientLink from '@/components/admin/ClientLink';
  
  interface InvoiceItem {
    id?: string;
@@ -47,6 +48,7 @@
  interface Invoice {
    id: string;
    invoice_number: string;
+  client_id: string | null;
    client_name: string;
    client_email: string | null;
    client_phone: string | null;
@@ -77,6 +79,7 @@ import { getStatusColor } from '@/lib/status-colors';
    const queryClient = useQueryClient();
  
    const [formData, setFormData] = useState({
+    client_id: '',
      client_name: '',
      client_email: '',
      client_phone: '',
@@ -101,6 +104,18 @@ import { getStatusColor } from '@/lib/status-colors';
        return data as Invoice[];
      },
    });
+
+  const { data: clients } = useQuery({
+    queryKey: ['clients-list'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, name, email, phone, address')
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
  
    const createMutation = useMutation({
      mutationFn: async (data: typeof formData & { items: InvoiceItem[] }) => {
@@ -115,6 +130,7 @@ import { getStatusColor } from '@/lib/status-colors';
          .from('invoices')
          .insert({
            invoice_number: invoiceNum || `INV-${Date.now()}`,
+            client_id: data.client_id || null,
            client_name: data.client_name,
            client_email: data.client_email || null,
            client_phone: data.client_phone || null,
@@ -250,6 +266,7 @@ import { getStatusColor } from '@/lib/status-colors';
  
    const resetForm = () => {
      setFormData({
+      client_id: '',
        client_name: '',
        client_email: '',
        client_phone: '',
@@ -269,6 +286,7 @@ import { getStatusColor } from '@/lib/status-colors';
    const handleEdit = async (invoice: Invoice) => {
      setEditingInvoice(invoice);
      setFormData({
+      client_id: invoice.client_id || '',
        client_name: invoice.client_name,
        client_email: invoice.client_email || '',
        client_phone: invoice.client_phone || '',
@@ -406,7 +424,12 @@ import { getStatusColor } from '@/lib/status-colors';
                {filteredInvoices.map((invoice) => (
                  <TableRow key={invoice.id}>
                    <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
-                   <TableCell>{invoice.client_name}</TableCell>
+                  <TableCell>
+                    <ClientLink 
+                      clientId={invoice.client_id} 
+                      clientName={invoice.client_name} 
+                    />
+                  </TableCell>
                    <TableCell>{format(new Date(invoice.issue_date), 'MMM dd, yyyy')}</TableCell>
                    <TableCell>{invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : '-'}</TableCell>
                    <TableCell className="font-medium">৳{Number(invoice.total).toLocaleString()}</TableCell>
@@ -502,6 +525,36 @@ import { getStatusColor } from '@/lib/status-colors';
            <form onSubmit={handleSubmit} className="space-y-6">
              {/* Client Info */}
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2 md:col-span-2">
+                <Label>Select Existing Client (Optional)</Label>
+                <Select 
+                  value={formData.client_id} 
+                  onValueChange={(clientId) => {
+                    const client = clients?.find(c => c.id === clientId);
+                    if (client) {
+                      setFormData({
+                        ...formData,
+                        client_id: client.id,
+                        client_name: client.name,
+                        client_email: client.email || '',
+                        client_phone: client.phone || '',
+                        client_address: client.address || '',
+                      });
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a client or enter details below" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients?.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name} {client.email ? `(${client.email})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
                <div className="space-y-2">
                  <Label>Client Name *</Label>
                  <Input

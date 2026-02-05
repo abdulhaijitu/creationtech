@@ -16,6 +16,8 @@
  import { toast } from 'sonner';
  import { format } from 'date-fns';
  import { CreditCard, Search, Filter, Eye, Plus, Edit } from 'lucide-react';
+ import { Link } from 'react-router-dom';
+ import ClientLink from '@/components/admin/ClientLink';
  
  interface Payment {
    id: string;
@@ -251,8 +253,24 @@
              <TableBody>
                {filteredPayments.map((payment) => (
                  <TableRow key={payment.id}>
-                   <TableCell className="font-medium">{payment.invoices?.invoice_number || '-'}</TableCell>
-                   <TableCell>{payment.invoices?.client_name || payment.clients?.name || '-'}</TableCell>
+                    <TableCell className="font-medium">
+                      {payment.invoice_id && payment.invoices?.invoice_number ? (
+                        <Link 
+                          to={`/admin/invoices?id=${payment.invoice_id}`}
+                          className="text-primary hover:underline underline-offset-2"
+                        >
+                          {payment.invoices.invoice_number}
+                        </Link>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <ClientLink 
+                        clientId={payment.client_id} 
+                        clientName={payment.invoices?.client_name || payment.clients?.name || '-'} 
+                      />
+                    </TableCell>
                    <TableCell>৳{payment.amount.toLocaleString()}</TableCell>
                    <TableCell className="capitalize">{payment.payment_method}</TableCell>
                    <TableCell><AdminStatusBadge status={payment.status} /></TableCell>

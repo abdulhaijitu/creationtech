@@ -1,6 +1,7 @@
  import { useEffect, useState } from 'react';
  import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
+ import ClientLink from '@/components/admin/ClientLink';
  import { generatePDF, DocumentData } from '@/utils/pdfGenerator';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import { Card, CardContent } from '@/components/ui/card';
@@ -428,7 +429,11 @@ import { getStatusColor } from '@/lib/status-colors';
                            {quotation.status}
                          </Badge>
                        </div>
-                       <p className="text-sm text-muted-foreground">{quotation.client_name}</p>
+                       <ClientLink 
+                         clientId={quotation.client_id} 
+                         clientName={quotation.client_name}
+                         className="text-sm"
+                       />
                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
                          <span className="flex items-center gap-1">
                            <Calendar className="h-3 w-3" /> {formatDate(quotation.issue_date)}

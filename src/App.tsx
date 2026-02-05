@@ -70,6 +70,7 @@ import ProtectedRoute from "./components/admin/ProtectedRoute";
  import AdminCMSCompanies from "./pages/admin/AdminCMSCompanies";
  import AdminCMSResources from "./pages/admin/AdminCMSResources";
  import AdminCMSOther from "./pages/admin/AdminCMSOther";
+ import AdminClientProfile from "./pages/admin/AdminClientProfile";
 
 const queryClient = new QueryClient();
 
@@ -217,6 +218,14 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+                 <Route
+                   path="/admin/clients/:id"
+                   element={
+                     <ProtectedRoute>
+                       <AdminClientProfile />
+                     </ProtectedRoute>
+                   }
+                 />
                  <Route
                    path="/admin/quotations"
                    element={
