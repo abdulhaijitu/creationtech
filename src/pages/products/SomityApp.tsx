@@ -216,7 +216,7 @@
                        <ArrowRight className="ml-2 h-4 w-4" />
                      </Link>
                    </Button>
-                   <Button size="lg" variant="outline" className="border-accent-foreground/30 hover:bg-accent-foreground/10" asChild>
+                   <Button size="lg" variant="outline" className="border-accent-foreground/30 text-accent-foreground hover:bg-accent-foreground/10 hover:text-accent-foreground" asChild>
                      <Link to="/contact#schedule">Talk to Sales</Link>
                    </Button>
                  </div>
