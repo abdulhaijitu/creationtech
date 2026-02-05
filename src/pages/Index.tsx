@@ -5,6 +5,7 @@ import ServicesSection from '@/components/home/ServicesSection';
 import ProductsSection from '@/components/home/ProductsSection';
 import IndustriesSection from '@/components/home/IndustriesSection';
 import TrustIndicators from '@/components/home/TrustIndicators';
+import TrustedBySection from '@/components/home/TrustedBySection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
 import PartnersSection from '@/components/home/PartnersSection';
 import CTASection from '@/components/home/CTASection';
@@ -31,6 +32,7 @@ const Index = () => {
         <ProductsSection />
         <IndustriesSection />
         <TrustIndicators />
+        <TrustedBySection />
         <TestimonialsSection />
         <CTASection />
       </Layout>
