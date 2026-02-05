@@ -18,6 +18,7 @@
  import { Plus, X, User, Calendar, FileText, Calculator, Receipt, Trash2 } from 'lucide-react';
  import ClientCombobox from './ClientCombobox';
  import { format } from 'date-fns';
+import RichTextEditor from '@/components/ui/rich-text-editor';
  
  export interface InvoiceItem {
    id?: string;
@@ -280,11 +281,15 @@
                        <Trash2 className="h-4 w-4" />
                      </Button>
                    </div>
-                   <Input
-                     value={item.description}
-                     onChange={(e) => updateItem(index, 'description', e.target.value)}
-                     placeholder="Item description"
-                   />
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-muted-foreground">Description</Label>
+                      <RichTextEditor
+                        content={item.description}
+                        onChange={(value) => updateItem(index, 'description', value)}
+                        placeholder="Item description with formatting..."
+                        className="min-h-[120px]"
+                      />
+                    </div>
                    <div className="grid grid-cols-3 gap-2">
                      <div>
                        <Label className="text-xs text-muted-foreground">Qty</Label>
@@ -315,13 +320,13 @@
  
                  {/* Desktop layout */}
                  <div className="hidden md:contents">
-                   <div className="col-span-5">
-                     <Input
-                       value={item.description}
-                       onChange={(e) => updateItem(index, 'description', e.target.value)}
-                       placeholder="Item description"
-                       className="h-9"
-                     />
+                    <div className="col-span-5 self-start">
+                      <RichTextEditor
+                        content={item.description}
+                        onChange={(value) => updateItem(index, 'description', value)}
+                        placeholder="Item description with formatting..."
+                        className="min-h-[100px]"
+                      />
                    </div>
                    <div className="col-span-2">
                      <Input
