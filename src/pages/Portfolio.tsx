@@ -102,11 +102,13 @@ const Portfolio = () => {
   return (
     <>
       <Helmet>
-        <title>Portfolio - Creation Tech | Our Work & Case Studies</title>
+        <title>Software Development Case Studies & Portfolio | Creation Tech Bangladesh</title>
         <meta
           name="description"
-          content="Explore Creation Tech's portfolio of successful projects including web development, mobile apps, cloud solutions, and more."
+          content="Explore our software development portfolio and case studies. See successful web applications, mobile apps, cloud migrations, and enterprise solutions delivered in Bangladesh."
         />
+        <meta name="keywords" content="software development portfolio, case studies Bangladesh, web development projects, mobile app case studies" />
+        <link rel="canonical" href="https://creationtechbd.com/portfolio" />
       </Helmet>
       <Layout>
         {/* Hero */}

@@ -162,11 +162,13 @@
    return (
      <>
        <Helmet>
-         <title>{getMetaTitle('Pricing - Creation Tech | Transparent IT Service Pricing')}</title>
+        <title>{getMetaTitle('Software Development Pricing & Packages | Creation Tech Bangladesh')}</title>
          <meta
            name="description"
-           content={getMetaDescription("View Creation Tech's transparent pricing for web development, mobile apps, and IT services.")}
+          content={getMetaDescription("Transparent custom software development pricing packages. Get affordable web application, mobile app, and enterprise software development quotes in Bangladesh.")}
          />
+        <meta name="keywords" content="software development pricing, custom software cost, web development packages, mobile app development cost Bangladesh" />
+        <link rel="canonical" href="https://creationtechbd.com/pricing" />
        </Helmet>
        <Layout>
          {/* Hero Section */}

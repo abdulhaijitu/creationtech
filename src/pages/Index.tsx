@@ -14,16 +14,16 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Creation Tech - Innovative IT Solutions for Business Growth</title>
+        <title>Software Development Company in Bangladesh | Creation Tech</title>
         <meta
           name="description"
-          content="Creation Tech delivers innovative IT solutions including web development, mobile apps, cloud solutions, and cybersecurity services to help businesses grow and succeed."
+          content="Creation Tech is a leading software development company in Bangladesh offering custom software development, AI solutions, mobile apps, and enterprise technology services."
         />
         <meta
           name="keywords"
-          content="IT solutions, web development, mobile apps, cloud solutions, cybersecurity, Bangladesh, Dhaka"
+          content="software development company Bangladesh, custom software development, IT company Bangladesh, technology solutions, AI software development"
         />
-        <link rel="canonical" href="https://creationtech.com" />
+        <link rel="canonical" href="https://creationtechbd.com" />
       </Helmet>
       <Layout>
         <HeroSection />

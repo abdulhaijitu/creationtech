@@ -104,11 +104,13 @@ const Blog = () => {
   return (
     <>
       <Helmet>
-        <title>Blog - Creation Tech | Technology Insights & News</title>
+        <title>Software Development Insights & Technology Blog | Creation Tech</title>
         <meta
           name="description"
-          content="Stay updated with the latest technology trends, insights, and best practices from the Creation Tech team."
+          content="Expert software development insights, technology blog, and business automation guides. Stay updated with the latest software development tips and industry best practices."
         />
+        <meta name="keywords" content="software development insights, technology blog, software development tips, business automation guides" />
+        <link rel="canonical" href="https://creationtechbd.com/blog" />
       </Helmet>
       <Layout>
         {/* Hero */}
