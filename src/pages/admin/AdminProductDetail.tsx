@@ -5,6 +5,7 @@
  import AdminLayout from '@/components/admin/AdminLayout';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
+import ProductImageUpload from '@/components/admin/ProductImageUpload';
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Input } from '@/components/ui/input';
@@ -42,17 +43,26 @@
        status: product.status,
        features: JSON.stringify(product.features || [], null, 2),
        highlights: JSON.stringify(product.highlights || [], null, 2),
+        image_url: (product.media as any)?.[0]?.url || '',
      });
    }
  
    const updateMutation = useMutation({
      mutationFn: async (data: any) => {
+        const mediaArray = data.image_url ? [{ type: 'image', url: data.image_url }] : [];
        const { error } = await supabase
          .from('products')
          .update({
-           ...data,
+            name_en: data.name_en,
+            name_bn: data.name_bn,
+            short_description_en: data.short_description_en,
+            short_description_bn: data.short_description_bn,
+            description_en: data.description_en,
+            description_bn: data.description_bn,
+            status: data.status,
            features: JSON.parse(data.features || '[]'),
            highlights: JSON.parse(data.highlights || '[]'),
+            media: mediaArray,
          })
          .eq('slug', slug);
        if (error) throw error;
@@ -127,6 +137,21 @@
          </Card>
  
          <Card>
+            <CardHeader><CardTitle>Product Image</CardTitle></CardHeader>
+            <CardContent>
+              <ProductImageUpload
+                productId={product.id}
+                currentImageUrl={formData.image_url || null}
+                onImageUploaded={(url) => setFormData({ ...formData, image_url: url })}
+                onImageRemoved={() => setFormData({ ...formData, image_url: '' })}
+              />
+              <p className="text-sm text-muted-foreground mt-2">
+                This image will be used on the products page and homepage.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
            <CardHeader><CardTitle>Full Description</CardTitle></CardHeader>
            <CardContent className="space-y-4">
              <div>
