@@ -185,11 +185,11 @@
 @layer utilities {
   /* Section spacing - generous and modern */
   .section-padding {
-    @apply py-20 md:py-28 lg:py-32;
+    @apply py-12 md:py-14 lg:py-16;
   }
 
   .section-padding-sm {
-    @apply py-12 md:py-16 lg:py-20;
+    @apply py-10 md:py-12 lg:py-14;
   }
 
   /* Container with better max-width control */

@@ -57,10 +57,10 @@ const ServicesSection = () => {
   const currentService = services.find((s) => s.id === activeService) || services[0];
 
   return (
-    <section className="pt-10 pb-16 lg:pt-12 lg:pb-20 bg-gradient-to-br from-primary/[0.02] via-background to-primary/[0.04] relative overflow-hidden">
+    <section className="py-12 lg:py-16 bg-gradient-to-br from-primary/[0.02] via-background to-primary/[0.04] relative overflow-hidden">
       <div className="container-custom relative">
         {/* Two Column Layout */}
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           {/* Left Side - Services List */}
           <ScrollReveal animation="fade-right" className="order-2 lg:order-1">
             <div className="mb-8">
