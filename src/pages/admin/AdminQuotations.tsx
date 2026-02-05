@@ -28,18 +28,9 @@
    DropdownMenuItem,
    DropdownMenuTrigger,
  } from '@/components/ui/dropdown-menu';
- import { Textarea } from '@/components/ui/textarea';
- import { Label } from '@/components/ui/label';
  import { useToast } from '@/hooks/use-toast';
  import { supabase } from '@/integrations/supabase/client';
- 
- interface QuotationItem {
-   id?: string;
-   description: string;
-   quantity: number;
-   unit_price: number;
-   amount: number;
- }
+ import QuotationForm, { QuotationItem, QuotationFormData } from '@/components/admin/QuotationForm';
  
  interface Quotation {
    id: string;
@@ -67,14 +58,14 @@ import { getStatusColor } from '@/lib/status-colors';
  const AdminQuotations = () => {
    const { toast } = useToast();
    const [quotations, setQuotations] = useState<Quotation[]>([]);
-   const [clients, setClients] = useState<{ id: string; name: string; email: string | null }[]>([]);
    const [isLoading, setIsLoading] = useState(true);
+   const [isSaving, setIsSaving] = useState(false);
    const [searchQuery, setSearchQuery] = useState('');
    const [statusFilter, setStatusFilter] = useState('all');
    const [isDialogOpen, setIsDialogOpen] = useState(false);
    const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
    const [items, setItems] = useState<QuotationItem[]>([{ description: '', quantity: 1, unit_price: 0, amount: 0 }]);
-   const [formData, setFormData] = useState({
+   const [formData, setFormData] = useState<QuotationFormData>({
      client_id: '',
      client_name: '',
      client_email: '',
@@ -85,6 +76,7 @@ import { getStatusColor } from '@/lib/status-colors';
      discount_amount: 0,
      notes: '',
      terms: '',
+     status: 'pending',
    });
  
    const fetchQuotations = async () => {
@@ -104,14 +96,8 @@ import { getStatusColor } from '@/lib/status-colors';
      }
    };
  
-   const fetchClients = async () => {
-     const { data } = await supabase.from('clients').select('id, name, email').order('name');
-     setClients(data || []);
-   };
- 
    useEffect(() => {
      fetchQuotations();
-     fetchClients();
    }, []);
  
    const calculateTotals = (lineItems: QuotationItem[], taxRate: number, discountAmount: number) => {
@@ -123,21 +109,11 @@ import { getStatusColor } from '@/lib/status-colors';
  
    const updateItemAmount = (index: number, field: keyof QuotationItem, value: number | string) => {
      const newItems = [...items];
-     (newItems[index] as any)[field] = value;
+     newItems[index] = { ...newItems[index], [field]: value };
      if (field === 'quantity' || field === 'unit_price') {
        newItems[index].amount = newItems[index].quantity * newItems[index].unit_price;
      }
      setItems(newItems);
-   };
- 
-   const addItem = () => {
-     setItems([...items, { description: '', quantity: 1, unit_price: 0, amount: 0 }]);
-   };
- 
-   const removeItem = (index: number) => {
-     if (items.length > 1) {
-       setItems(items.filter((_, i) => i !== index));
-     }
    };
  
    const openCreateDialog = () => {
@@ -153,6 +129,7 @@ import { getStatusColor } from '@/lib/status-colors';
        discount_amount: 0,
        notes: '',
        terms: '',
+       status: 'pending',
      });
      setItems([{ description: '', quantity: 1, unit_price: 0, amount: 0 }]);
      setIsDialogOpen(true);
@@ -171,6 +148,7 @@ import { getStatusColor } from '@/lib/status-colors';
        discount_amount: quotation.discount_amount || 0,
        notes: quotation.notes || '',
        terms: quotation.terms || '',
+       status: quotation.status || 'pending',
      });
  
      const { data: itemsData } = await supabase
@@ -190,26 +168,16 @@ import { getStatusColor } from '@/lib/status-colors';
      setIsDialogOpen(true);
    };
  
-   const handleClientSelect = (clientId: string) => {
-     const client = clients.find(c => c.id === clientId);
-     if (client) {
-       setFormData({
-         ...formData,
-         client_id: client.id,
-         client_name: client.name,
-         client_email: client.email || '',
-       });
-     }
-   };
- 
-   const handleSave = async () => {
-     if (!formData.client_name || items.every(i => !i.description)) {
+   const handleSave = async (e: React.FormEvent) => {
+     e.preventDefault();
+     if (!formData.client_id || items.every(i => !i.description)) {
        toast({ title: 'Error', description: 'Please fill in required fields', variant: 'destructive' });
        return;
      }
  
      const { subtotal, taxAmount, total } = calculateTotals(items, formData.tax_rate, formData.discount_amount);
  
+     setIsSaving(true);
      try {
        if (selectedQuotation) {
          const { error } = await supabase
@@ -228,6 +196,7 @@ import { getStatusColor } from '@/lib/status-colors';
              total,
              notes: formData.notes || null,
              terms: formData.terms || null,
+             status: formData.status,
            })
            .eq('id', selectedQuotation.id);
  
@@ -292,6 +261,8 @@ import { getStatusColor } from '@/lib/status-colors';
      } catch (error: any) {
        console.error('Error saving quotation:', error);
        toast({ title: 'Error', description: error.message || 'Failed to save quotation', variant: 'destructive' });
+     } finally {
+       setIsSaving(false);
      }
    };
  
@@ -371,8 +342,6 @@ import { getStatusColor } from '@/lib/status-colors';
  
    const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
    const formatCurrency = (amount: number) => `৳${amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`;
- 
-   const { subtotal, taxAmount, total } = calculateTotals(items, formData.tax_rate, formData.discount_amount);
  
    return (
      <AdminLayout>
@@ -511,7 +480,7 @@ import { getStatusColor } from '@/lib/status-colors';
        </div>
  
        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
            <DialogHeader>
              <DialogTitle>{selectedQuotation ? 'Edit Quotation' : 'New Quotation'}</DialogTitle>
              <DialogDescription>
@@ -519,105 +488,16 @@ import { getStatusColor } from '@/lib/status-colors';
              </DialogDescription>
            </DialogHeader>
  
-           <div className="space-y-6">
-             <div className="grid gap-4 sm:grid-cols-2">
-               <div className="space-y-2">
-                 <Label>Select Client (Optional)</Label>
-                 <Select value={formData.client_id} onValueChange={handleClientSelect}>
-                   <SelectTrigger><SelectValue placeholder="Select a client" /></SelectTrigger>
-                   <SelectContent>
-                     {clients.map((client) => (
-                       <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <div className="space-y-2">
-                 <Label>Client Name *</Label>
-                 <Input value={formData.client_name} onChange={(e) => setFormData({ ...formData, client_name: e.target.value })} />
-               </div>
-               <div className="space-y-2">
-                 <Label>Email</Label>
-                 <Input type="email" value={formData.client_email} onChange={(e) => setFormData({ ...formData, client_email: e.target.value })} />
-               </div>
-               <div className="space-y-2">
-                 <Label>Phone</Label>
-                 <Input value={formData.client_phone} onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })} />
-               </div>
-               <div className="space-y-2 sm:col-span-2">
-                 <Label>Address</Label>
-                 <Input value={formData.client_address} onChange={(e) => setFormData({ ...formData, client_address: e.target.value })} />
-               </div>
-               <div className="space-y-2">
-                 <Label>Valid Until</Label>
-                 <Input type="date" value={formData.valid_until} onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })} />
-               </div>
-             </div>
- 
-             <div className="space-y-4">
-               <div className="flex items-center justify-between">
-                 <Label>Line Items</Label>
-                 <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                   <Plus className="h-4 w-4 mr-1" /> Add Item
-                 </Button>
-               </div>
-               <div className="space-y-3">
-                 {items.map((item, index) => (
-                   <div key={index} className="grid gap-2 sm:grid-cols-12 items-end">
-                     <div className="sm:col-span-5">
-                       <Input placeholder="Description" value={item.description} onChange={(e) => updateItemAmount(index, 'description', e.target.value)} />
-                     </div>
-                     <div className="sm:col-span-2">
-                       <Input type="number" placeholder="Qty" min="1" value={item.quantity} onChange={(e) => updateItemAmount(index, 'quantity', Number(e.target.value))} />
-                     </div>
-                     <div className="sm:col-span-2">
-                       <Input type="number" placeholder="Price" min="0" value={item.unit_price} onChange={(e) => updateItemAmount(index, 'unit_price', Number(e.target.value))} />
-                     </div>
-                     <div className="sm:col-span-2 text-right font-medium">
-                       {formatCurrency(item.amount)}
-                     </div>
-                     <div className="sm:col-span-1">
-                       <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(index)} disabled={items.length === 1}>×</Button>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
- 
-             <div className="grid gap-4 sm:grid-cols-2">
-               <div className="space-y-2">
-                 <Label>Tax Rate (%)</Label>
-                 <Input type="number" min="0" value={formData.tax_rate} onChange={(e) => setFormData({ ...formData, tax_rate: Number(e.target.value) })} />
-               </div>
-               <div className="space-y-2">
-                 <Label>Discount Amount</Label>
-                 <Input type="number" min="0" value={formData.discount_amount} onChange={(e) => setFormData({ ...formData, discount_amount: Number(e.target.value) })} />
-               </div>
-             </div>
- 
-             <div className="bg-muted p-4 rounded-lg space-y-2">
-               <div className="flex justify-between"><span>Subtotal:</span><span>{formatCurrency(subtotal)}</span></div>
-               <div className="flex justify-between"><span>Tax ({formData.tax_rate}%):</span><span>{formatCurrency(taxAmount)}</span></div>
-               <div className="flex justify-between"><span>Discount:</span><span>-{formatCurrency(formData.discount_amount)}</span></div>
-               <div className="flex justify-between font-bold text-lg border-t pt-2"><span>Total:</span><span>{formatCurrency(total)}</span></div>
-             </div>
- 
-             <div className="grid gap-4 sm:grid-cols-2">
-               <div className="space-y-2">
-                 <Label>Notes</Label>
-                 <Textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows={3} />
-               </div>
-               <div className="space-y-2">
-                 <Label>Terms & Conditions</Label>
-                 <Textarea value={formData.terms} onChange={(e) => setFormData({ ...formData, terms: e.target.value })} rows={3} />
-               </div>
-             </div>
- 
-             <div className="flex justify-end gap-3">
-               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-               <Button onClick={handleSave}>{selectedQuotation ? 'Update Quotation' : 'Create Quotation'}</Button>
-             </div>
-           </div>
+           <QuotationForm
+             formData={formData}
+             setFormData={setFormData}
+             items={items}
+             setItems={setItems}
+             onSubmit={handleSave}
+             onCancel={() => setIsDialogOpen(false)}
+             isEditing={!!selectedQuotation}
+             isLoading={isSaving}
+           />
          </DialogContent>
        </Dialog>
      </AdminLayout>
