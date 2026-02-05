@@ -25,6 +25,7 @@
  import { Textarea } from '@/components/ui/textarea';
  import { useToast } from '@/hooks/use-toast';
  import { Plus, Pencil, Trash2, Users, Search, Mail, Phone } from 'lucide-react';
+ import { useNavigate } from 'react-router-dom';
  import { format } from 'date-fns';
  
  interface Client {
@@ -44,6 +45,7 @@
    const [searchTerm, setSearchTerm] = useState('');
    const { toast } = useToast();
    const queryClient = useQueryClient();
+  const navigate = useNavigate();
  
    const [formData, setFormData] = useState({
      name: '',
@@ -210,7 +212,14 @@
              <TableBody>
                {filteredClients.map((client) => (
                  <TableRow key={client.id}>
-                   <TableCell className="font-medium">{client.name}</TableCell>
+                  <TableCell>
+                    <button
+                      onClick={() => navigate(`/admin/clients/${client.id}`)}
+                      className="font-medium text-foreground hover:text-primary hover:underline underline-offset-2 transition-colors text-left"
+                    >
+                      {client.name}
+                    </button>
+                  </TableCell>
                    <TableCell>{client.company || '-'}</TableCell>
                    <TableCell>
                      <div className="flex flex-col gap-1 text-sm">
