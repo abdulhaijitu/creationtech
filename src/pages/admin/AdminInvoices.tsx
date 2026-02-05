@@ -29,13 +29,12 @@
    SelectTrigger,
    SelectValue,
  } from '@/components/ui/select';
- import { Label } from '@/components/ui/label';
- import { Textarea } from '@/components/ui/textarea';
  import { useToast } from '@/hooks/use-toast';
- import { Plus, Pencil, Trash2, Eye, FileText, Search, X, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Search, Download } from 'lucide-react';
  import { format } from 'date-fns';
  import { generatePDF, DocumentData, LineItem } from '@/utils/pdfGenerator';
  import ClientLink from '@/components/admin/ClientLink';
+import InvoiceForm from '@/components/admin/InvoiceForm';
  
  interface InvoiceItem {
    id?: string;
@@ -105,18 +104,6 @@ import { getStatusColor } from '@/lib/status-colors';
      },
    });
 
-  const { data: clients } = useQuery({
-    queryKey: ['clients-list'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('id, name, email, phone, address')
-        .order('name');
-      if (error) throw error;
-      return data;
-    },
-  });
- 
    const createMutation = useMutation({
      mutationFn: async (data: typeof formData & { items: InvoiceItem[] }) => {
        const subtotal = data.items.reduce((sum, item) => sum + item.amount, 0);
@@ -329,29 +316,6 @@ import { getStatusColor } from '@/lib/status-colors';
      }
    };
  
-   const addItem = () => {
-     setItems([...items, { description: '', quantity: 1, unit_price: 0, amount: 0 }]);
-   };
- 
-   const removeItem = (index: number) => {
-     if (items.length > 1) {
-       setItems(items.filter((_, i) => i !== index));
-     }
-   };
- 
-   const updateItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
-     const newItems = [...items];
-     newItems[index] = { ...newItems[index], [field]: value };
-     if (field === 'quantity' || field === 'unit_price') {
-       newItems[index].amount = Number(newItems[index].quantity) * Number(newItems[index].unit_price);
-     }
-     setItems(newItems);
-   };
- 
-   const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-   const taxAmount = subtotal * (formData.tax_rate / 100);
-   const total = subtotal + taxAmount - formData.discount_amount;
- 
    const filteredInvoices = invoices?.filter(invoice => {
      const matchesSearch = invoice.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
        invoice.invoice_number.toLowerCase().includes(searchTerm.toLowerCase());
@@ -518,230 +482,20 @@ import { getStatusColor } from '@/lib/status-colors';
  
        {/* Create/Edit Dialog */}
        <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
-         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
            <DialogHeader>
              <DialogTitle>{editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}</DialogTitle>
            </DialogHeader>
-           <form onSubmit={handleSubmit} className="space-y-6">
-             {/* Client Info */}
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2 md:col-span-2">
-                <Label>Select Client</Label>
-                <Select 
-                  value={formData.client_id} 
-                  onValueChange={(clientId) => {
-                    const client = clients?.find(c => c.id === clientId);
-                    if (client) {
-                      setFormData({
-                        ...formData,
-                        client_id: client.id,
-                        client_name: client.name,
-                        client_email: client.email || '',
-                        client_phone: client.phone || '',
-                        client_address: client.address || '',
-                      });
-                    }
-                  }}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a client" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients?.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name} {client.email ? `(${client.email})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-               <div className="space-y-2">
-                 <Label>Email</Label>
-                 <Input
-                   type="email"
-                   value={formData.client_email}
-                   onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
-                 />
-               </div>
-               <div className="space-y-2">
-                 <Label>Phone</Label>
-                 <Input
-                   value={formData.client_phone}
-                   onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
-                 />
-               </div>
-               <div className="space-y-2">
-                 <Label>Address</Label>
-                 <Input
-                   value={formData.client_address}
-                   onChange={(e) => setFormData({ ...formData, client_address: e.target.value })}
-                 />
-               </div>
-             </div>
- 
-             {/* Dates */}
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-               <div className="space-y-2">
-                 <Label>Issue Date *</Label>
-                 <Input
-                   type="date"
-                   value={formData.issue_date}
-                   onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
-                   required
-                 />
-               </div>
-               <div className="space-y-2">
-                 <Label>Due Date</Label>
-                 <Input
-                   type="date"
-                   value={formData.due_date}
-                   onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                 />
-               </div>
-               <div className="space-y-2">
-                 <Label>Status</Label>
-                 <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
-                   <SelectTrigger>
-                     <SelectValue />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="draft">Draft</SelectItem>
-                     <SelectItem value="sent">Sent</SelectItem>
-                     <SelectItem value="paid">Paid</SelectItem>
-                   </SelectContent>
-                 </Select>
-               </div>
-             </div>
- 
-             {/* Line Items */}
-             <div className="space-y-4">
-               <div className="flex justify-between items-center">
-                 <Label className="text-base font-semibold">Line Items</Label>
-                 <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                   <Plus className="mr-2 h-4 w-4" />
-                   Add Item
-                 </Button>
-               </div>
-               <div className="space-y-3">
-                 {items.map((item, index) => (
-                   <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                     <div className="col-span-5">
-                       <Label className="text-xs">Description</Label>
-                       <Input
-                         value={item.description}
-                         onChange={(e) => updateItem(index, 'description', e.target.value)}
-                         placeholder="Item description"
-                       />
-                     </div>
-                     <div className="col-span-2">
-                       <Label className="text-xs">Qty</Label>
-                       <Input
-                         type="number"
-                         value={item.quantity}
-                         onChange={(e) => updateItem(index, 'quantity', Number(e.target.value))}
-                         min="1"
-                       />
-                     </div>
-                     <div className="col-span-2">
-                       <Label className="text-xs">Unit Price</Label>
-                       <Input
-                         type="number"
-                         value={item.unit_price}
-                         onChange={(e) => updateItem(index, 'unit_price', Number(e.target.value))}
-                         min="0"
-                       />
-                     </div>
-                     <div className="col-span-2">
-                       <Label className="text-xs">Amount</Label>
-                       <Input value={`৳${item.amount.toLocaleString()}`} disabled />
-                     </div>
-                     <div className="col-span-1">
-                       <Button
-                         type="button"
-                         variant="ghost"
-                         size="icon"
-                         onClick={() => removeItem(index)}
-                         disabled={items.length === 1}
-                       >
-                         <X className="h-4 w-4" />
-                       </Button>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
- 
-             {/* Totals */}
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="space-y-4">
-                 <div className="space-y-2">
-                   <Label>Notes</Label>
-                   <Textarea
-                     value={formData.notes}
-                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                     placeholder="Additional notes..."
-                     rows={3}
-                   />
-                 </div>
-                 <div className="space-y-2">
-                   <Label>Terms</Label>
-                   <Textarea
-                     value={formData.terms}
-                     onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
-                     placeholder="Payment terms..."
-                     rows={2}
-                   />
-                 </div>
-               </div>
-               <div className="space-y-3 p-4 bg-muted rounded-lg">
-                 <div className="flex justify-between">
-                   <span>Subtotal</span>
-                   <span className="font-medium">৳{subtotal.toLocaleString()}</span>
-                 </div>
-                 <div className="flex justify-between items-center">
-                   <div className="flex items-center gap-2">
-                     <span>Tax</span>
-                     <Input
-                       type="number"
-                       value={formData.tax_rate}
-                       onChange={(e) => setFormData({ ...formData, tax_rate: Number(e.target.value) })}
-                       className="w-16 h-8"
-                       min="0"
-                       max="100"
-                     />
-                     <span>%</span>
-                   </div>
-                   <span>৳{taxAmount.toLocaleString()}</span>
-                 </div>
-                 <div className="flex justify-between items-center">
-                   <div className="flex items-center gap-2">
-                     <span>Discount</span>
-                   </div>
-                   <Input
-                     type="number"
-                     value={formData.discount_amount}
-                     onChange={(e) => setFormData({ ...formData, discount_amount: Number(e.target.value) })}
-                     className="w-24 h-8"
-                     min="0"
-                   />
-                 </div>
-                 <div className="border-t pt-3 flex justify-between text-lg font-bold">
-                   <span>Total</span>
-                   <span>৳{total.toLocaleString()}</span>
-                 </div>
-               </div>
-             </div>
- 
-             <div className="flex justify-end gap-3">
-               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                 Cancel
-               </Button>
-               <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                 {editingInvoice ? 'Update Invoice' : 'Create Invoice'}
-               </Button>
-             </div>
-           </form>
+            <InvoiceForm
+              formData={formData}
+              setFormData={setFormData}
+              items={items}
+              setItems={setItems}
+              onSubmit={handleSubmit}
+              onCancel={() => setIsDialogOpen(false)}
+              isEditing={!!editingInvoice}
+              isLoading={createMutation.isPending || updateMutation.isPending}
+            />
          </DialogContent>
        </Dialog>
      </AdminLayout>
