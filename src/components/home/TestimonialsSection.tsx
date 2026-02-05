@@ -23,9 +23,9 @@ const TestimonialsSection = () => {
 
   if (isLoading) {
     return (
-      <section className="section-padding bg-gradient-to-b from-background to-muted/30">
+      <section className="py-12 lg:py-16 bg-gradient-to-b from-background to-muted/30">
         <div className="container-custom">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
             <Skeleton className="mx-auto mb-5 h-10 w-72" />
             <Skeleton className="mx-auto h-6 w-56" />
           </div>
@@ -42,10 +42,10 @@ const TestimonialsSection = () => {
   if (!testimonials?.length) return null;
 
   return (
-    <section className="section-padding bg-gradient-to-b from-background to-muted/30 overflow-hidden">
+    <section className="py-12 lg:py-16 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
       <div className="container-custom">
         {/* Section Header */}
-        <ScrollReveal className="mx-auto mb-12 max-w-2xl text-center">
+        <ScrollReveal className="mx-auto mb-10 max-w-2xl text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
             <MessageSquareQuote className="h-4 w-4" />
             {language === 'en' ? 'Testimonials' : 'প্রশংসাপত্র'}

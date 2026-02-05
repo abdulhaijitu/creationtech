@@ -83,7 +83,7 @@ const IndustriesSection = () => {
     : 'আমরা গভীর শিল্প দক্ষতা এবং বছরের অভিজ্ঞতা ব্যবহার করে আপনার অনন্য চ্যালেঞ্জ বুঝি, এমন কাস্টম সফটওয়্যার তৈরি করি যা শুধু প্রযুক্তিগতভাবে সঠিক নয় বরং ব্যবসায়িক সমস্যা সমাধান এবং প্রবৃদ্ধি চালাতে কৌশলগতভাবে তৈরি।';
 
   return (
-    <section className="py-12 lg:py-16">
+    <section className="py-10 lg:py-14">
       <div className="container-custom">
         <ScrollReveal animation="fade-up">
           {/* Main Card Container */}

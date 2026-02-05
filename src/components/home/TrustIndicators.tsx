@@ -43,10 +43,10 @@ const TrustIndicators = () => {
   ];
 
   return (
-    <section className="section-padding-sm bg-section-light">
+    <section className="py-10 lg:py-14 bg-section-light">
       <div className="container-custom">
         {/* Trust Statement */}
-        <ScrollReveal className="mb-12 text-center">
+        <ScrollReveal className="mb-8 text-center">
           <p className="text-lg text-muted-foreground leading-relaxed">
             {language === 'en' 
               ? 'Trusted by startups and enterprises across Bangladesh and beyond'
@@ -71,7 +71,7 @@ const TrustIndicators = () => {
         </div>
         
         {/* Process Steps */}
-        <ScrollReveal delay={400} className="mt-14 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <ScrollReveal delay={400} className="mt-10 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
           {processSteps.map((step, index) => (
             <div key={index} className="flex items-center gap-3 sm:gap-4">
               <span className="flex items-center gap-2.5 rounded-full bg-primary/8 px-4 py-2 text-sm font-medium text-primary">

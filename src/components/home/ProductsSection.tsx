@@ -46,11 +46,11 @@
    const ctaText = language === 'en' ? 'All Products' : 'সব পণ্য দেখুন';
  
    return (
-     <section className="py-16 lg:py-20 bg-muted/30">
+    <section className="py-12 lg:py-16 bg-muted/30">
        <div className="container-custom">
          {/* Section Header */}
          <ScrollReveal animation="fade-up">
-           <div className="text-center mb-12 lg:mb-16">
+          <div className="text-center mb-10 lg:mb-12">
              <span className="inline-block mb-3 text-xs font-semibold uppercase tracking-widest text-primary/80">
                {label}
              </span>
@@ -111,7 +111,7 @@
  
          {/* CTA Button */}
          <ScrollReveal animation="fade-up" delay={300}>
-           <div className="flex justify-center mt-10 lg:mt-14">
+          <div className="flex justify-center mt-8 lg:mt-10">
              <Button
                asChild
                size="lg"

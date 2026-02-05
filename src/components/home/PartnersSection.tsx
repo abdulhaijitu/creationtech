@@ -36,9 +36,9 @@ const PartnersSection = () => {
   );
 
   return (
-    <section className="py-12 lg:py-16 bg-muted/30 border-y border-border/30">
+    <section className="py-8 lg:py-10 bg-muted/30 border-y border-border/30">
       <div className="container-custom">
-        <div className="grid items-center gap-10 lg:grid-cols-5 lg:gap-12">
+        <div className="grid items-center gap-8 lg:grid-cols-5 lg:gap-10">
           {/* Left Side - Trust Summary */}
           <ScrollReveal className="lg:col-span-2">
             <div className="flex items-center gap-5 text-center lg:text-left">

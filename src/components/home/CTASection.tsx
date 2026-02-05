@@ -38,7 +38,7 @@ const CTASection = () => {
   ];
 
   return (
-    <section className="relative overflow-hidden py-20 lg:py-28">
+    <section className="relative overflow-hidden py-14 lg:py-20">
       {/* Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/80" />
       
@@ -75,7 +75,7 @@ const CTASection = () => {
           </ScrollReveal>
           
           <ScrollReveal delay={150}>
-            <p className="mb-12 text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
+            <p className="mb-10 text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
               {language === 'en'
                 ? 'From discovery to delivery — we partner with you every step of the way.'
                 : 'আবিষ্কার থেকে ডেলিভারি পর্যন্ত — প্রতিটি ধাপে আমরা আপনার সাথে আছি।'}
@@ -83,7 +83,7 @@ const CTASection = () => {
           </ScrollReveal>
 
           {/* Action Cards */}
-          <div className="grid gap-5 sm:grid-cols-3 sm:gap-6 mb-12">
+          <div className="grid gap-5 sm:grid-cols-3 sm:gap-6 mb-10">
             {actions.map((action, index) => {
               const Icon = action.icon;
               return (
