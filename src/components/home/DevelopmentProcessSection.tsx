@@ -144,98 +144,96 @@ import { cn } from '@/lib/utils';
          </ScrollReveal>
  
          {/* Content Grid */}
-         <div className="grid gap-8 lg:grid-cols-[1fr,1.2fr] lg:gap-12 items-start">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
            {/* Left - Step Details Card */}
-           <ScrollReveal animation="fade-right" className="hidden lg:block order-2 lg:order-1">
-             <div className="sticky top-24">
-               <div className="relative group">
-                 {/* Glow effect */}
-                 <div className={cn(
-                   "absolute -inset-1 rounded-3xl bg-gradient-to-r opacity-50 blur-xl transition-all duration-500 group-hover:opacity-75",
-                   currentStep.color
-                 )} />
-                 
-                 <div className="relative rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl p-8 shadow-2xl overflow-hidden">
-                   {/* Animated background pattern */}
-                   <div className="absolute inset-0 opacity-5">
-                     <div className="absolute inset-0" style={{
-                       backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-                       backgroundSize: '24px 24px'
-                     }} />
-                   </div>
-                   
-                   <div className="relative">
-                     {/* Step indicator */}
-                     <div className="flex items-center justify-between mb-6">
-                       <div className="flex items-center gap-4">
-                         <div className={cn(
-                           "flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg transition-transform duration-300 group-hover:scale-110",
-                           currentStep.color
-                         )}>
-                           <Icon className="h-8 w-8" />
+          <ScrollReveal animation="fade-right" className="hidden lg:flex order-2 lg:order-1">
+            <div className="relative group w-full h-full">
+              {/* Glow effect */}
+              <div className={cn(
+                "absolute -inset-1 rounded-3xl bg-gradient-to-r opacity-50 blur-xl transition-all duration-500 group-hover:opacity-75",
+                currentStep.color
+              )} />
+              
+              <div className="relative rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl p-8 shadow-2xl overflow-hidden h-full flex flex-col">
+                {/* Animated background pattern */}
+                <div className="absolute inset-0 opacity-5">
+                  <div className="absolute inset-0" style={{
+                    backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+                    backgroundSize: '24px 24px'
+                  }} />
+                </div>
+                
+                <div className="relative flex-1 flex flex-col">
+                  {/* Step indicator */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className={cn(
+                        "flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg transition-transform duration-300 group-hover:scale-110",
+                        currentStep.color
+                      )}>
+                        <Icon className="h-8 w-8" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={cn(
+                            "text-xs font-bold uppercase tracking-widest bg-gradient-to-r bg-clip-text text-transparent",
+                            currentStep.color
+                          )}>
+                            {language === 'en' ? 'Step' : 'ধাপ'} {currentStep.number}
+                          </span>
+                          <ArrowRight className="h-3 w-3 text-muted-foreground" />
                          </div>
-                         <div>
-                           <div className="flex items-center gap-2 mb-1">
-                             <span className={cn(
-                               "text-xs font-bold uppercase tracking-widest bg-gradient-to-r bg-clip-text text-transparent",
-                               currentStep.color
-                             )}>
-                               {language === 'en' ? 'Step' : 'ধাপ'} {currentStep.number}
-                             </span>
-                             <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                           </div>
-                           <h3 className="text-2xl font-bold text-foreground">
-                             {language === 'en' ? currentStep.detailTitleEn : currentStep.detailTitleBn}
-                           </h3>
-                         </div>
-                       </div>
-                       <div className="text-6xl font-black text-muted/20">
-                         {currentStep.number}
+                        <h3 className="text-2xl font-bold text-foreground">
+                          {language === 'en' ? currentStep.detailTitleEn : currentStep.detailTitleBn}
+                        </h3>
                        </div>
                      </div>
- 
-                     {/* Description */}
-                     <p className="text-muted-foreground leading-relaxed mb-6 text-base">
-                       {language === 'en' ? currentStep.detailDescEn : currentStep.detailDescBn}
-                     </p>
- 
-                     {/* Features Grid */}
-                     <div className="space-y-3">
-                       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                         {language === 'en' ? 'Key Deliverables' : 'মূল ডেলিভারেবল'}
-                       </span>
-                       <div className="grid grid-cols-2 gap-3">
-                         {currentStep.features.map((feature, idx) => (
-                           <div
-                             key={idx}
-                             className={cn(
-                               "flex items-center gap-2.5 rounded-xl px-4 py-3 transition-all duration-200 hover:scale-[1.02]",
-                               currentStep.bgColor
-                             )}
-                           >
-                             <CheckCircle2 className={cn(
-                               "h-4 w-4 flex-shrink-0 bg-gradient-to-r bg-clip-text",
-                               currentStep.color.replace('from-', 'text-').split(' ')[0]
-                             )} />
-                             <span className="text-sm font-medium text-foreground">{feature}</span>
-                           </div>
-                         ))}
-                       </div>
-                     </div>
- 
-                     {/* Progress indicator */}
-                     <div className="mt-8 pt-6 border-t border-border/50">
-                       <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
-                         <span>{language === 'en' ? 'Progress' : 'অগ্রগতি'}</span>
-                         <span>{activeStep + 1} / {processSteps.length}</span>
-                       </div>
-                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                         <div 
-                           className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-500", currentStep.color)}
-                           style={{ width: `${((activeStep + 1) / processSteps.length) * 100}%` }}
-                         />
-                       </div>
-                     </div>
+                    <div className="text-6xl font-black text-muted/20">
+                      {currentStep.number}
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-muted-foreground leading-relaxed mb-6 text-base">
+                    {language === 'en' ? currentStep.detailDescEn : currentStep.detailDescBn}
+                  </p>
+
+                  {/* Features Grid */}
+                  <div className="space-y-3 flex-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {language === 'en' ? 'Key Deliverables' : 'মূল ডেলিভারেবল'}
+                    </span>
+                    <div className="grid grid-cols-2 gap-3">
+                      {currentStep.features.map((feature, idx) => (
+                        <div
+                          key={idx}
+                          className={cn(
+                            "flex items-center gap-2.5 rounded-xl px-4 py-3 transition-all duration-200 hover:scale-[1.02]",
+                            currentStep.bgColor
+                          )}
+                        >
+                          <CheckCircle2 className={cn(
+                            "h-4 w-4 flex-shrink-0 bg-gradient-to-r bg-clip-text",
+                            currentStep.color.replace('from-', 'text-').split(' ')[0]
+                          )} />
+                          <span className="text-sm font-medium text-foreground">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Progress indicator */}
+                  <div className="mt-auto pt-6 border-t border-border/50">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                      <span>{language === 'en' ? 'Progress' : 'অগ্রগতি'}</span>
+                      <span>{activeStep + 1} / {processSteps.length}</span>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-500", currentStep.color)}
+                        style={{ width: `${((activeStep + 1) / processSteps.length) * 100}%` }}
+                      />
+                    </div>
                    </div>
                  </div>
                </div>
