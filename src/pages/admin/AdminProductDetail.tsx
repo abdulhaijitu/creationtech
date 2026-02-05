@@ -1,11 +1,11 @@
- import { useState } from 'react';
+import { useState, useMemo } from 'react';
  import { useParams, Link } from 'react-router-dom';
  import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
  import { supabase } from '@/integrations/supabase/client';
  import AdminLayout from '@/components/admin/AdminLayout';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
-import ProductImageUpload from '@/components/admin/ProductImageUpload';
+import ProductGalleryUpload from '@/components/admin/ProductGalleryUpload';
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Input } from '@/components/ui/input';
@@ -15,6 +15,11 @@ import ProductImageUpload from '@/components/admin/ProductImageUpload';
  import { toast } from 'sonner';
  import { Save, ExternalLink, ArrowLeft } from 'lucide-react';
  
+interface MediaItem {
+  type: string;
+  url: string;
+}
+
  const AdminProductDetail = () => {
    const { slug } = useParams<{ slug: string }>();
    const queryClient = useQueryClient();
@@ -43,13 +48,12 @@ import ProductImageUpload from '@/components/admin/ProductImageUpload';
        status: product.status,
        features: JSON.stringify(product.features || [], null, 2),
        highlights: JSON.stringify(product.highlights || [], null, 2),
-        image_url: (product.media as any)?.[0]?.url || '',
+      images: (Array.isArray(product.media) ? product.media : []).filter((m: any) => m?.url).map((m: any) => ({ type: m.type || 'image', url: m.url })) as MediaItem[],
      });
    }
  
    const updateMutation = useMutation({
      mutationFn: async (data: any) => {
-        const mediaArray = data.image_url ? [{ type: 'image', url: data.image_url }] : [];
        const { error } = await supabase
          .from('products')
          .update({
@@ -62,7 +66,7 @@ import ProductImageUpload from '@/components/admin/ProductImageUpload';
             status: data.status,
            features: JSON.parse(data.features || '[]'),
            highlights: JSON.parse(data.highlights || '[]'),
-            media: mediaArray,
+          media: data.images || [],
          })
          .eq('slug', slug);
        if (error) throw error;
@@ -137,17 +141,13 @@ import ProductImageUpload from '@/components/admin/ProductImageUpload';
          </Card>
  
          <Card>
-            <CardHeader><CardTitle>Product Image</CardTitle></CardHeader>
+           <CardHeader><CardTitle>Product Gallery</CardTitle></CardHeader>
             <CardContent>
-              <ProductImageUpload
-                productId={product.id}
-                currentImageUrl={formData.image_url || null}
-                onImageUploaded={(url) => setFormData({ ...formData, image_url: url })}
-                onImageRemoved={() => setFormData({ ...formData, image_url: '' })}
-              />
-              <p className="text-sm text-muted-foreground mt-2">
-                This image will be used on the products page and homepage.
-              </p>
+             <ProductGalleryUpload
+               productId={product.id}
+               images={formData.images || []}
+               onImagesChange={(images) => setFormData({ ...formData, images })}
+             />
             </CardContent>
           </Card>
 

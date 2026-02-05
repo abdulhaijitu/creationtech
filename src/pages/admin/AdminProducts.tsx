@@ -28,6 +28,11 @@ import {
 import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save, Trash2, Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
  
+interface MediaItem {
+  type: string;
+  url: string;
+}
+
  interface Product {
    id: string;
    slug: string;
@@ -46,7 +51,7 @@ type ViewMode = 'list' | 'create';
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [galleryImages, setGalleryImages] = useState<MediaItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name_en: '',
@@ -63,40 +68,57 @@ type ViewMode = 'list' | 'create';
   });
  
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
+    const validFiles: File[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith('image/')) {
+        toast.error(`${file.name} is not an image file`);
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name} is larger than 5MB`);
+        continue;
+      }
+      validFiles.push(file);
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB');
-      return;
-    }
+    if (validFiles.length === 0) return;
 
     setIsUploading(true);
+    const newImages: MediaItem[] = [];
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `new-product-${Date.now()}.${fileExt}`;
+      for (const file of validFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `new-product-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, file, { upsert: true });
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, file, { upsert: true });
 
-      if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast.error(`Failed to upload ${file.name}`);
+          continue;
+        }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
 
-      setPreviewUrl(publicUrl);
-      toast.success('Image uploaded successfully');
+        newImages.push({ type: 'image', url: publicUrl });
+      }
+
+      if (newImages.length > 0) {
+        setGalleryImages((prev) => [...prev, ...newImages]);
+        toast.success(`${newImages.length} image(s) uploaded successfully`);
+      }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload image');
+      toast.error('Failed to upload images');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -105,18 +127,25 @@ type ViewMode = 'list' | 'create';
     }
   };
 
-  const handleRemoveImage = async () => {
-    if (previewUrl) {
-      try {
-        const urlParts = previewUrl.split('/');
-        const fileName = urlParts[urlParts.length - 1];
-        await supabase.storage.from('product-images').remove([fileName]);
-      } catch (error) {
-        console.error('Delete error:', error);
-      }
+  const handleRemoveImage = async (index: number) => {
+    const imageToRemove = galleryImages[index];
+    try {
+      const urlParts = imageToRemove.url.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      await supabase.storage.from('product-images').remove([fileName]);
+    } catch (error) {
+      console.error('Delete error:', error);
     }
-    setPreviewUrl(null);
+    setGalleryImages((prev) => prev.filter((_, i) => i !== index));
     toast.success('Image removed');
+  };
+
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= galleryImages.length) return;
+    const newImages = [...galleryImages];
+    const [movedImage] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, movedImage);
+    setGalleryImages(newImages);
   };
 
    const { data: products, isLoading } = useQuery({
@@ -158,7 +187,7 @@ type ViewMode = 'list' | 'create';
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const { error } = await supabase.from('products').insert({
+      const { error } = await supabase.from('products').insert([{
         name_en: data.name_en,
         name_bn: data.name_bn || null,
         slug: data.slug,
@@ -170,8 +199,8 @@ type ViewMode = 'list' | 'create';
         features: JSON.parse(data.features || '[]'),
         highlights: JSON.parse(data.highlights || '[]'),
         display_order: data.display_order,
-        media: previewUrl ? [{ type: 'image', url: previewUrl }] : [],
-      });
+        media: galleryImages as any,
+      }]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -179,7 +208,7 @@ type ViewMode = 'list' | 'create';
       toast.success('Product created successfully');
       setViewMode('list');
       resetForm();
-      setPreviewUrl(null);
+      setGalleryImages([]);
     },
     onError: (error) => {
       console.error(error);
@@ -201,7 +230,7 @@ type ViewMode = 'list' | 'create';
       highlights: '[]',
       display_order: products?.length || 0,
     });
-    setPreviewUrl(null);
+    setGalleryImages([]);
   };
 
   const generateSlug = (name: string) => {
@@ -339,37 +368,51 @@ type ViewMode = 'list' | 'create';
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Product Image</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Product Gallery ({galleryImages.length})
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  <Upload className="h-4 w-4 mr-1" />
+                  Add Images
+                </Button>
+              </CardTitle>
+            </CardHeader>
             <CardContent>
-              {previewUrl ? (
-                <div className="relative group">
-                  <img
-                    src={previewUrl}
-                    alt="Product preview"
-                    className="w-full h-48 object-cover rounded-lg border"
-                  />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                    >
-                      <Upload className="h-4 w-4 mr-1" />
-                      Replace
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={handleRemoveImage}
-                      disabled={isUploading}
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Remove
-                    </Button>
-                  </div>
+              {galleryImages.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {galleryImages.map((image, index) => (
+                    <div key={index} className="relative group aspect-square">
+                      <img
+                        src={image.url}
+                        alt={`Product image ${index + 1}`}
+                        className="w-full h-full object-cover rounded-lg border"
+                      />
+                      {index === 0 && (
+                        <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded">
+                          Primary
+                        </span>
+                      )}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex flex-col items-center justify-center gap-2">
+                        <div className="flex gap-1">
+                          {index > 0 && (
+                            <Button type="button" variant="secondary" size="sm" onClick={() => moveImage(index, index - 1)}>←</Button>
+                          )}
+                          {index < galleryImages.length - 1 && (
+                            <Button type="button" variant="secondary" size="sm" onClick={() => moveImage(index, index + 1)}>→</Button>
+                          )}
+                        </div>
+                        <Button type="button" variant="destructive" size="sm" onClick={() => handleRemoveImage(index)}>
+                          <X className="h-4 w-4 mr-1" />Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div
@@ -384,19 +427,29 @@ type ViewMode = 'list' | 'create';
                   ) : (
                     <>
                       <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Click to upload image</span>
-                      <span className="text-xs text-muted-foreground">PNG, JPG up to 5MB</span>
+                      <span className="text-sm text-muted-foreground">Click to upload images</span>
+                      <span className="text-xs text-muted-foreground">PNG, JPG up to 5MB each. Multiple files allowed.</span>
                     </>
                   )}
+                </div>
+              )}
+              {isUploading && galleryImages.length > 0 && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-3">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Uploading...
                 </div>
               )}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleFileSelect}
                 className="hidden"
               />
+              <p className="text-xs text-muted-foreground mt-3">
+                The first image will be used as the primary image on product cards.
+              </p>
             </CardContent>
           </Card>
 
