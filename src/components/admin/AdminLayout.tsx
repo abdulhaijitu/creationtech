@@ -16,6 +16,8 @@ import {
   Building2,
   FileCode,
   Quote,
+  Receipt,
+  UserCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,6 +34,13 @@ const navGroups = [
     label: 'Overview',
     items: [
       { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'Sales',
+    items: [
+      { label: 'Invoices', href: '/admin/invoices', icon: Receipt },
+      { label: 'Clients', href: '/admin/clients', icon: UserCircle },
     ],
   },
   {
