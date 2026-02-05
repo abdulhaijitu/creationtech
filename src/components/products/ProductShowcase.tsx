@@ -1,71 +1,63 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
 import OptimizedImage from '@/components/common/OptimizedImage';
+import { useProducts, Product } from '@/hooks/useProducts';
 
+// Fallback images for products without media
 import ispManagerImg from '@/assets/products/isp-manager.jpg';
 import somityAppImg from '@/assets/products/somity-app.jpg';
 import restaurantAppImg from '@/assets/products/restaurant-app.jpg';
 
-interface ProductData {
-  slug: string;
-  image: string;
-  titleEn: string;
-  titleBn: string;
-  descriptionEn: string;
-  descriptionBn: string;
-  highlights: {
-    en: string;
-    bn: string;
-  }[];
-}
+const fallbackImages: Record<string, string> = {
+  'isp-manager': ispManagerImg,
+  'somity-app': somityAppImg,
+  'restaurant-app': restaurantAppImg,
+};
 
-const products: ProductData[] = [
-  {
-    slug: 'isp-manager',
-    image: ispManagerImg,
-    titleEn: 'ISP Manager',
-    titleBn: 'ISP ম্যানেজার',
-    descriptionEn: 'AI-assisted ISP & network management platform for modern internet providers.',
-    descriptionBn: 'আধুনিক ইন্টারনেট প্রদানকারীদের জন্য AI-সহায়তায় ISP ও নেটওয়ার্ক ম্যানেজমেন্ট প্ল্যাটফর্ম।',
-    highlights: [
-      { en: 'Subscriber & billing management', bn: 'সাবস্ক্রাইবার ও বিলিং ম্যানেজমেন্ট' },
-      { en: 'Network & usage monitoring', bn: 'নেটওয়ার্ক ও ব্যবহার মনিটরিং' },
-      { en: 'Automated reporting', bn: 'অটোমেটেড রিপোর্টিং' },
-    ],
-  },
-  {
-    slug: 'somity-app',
-    image: somityAppImg,
-    titleEn: 'Somity App',
-    titleBn: 'সমিতি অ্যাপ',
-    descriptionEn: 'Digital management solution for somity & cooperative organizations.',
-    descriptionBn: 'সমিতি এবং সমবায় সংস্থাগুলির জন্য ডিজিটাল ম্যানেজমেন্ট সমাধান।',
-    highlights: [
-      { en: 'Member & savings tracking', bn: 'সদস্য ও সঞ্চয় ট্র্যাকিং' },
-      { en: 'Automated calculations', bn: 'অটোমেটেড ক্যালকুলেশন' },
-      { en: 'Secure data handling', bn: 'নিরাপদ ডেটা হ্যান্ডলিং' },
-    ],
-  },
-  {
-    slug: 'restaurant-app',
-    image: restaurantAppImg,
-    titleEn: 'Restaurant App',
-    titleBn: 'রেস্তোরাঁ অ্যাপ',
-    descriptionEn: 'Smart restaurant ordering, billing, and management system.',
-    descriptionBn: 'স্মার্ট রেস্তোরাঁ অর্ডারিং, বিলিং এবং ম্যানেজমেন্ট সিস্টেম।',
-    highlights: [
-      { en: 'POS & order management', bn: 'POS ও অর্ডার ম্যানেজমেন্ট' },
-      { en: 'Billing & reports', bn: 'বিলিং ও রিপোর্টস' },
-      { en: 'Business analytics', bn: 'বিজনেস অ্যানালিটিক্স' },
-    ],
-  },
-];
+const getProductImage = (product: Product): string => {
+  // Check if product has media with an image
+  if (product.media && Array.isArray(product.media) && product.media.length > 0) {
+    const imageMedia = product.media.find((m) => m.type === 'image' && m.url);
+    if (imageMedia?.url) return imageMedia.url;
+  }
+  // Use fallback image based on slug
+  return fallbackImages[product.slug] || ispManagerImg;
+};
+
+const getHighlights = (product: Product): string[] => {
+  if (product.highlights && Array.isArray(product.highlights)) {
+    return product.highlights.slice(0, 3);
+  }
+  return [];
+};
+
+const ProductCardSkeleton = () => (
+  <div className="h-full overflow-hidden rounded-2xl border border-border/50 bg-card">
+    <Skeleton className="aspect-[16/10] w-full" />
+    <div className="p-6 space-y-4">
+      <Skeleton className="h-6 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-5/6" />
+      <div className="space-y-2 pt-2">
+        <Skeleton className="h-4 w-4/5" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-4/5" />
+      </div>
+      <div className="flex gap-3 pt-4">
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 flex-1" />
+      </div>
+    </div>
+  </div>
+);
 
 const ProductShowcase = () => {
   const { language } = useLanguage();
+  const { data: products, isLoading } = useProducts();
 
   return (
     <section className="section-padding bg-background">
@@ -93,14 +85,27 @@ const ProductShowcase = () => {
 
         {/* Products Grid */}
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {products.map((product, index) => (
+          {isLoading ? (
+            <>
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
+              <ProductCardSkeleton />
+            </>
+          ) : !products?.length ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground">
+                {language === 'en' ? 'No products available.' : 'কোনো প্রোডাক্ট পাওয়া যায়নি।'}
+              </p>
+            </div>
+          ) : (
+            products.map((product, index) => (
             <ScrollReveal key={product.slug} delay={200 + index * 100} animation="fade-in">
               <div className="group h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10">
                 {/* Product Image */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                   <OptimizedImage
-                    src={product.image}
-                    alt={language === 'en' ? product.titleEn : product.titleBn}
+                    src={getProductImage(product)}
+                    alt={language === 'en' ? product.name_en : (product.name_bn || product.name_en)}
                     className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -110,23 +115,27 @@ const ProductShowcase = () => {
                 <div className="flex flex-col p-6">
                   {/* Title */}
                   <h3 className="mb-2 text-xl font-bold text-foreground">
-                    {language === 'en' ? product.titleEn : product.titleBn}
+                    {language === 'en' ? product.name_en : (product.name_bn || product.name_en)}
                   </h3>
 
                   {/* Description */}
                   <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
-                    {language === 'en' ? product.descriptionEn : product.descriptionBn}
+                    {language === 'en' 
+                      ? product.short_description_en 
+                      : (product.short_description_bn || product.short_description_en)}
                   </p>
 
                   {/* Highlights */}
-                  <ul className="mb-6 flex-1 space-y-2">
-                    {product.highlights.map((highlight, i) => (
+                  {getHighlights(product).length > 0 && (
+                    <ul className="mb-6 flex-1 space-y-2">
+                      {getHighlights(product).map((highlight, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
                         <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span>{language === 'en' ? highlight.en : highlight.bn}</span>
+                        <span>{highlight}</span>
                       </li>
-                    ))}
-                  </ul>
+                      ))}
+                    </ul>
+                  )}
 
                   {/* CTAs */}
                   <div className="flex flex-col gap-3 lg:flex-row">
@@ -146,7 +155,8 @@ const ProductShowcase = () => {
                 </div>
               </div>
             </ScrollReveal>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>
