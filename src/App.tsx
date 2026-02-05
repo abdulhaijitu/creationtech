@@ -44,6 +44,8 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminInvoices from "./pages/admin/AdminInvoices";
 import AdminClients from "./pages/admin/AdminClients";
+ import AdminQuotations from "./pages/admin/AdminQuotations";
+ import AdminProposals from "./pages/admin/AdminProposals";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -192,6 +194,22 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+                 <Route
+                   path="/admin/quotations"
+                   element={
+                     <ProtectedRoute>
+                       <AdminQuotations />
+                     </ProtectedRoute>
+                   }
+                 />
+                 <Route
+                   path="/admin/proposals"
+                   element={
+                     <ProtectedRoute>
+                       <AdminProposals />
+                     </ProtectedRoute>
+                   }
+                 />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />

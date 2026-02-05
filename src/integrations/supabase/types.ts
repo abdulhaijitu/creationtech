@@ -664,6 +664,204 @@ export type Database = {
         }
         Relationships: []
       }
+      proposals: {
+        Row: {
+          client_company: string | null
+          client_email: string | null
+          client_id: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          created_by: string | null
+          deliverables: string | null
+          id: string
+          notes: string | null
+          pricing_summary: string | null
+          proposal_number: string
+          scope_of_work: string | null
+          status: string
+          terms: string | null
+          timeline: string | null
+          title: string
+          total_amount: number | null
+          updated_at: string
+          valid_until: string | null
+          version: number | null
+        }
+        Insert: {
+          client_company?: string | null
+          client_email?: string | null
+          client_id?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          deliverables?: string | null
+          id?: string
+          notes?: string | null
+          pricing_summary?: string | null
+          proposal_number: string
+          scope_of_work?: string | null
+          status?: string
+          terms?: string | null
+          timeline?: string | null
+          title: string
+          total_amount?: number | null
+          updated_at?: string
+          valid_until?: string | null
+          version?: number | null
+        }
+        Update: {
+          client_company?: string | null
+          client_email?: string | null
+          client_id?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          deliverables?: string | null
+          id?: string
+          notes?: string | null
+          pricing_summary?: string | null
+          proposal_number?: string
+          scope_of_work?: string | null
+          status?: string
+          terms?: string | null
+          timeline?: string | null
+          title?: string
+          total_amount?: number | null
+          updated_at?: string
+          valid_until?: string | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotation_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          display_order: number | null
+          id: string
+          quantity: number
+          quotation_id: string
+          unit_price: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          display_order?: number | null
+          id?: string
+          quantity?: number
+          quotation_id: string
+          unit_price: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          display_order?: number | null
+          id?: string
+          quantity?: number
+          quotation_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotations: {
+        Row: {
+          client_address: string | null
+          client_email: string | null
+          client_id: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          created_by: string | null
+          discount_amount: number | null
+          id: string
+          issue_date: string
+          notes: string | null
+          quotation_number: string
+          status: string
+          subtotal: number
+          tax_amount: number | null
+          tax_rate: number | null
+          terms: string | null
+          total: number
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          client_address?: string | null
+          client_email?: string | null
+          client_id?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          discount_amount?: number | null
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          quotation_number: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          tax_rate?: number | null
+          terms?: string | null
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          client_address?: string | null
+          client_email?: string | null
+          client_id?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          created_by?: string | null
+          discount_amount?: number | null
+          id?: string
+          issue_date?: string
+          notes?: string | null
+          quotation_number?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          tax_rate?: number | null
+          terms?: string | null
+          total?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_requests: {
         Row: {
           budget: string | null
@@ -856,6 +1054,8 @@ export type Database = {
     }
     Functions: {
       generate_invoice_number: { Args: never; Returns: string }
+      generate_proposal_number: { Args: never; Returns: string }
+      generate_quotation_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
