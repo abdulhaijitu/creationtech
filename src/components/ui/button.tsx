@@ -11,7 +11,10 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md active:scale-[0.98]",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:shadow-md active:scale-[0.98]",
-        outline: "border border-input bg-background hover:bg-secondary hover:border-border/80 active:scale-[0.98]",
+        // NOTE: outline buttons are frequently used on colored sections (e.g. bg-primary).
+        // Using bg-background can make inherited light text invisible on light background.
+        // Keep outline background transparent so text contrast remains correct in any context.
+        outline: "border border-input bg-transparent hover:bg-secondary hover:border-border/80 active:scale-[0.98]",
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:shadow-md active:scale-[0.98]",
         ghost: "hover:bg-secondary hover:text-secondary-foreground",
         link: "text-primary underline-offset-4 hover:underline",
