@@ -389,6 +389,45 @@ export type Database = {
           },
         ]
       }
+      internal_notes: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          content: string | null
+          created_at: string
+          id: string
+          is_archived: boolean | null
+          tagged_users: string[] | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_archived?: boolean | null
+          tagged_users?: string[] | null
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_archived?: boolean | null
+          tagged_users?: string[] | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       invoice_items: {
         Row: {
           amount: number
@@ -656,6 +695,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          title: string
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       page_content: {
         Row: {
           content_bn: string | null
@@ -706,6 +784,102 @@ export type Database = {
           section_key?: string
           title_bn?: string | null
           title_en?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          paid_at: string | null
+          payment_method: string
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permissions: {
+        Row: {
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_edit: boolean | null
+          can_view: boolean | null
+          created_at: string
+          id: string
+          module: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_edit?: boolean | null
+          can_view?: boolean | null
+          created_at?: string
+          id?: string
+          module?: string
+          role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
         }
         Relationships: []
@@ -769,6 +943,60 @@ export type Database = {
           tags?: string[] | null
           title_bn?: string | null
           title_en?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          created_at: string
+          description_bn: string | null
+          description_en: string | null
+          display_order: number | null
+          features: Json | null
+          highlights: Json | null
+          id: string
+          media: Json | null
+          name_bn: string | null
+          name_en: string
+          short_description_bn: string | null
+          short_description_en: string | null
+          slug: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_bn?: string | null
+          description_en?: string | null
+          display_order?: number | null
+          features?: Json | null
+          highlights?: Json | null
+          id?: string
+          media?: Json | null
+          name_bn?: string | null
+          name_en: string
+          short_description_bn?: string | null
+          short_description_en?: string | null
+          slug: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_bn?: string | null
+          description_en?: string | null
+          display_order?: number | null
+          features?: Json | null
+          highlights?: Json | null
+          id?: string
+          media?: Json | null
+          name_bn?: string | null
+          name_en?: string
+          short_description_bn?: string | null
+          short_description_en?: string | null
+          slug?: string
+          status?: string
           updated_at?: string
         }
         Relationships: []
@@ -1111,6 +1339,90 @@ export type Database = {
           created_at?: string
           id?: string
           key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          category: string
+          id: string
+          key: string
+          metadata: Json | null
+          updated_at: string
+          updated_by: string | null
+          value: string | null
+        }
+        Insert: {
+          category: string
+          id?: string
+          key: string
+          metadata?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          value?: string | null
+        }
+        Update: {
+          category?: string
+          id?: string
+          key?: string
+          metadata?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          value?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          assigned_to_name: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          follow_up_notes: string | null
+          id: string
+          priority: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          reminder_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          assigned_to_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          follow_up_notes?: string | null
+          id?: string
+          priority?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          reminder_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          assigned_to_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          follow_up_notes?: string | null
+          id?: string
+          priority?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          reminder_at?: string | null
+          status?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []
