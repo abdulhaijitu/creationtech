@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Search, ArrowUp, ArrowDown, Briefcase, Save, Eye, EyeOff, Star, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Briefcase, Save, Eye, EyeOff, Star, GripVertical } from 'lucide-react';
 import RichTextEditor from '@/components/ui/rich-text-editor';
 
 interface ServiceRow {
@@ -75,6 +75,8 @@ const AdminServices = () => {
   const [selectedService, setSelectedService] = useState<ServiceRow | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState(defaultFormData);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const { data: services, isLoading } = useQuery({
     queryKey: ['admin-services'],
@@ -141,22 +143,40 @@ const AdminServices = () => {
   });
 
   const reorderMutation = useMutation({
-    mutationFn: async ({ id, direction }: { id: string; direction: 'up' | 'down' }) => {
-      if (!services) return;
-      const idx = services.findIndex(s => s.id === id);
-      const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-      if (swapIdx < 0 || swapIdx >= services.length) return;
+    mutationFn: async ({ fromIdx, toIdx }: { fromIdx: number; toIdx: number }) => {
+      if (!services || fromIdx === toIdx) return;
+      const reordered = [...services];
+      const [moved] = reordered.splice(fromIdx, 1);
+      reordered.splice(toIdx, 0, moved);
 
-      const currentOrder = services[idx].display_order ?? idx;
-      const swapOrder = services[swapIdx].display_order ?? swapIdx;
-
-      await supabase.from('services').update({ display_order: swapOrder }).eq('id', services[idx].id);
-      await supabase.from('services').update({ display_order: currentOrder }).eq('id', services[swapIdx].id);
+      const updates = reordered.map((s, i) => 
+        supabase.from('services').update({ display_order: i }).eq('id', s.id)
+      );
+      await Promise.all(updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-services'] });
+      toast.success('Order updated');
     },
+    onError: () => toast.error('Failed to reorder'),
   });
+
+  const handleDragStart = (idx: number) => setDragIndex(idx);
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    setDragOverIndex(idx);
+  };
+  const handleDrop = (toIdx: number) => {
+    if (dragIndex !== null && dragIndex !== toIdx) {
+      reorderMutation.mutate({ fromIdx: dragIndex, toIdx });
+    }
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
+  const handleDragEnd = () => {
+    setDragIndex(null);
+    setDragOverIndex(null);
+  };
 
   const openCreate = () => {
     setSelectedService(null);
@@ -275,28 +295,25 @@ const AdminServices = () => {
               </TableHeader>
               <TableBody>
                 {filtered.map((service, idx) => (
-                  <TableRow key={service.id}>
+                  <TableRow
+                    key={service.id}
+                    draggable={!searchQuery}
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDrop={() => handleDrop(idx)}
+                    onDragEnd={handleDragEnd}
+                    className={
+                      dragOverIndex === idx
+                        ? 'border-t-2 border-t-primary bg-primary/5'
+                        : dragIndex === idx
+                        ? 'opacity-50'
+                        : ''
+                    }
+                  >
                     <TableCell>
-                      <div className="flex flex-col items-center gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          disabled={idx === 0}
-                          onClick={() => reorderMutation.mutate({ id: service.id, direction: 'up' })}
-                        >
-                          <ArrowUp className="h-3 w-3" />
-                        </Button>
-                        <span className="text-xs text-muted-foreground">{(service.display_order ?? idx) + 1}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          disabled={idx === filtered.length - 1}
-                          onClick={() => reorderMutation.mutate({ id: service.id, direction: 'down' })}
-                        >
-                          <ArrowDown className="h-3 w-3" />
-                        </Button>
+                      <div className="flex items-center gap-2">
+                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
+                        <span className="text-xs text-muted-foreground font-medium">{(service.display_order ?? idx) + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell>
