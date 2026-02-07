@@ -33,7 +33,7 @@ const ServicesSection = () => {
         .select('id, slug, title_en, title_bn, short_description_en, short_description_bn, description_en, description_bn, featured_image_url')
         .eq('is_active', true)
         .order('display_order', { ascending: true })
-        .limit(6);
+        .limit(4);
       if (error) throw error;
       return data;
     },
