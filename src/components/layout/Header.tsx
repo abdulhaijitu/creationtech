@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, ChevronDown } from 'lucide-react';
+import { Menu, ChevronDown, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
@@ -22,13 +22,31 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 import Topbar from './Topbar';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isTopbarVisible, setIsTopbarVisible] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const location = useLocation();
+
+  // Fetch active services for mega menu
+  const { data: dynamicServices } = useQuery({
+    queryKey: ['nav-services'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('services')
+        .select('id, slug, title_en, title_bn, short_description_en, short_description_bn, icon')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+        .limit(12);
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 5 * 60 * 1000, // cache 5 min
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,14 +70,14 @@ const Header = () => {
     { href: '/products', label: 'View All Products', description: 'Explore our complete product lineup.' },
   ];
 
-  const servicesItems = [
-    { href: '/services#software', label: 'Custom Software Development', description: 'Tailored solutions for your unique business needs.' },
-    { href: '/services#mobile', label: 'Mobile App Development', description: 'iOS and Android apps that users love.' },
-    { href: '/services#design', label: 'Product Design', description: 'User-centric design for digital products.' },
-    { href: '/services#consulting', label: 'IT Consulting', description: 'Strategic guidance for technology decisions.' },
-    { href: '/services#cloud', label: 'Cloud Solutions', description: 'Scalable infrastructure and cloud migration.' },
-    { href: '/services#support', label: 'Maintenance & Support', description: 'Ongoing support to keep your systems running.' },
-  ];
+  // Build dynamic services menu items
+  const servicesMenuItems = (dynamicServices || []).map(s => ({
+    href: `/services#${s.slug}`,
+    label: language === 'en' ? s.title_en : (s.title_bn || s.title_en),
+    description: language === 'en'
+      ? ((s as any).short_description_en || '')
+      : ((s as any).short_description_bn || (s as any).short_description_en || ''),
+  }));
 
   const companiesItems = [
     { href: '/about', label: 'About Us', description: 'Learn about our mission, vision, and values.' },
@@ -184,35 +202,57 @@ const Header = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* Services Dropdown */}
+                {/* Services Mega Menu */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger
                     className={cn(
                       'bg-transparent px-4 py-2 text-sm font-medium',
-                      isDropdownActive(servicesItems) || location.pathname === '/services'
+                      isDropdownActive(servicesMenuItems) || location.pathname === '/services'
                         ? 'text-primary'
                         : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                     )}
                   >
-                    Services
+                    <Link to="/services" onClick={(e) => e.stopPropagation()}>
+                      Services
+                    </Link>
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid w-[500px] gap-3 p-4 md:grid-cols-2">
-                      {servicesItems.map((item) => (
-                        <NavigationMenuLink key={item.href} asChild>
-                          <Link
-                            to={item.href}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">{item.label}</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              {item.description}
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
+                  {servicesMenuItems.length > 0 && (
+                    <NavigationMenuContent>
+                      <div className="w-[560px] p-4">
+                        <div className={cn(
+                          "grid gap-2",
+                          servicesMenuItems.length <= 4 ? "grid-cols-1" : servicesMenuItems.length <= 8 ? "grid-cols-2" : "grid-cols-3"
+                        )}>
+                          {servicesMenuItems.map((item) => (
+                            <NavigationMenuLink key={item.href} asChild>
+                              <Link
+                                to={item.href}
+                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              >
+                                <div className="text-sm font-medium leading-none">{item.label}</div>
+                                {item.description && (
+                                  <p className="line-clamp-1 text-xs leading-snug text-muted-foreground mt-1">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </Link>
+                            </NavigationMenuLink>
+                          ))}
+                        </div>
+                        <div className="mt-3 border-t border-border/50 pt-3">
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to="/services"
+                              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline px-3"
+                            >
+                              {language === 'en' ? 'View All Services' : 'সকল সেবা দেখুন'}
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
+                          </NavigationMenuLink>
+                        </div>
+                      </div>
+                    </NavigationMenuContent>
+                  )}
                 </NavigationMenuItem>
 
                 {/* Companies Dropdown */}
@@ -349,7 +389,15 @@ const Header = () => {
                         <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                           Services
                         </div>
-                        {servicesItems.map((item) => (
+                        <Link
+                          to="/services"
+                          onClick={() => setIsSheetOpen(false)}
+                          className="rounded-lg px-4 py-2 text-sm font-medium text-primary hover:bg-secondary flex items-center gap-1"
+                        >
+                          {language === 'en' ? 'View All Services' : 'সকল সেবা দেখুন'}
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                        {servicesMenuItems.map((item) => (
                           <Link
                             key={item.href}
                             to={item.href}
