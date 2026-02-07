@@ -1274,13 +1274,24 @@ export type Database = {
       services: {
         Row: {
           created_at: string
+          cta_link: string | null
+          cta_text_bn: string | null
+          cta_text_en: string | null
           description_bn: string | null
           description_en: string | null
           display_order: number | null
+          featured_image_url: string | null
           features: Json | null
           icon: string | null
           id: string
           is_active: boolean | null
+          is_featured: boolean | null
+          meta_description_bn: string | null
+          meta_description_en: string | null
+          meta_title_bn: string | null
+          meta_title_en: string | null
+          short_description_bn: string | null
+          short_description_en: string | null
           slug: string
           title_bn: string | null
           title_en: string
@@ -1288,13 +1299,24 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          cta_link?: string | null
+          cta_text_bn?: string | null
+          cta_text_en?: string | null
           description_bn?: string | null
           description_en?: string | null
           display_order?: number | null
+          featured_image_url?: string | null
           features?: Json | null
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          is_featured?: boolean | null
+          meta_description_bn?: string | null
+          meta_description_en?: string | null
+          meta_title_bn?: string | null
+          meta_title_en?: string | null
+          short_description_bn?: string | null
+          short_description_en?: string | null
           slug: string
           title_bn?: string | null
           title_en: string
@@ -1302,13 +1324,24 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          cta_link?: string | null
+          cta_text_bn?: string | null
+          cta_text_en?: string | null
           description_bn?: string | null
           description_en?: string | null
           display_order?: number | null
+          featured_image_url?: string | null
           features?: Json | null
           icon?: string | null
           id?: string
           is_active?: boolean | null
+          is_featured?: boolean | null
+          meta_description_bn?: string | null
+          meta_description_en?: string | null
+          meta_title_bn?: string | null
+          meta_title_en?: string | null
+          short_description_bn?: string | null
+          short_description_en?: string | null
           slug?: string
           title_bn?: string | null
           title_en?: string
