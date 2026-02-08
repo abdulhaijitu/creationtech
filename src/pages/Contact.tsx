@@ -1,11 +1,15 @@
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
-import { Mail, Phone, MapPin, Clock, CheckCircle2, Sparkles, Shield, Zap, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Phone, MapPin, Clock, CheckCircle2, Sparkles, Shield, Zap, Users, ArrowRight, TrendingUp } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
 import ScrollReveal from '@/components/common/ScrollReveal';
+import CountUp from '@/components/common/CountUp';
+import { Button } from '@/components/ui/button';
 import ContactFormTabs from '@/components/contact/ContactFormTabs';
+import contactHeroImg from '@/assets/contact-hero.jpg';
 
 const services = [
   { value: 'web', labelEn: 'Web Development', labelBn: 'ওয়েব ডেভেলপমেন্ট' },
@@ -50,46 +54,90 @@ const Contact = () => {
       </Helmet>
       <Layout>
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-12 lg:py-20">
-          {/* Background Decorations */}
-          <div className="absolute inset-0">
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-white/5 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-accent/10 blur-3xl" />
-          </div>
+        <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(var(--primary)/0.08)] via-background to-[hsl(var(--accent)/0.06)] py-16 lg:py-24">
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+          <div className="absolute top-10 left-[10%] h-72 w-72 rounded-full bg-primary/8 blur-[100px] animate-[floatSlow_8s_ease-in-out_infinite]" />
+          <div className="absolute bottom-10 right-[10%] h-96 w-96 rounded-full bg-accent/10 blur-[120px] animate-[floatSlow_10s_ease-in-out_infinite_reverse]" />
 
-          <div className="container-custom relative text-center">
-            <ScrollReveal animation="fade-up">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
-                <Sparkles className="h-4 w-4" />
-                {language === 'en' ? 'Get in Touch' : 'যোগাযোগ করুন'}
-              </div>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-up" delay={100}>
-              <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
-                {language === 'en' ? 'Hire Software Development Company in Bangladesh' : 'বাংলাদেশে সফটওয়্যার ডেভেলপমেন্ট কোম্পানি নিয়োগ করুন'}
-              </h1>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-up" delay={150}>
-              <p className="mx-auto mb-6 max-w-2xl text-base text-white/70 leading-relaxed">
-                {language === 'en'
-                  ? 'Ready to transform your business with cutting-edge technology? Our team is here to help you every step of the way.'
-                  : 'আধুনিক প্রযুক্তি দিয়ে আপনার ব্যবসা রূপান্তর করতে প্রস্তুত? আমাদের দল প্রতিটি পদক্ষেপে আপনাকে সাহায্য করতে এখানে।'}
-              </p>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-up" delay={200}>
-              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-                {contactFeatures.map((feature, index) => {
-                  const Icon = feature.icon;
-                  return (
-                    <div key={index} className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white/90 backdrop-blur-sm">
-                      <Icon className="h-4 w-4 text-accent" />
-                      <span>{language === 'en' ? feature.labelEn : feature.labelBn}</span>
+          <div className="container-custom relative z-10">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <div className="text-center lg:text-left">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-5 py-2.5 text-sm font-medium text-primary ring-1 ring-primary/20 shadow-lg shadow-primary/5 hero-animate hero-animate-delay-0 backdrop-blur-sm">
+                  <Sparkles className="h-4 w-4 animate-pulse" />
+                  {language === 'en' ? 'Get in Touch' : 'যোগাযোগ করুন'}
+                </div>
+
+                <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl hero-animate hero-animate-delay-1" style={{ letterSpacing: '-0.025em' }}>
+                  <span className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
+                    {language === 'en' ? 'Hire Software Dev' : 'সফটওয়্যার ডেভেলপমেন্ট'}
+                  </span>
+                  <br />
+                  <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+                    {language === 'en' ? 'Company in Bangladesh' : 'কোম্পানি নিয়োগ করুন'}
+                  </span>
+                </h1>
+
+                <p className="max-w-xl text-lg text-muted-foreground leading-relaxed hero-animate hero-animate-delay-2 mx-auto lg:mx-0">
+                  {language === 'en'
+                    ? 'Ready to transform your business with cutting-edge technology? Our team is here to help you every step of the way.'
+                    : 'আধুনিক প্রযুক্তি দিয়ে আপনার ব্যবসা রূপান্তর করতে প্রস্তুত? আমাদের দল প্রতিটি পদক্ষেপে আপনাকে সাহায্য করতে এখানে।'}
+                </p>
+
+                <div className="mt-6 flex flex-wrap items-center justify-center lg:justify-start gap-3 hero-animate hero-animate-delay-3">
+                  {contactFeatures.map((feature, index) => {
+                    const Icon = feature.icon;
+                    return (
+                      <div key={index} className="flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm text-foreground/80 backdrop-blur-sm ring-1 ring-primary/10">
+                        <Icon className="h-4 w-4 text-primary" />
+                        <span>{language === 'en' ? feature.labelEn : feature.labelBn}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-10 grid grid-cols-3 gap-3 sm:gap-6 max-w-md mx-auto lg:mx-0 hero-animate hero-animate-delay-4">
+                  {[
+                    { value: 200, suffix: '+', labelEn: 'Happy Clients', labelBn: 'সন্তুষ্ট ক্লায়েন্ট', icon: Users },
+                    { value: 24, suffix: 'h', labelEn: 'Response Time', labelBn: 'রেসপন্স টাইম', icon: Zap },
+                    { value: 98, suffix: '%', labelEn: 'Satisfaction', labelBn: 'সন্তুষ্টি', icon: TrendingUp },
+                  ].map((stat, index) => (
+                    <div key={index} className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="relative flex flex-col items-center p-3 sm:p-5 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50 hover:border-primary/20 transition-colors duration-300">
+                        <stat.icon className="h-5 w-5 text-primary mb-2" />
+                        <span className="text-xl sm:text-2xl font-bold text-foreground">
+                          <CountUp end={stat.value} suffix={stat.suffix} />
+                        </span>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {language === 'en' ? stat.labelEn : stat.labelBn}
+                        </span>
+                      </div>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
-            </ScrollReveal>
+
+              <div className="relative hero-animate hero-animate-delay-2 hidden lg:block">
+                <div className="relative">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-accent/15 to-primary/20 rounded-3xl blur-2xl opacity-60" />
+                  <div className="relative rounded-2xl overflow-hidden border border-border/30 shadow-2xl shadow-primary/10">
+                    <img src={contactHeroImg} alt="CreationTech Team - Contact Us for Software Development" className="w-full h-auto object-cover" loading="eager" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
+                  </div>
+                  <div className="absolute -top-3 -right-3 bg-primary text-primary-foreground rounded-xl px-4 py-2 text-sm font-semibold shadow-lg shadow-primary/30 animate-[floatSlow_6s_ease-in-out_infinite]">
+                    {language === 'en' ? '💬 Let\'s Talk' : '💬 কথা বলুন'}
+                  </div>
+                  <div className="absolute -bottom-3 -left-3 bg-background/90 backdrop-blur-md border border-border/50 rounded-xl px-4 py-2 text-sm font-medium shadow-lg animate-[floatSlow_7s_ease-in-out_infinite_reverse]">
+                    <span className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+                      {language === 'en' ? 'Free Consultation' : 'বিনামূল্যে পরামর্শ'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
         </section>
 
         {/* Main Contact Section */}
