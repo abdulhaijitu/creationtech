@@ -51,6 +51,7 @@ import AdminClients from "./pages/admin/AdminClients";
  import AdminAttendance from "./pages/admin/AdminAttendance";
  import AdminLeads from "./pages/admin/AdminLeads";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
+import ScrollToTop from "./components/common/ScrollToTop";
  import AdminPlaceholder from "./pages/admin/AdminPlaceholder";
  import AdminPayments from "./pages/admin/AdminPayments";
  import AdminRevenue from "./pages/admin/AdminRevenue";
@@ -84,6 +85,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
