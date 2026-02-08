@@ -267,7 +267,9 @@ const Header = () => {
                         : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                     )}
                   >
-                    Companies
+                    <Link to="/about" onClick={(e) => e.stopPropagation()}>
+                      Companies
+                    </Link>
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid w-[600px] gap-3 p-4 md:grid-cols-2">
@@ -298,7 +300,9 @@ const Header = () => {
                         : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                     )}
                   >
-                    Resources
+                    <Link to="/blog" onClick={(e) => e.stopPropagation()}>
+                      Resources
+                    </Link>
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid w-[500px] gap-3 p-4 md:grid-cols-2">
