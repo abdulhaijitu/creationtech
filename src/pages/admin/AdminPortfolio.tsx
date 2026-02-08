@@ -206,17 +206,33 @@ const AdminPortfolio = () => {
             <Card><CardContent className="py-8 text-center text-muted-foreground">No projects yet.</CardContent></Card>
           ) : (
             projects.map((project) => (
-              <Card key={project.id}>
-                <CardContent className="flex items-center justify-between py-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{project.title_en}</h3>
-                      {project.is_featured && <Badge variant="secondary">Featured</Badge>}
+              <Card key={project.id} className="overflow-hidden">
+                <CardContent className="flex items-center gap-4 py-4">
+                  {/* Thumbnail */}
+                  {project.image_url ? (
+                    <img src={project.image_url} alt={project.title_en} className="h-16 w-24 rounded-md object-cover flex-shrink-0 bg-muted" />
+                  ) : (
+                    <div className="h-16 w-24 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
+                      <Eye className="h-5 w-5 text-muted-foreground/40" />
                     </div>
-                    {project.category && <Badge variant="outline" className="mt-1">{project.category}</Badge>}
-                    <p className="text-sm text-muted-foreground">/{project.slug}</p>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-medium truncate">{project.title_en}</h3>
+                      {project.is_featured && <Badge variant="secondary" className="text-[10px]">Featured</Badge>}
+                      {project.category && <Badge variant="outline" className="text-[10px]">{project.category}</Badge>}
+                    </div>
+                    {project.client_en && <p className="text-xs text-muted-foreground mt-0.5">{project.client_en}</p>}
+                    <p className="text-xs text-muted-foreground/60 mt-0.5">/{project.slug}</p>
+                    {project.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {project.tags.slice(0, 4).map((tag, i) => (
+                          <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{tag}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs px-2 py-1 rounded-full ${project.is_active ? 'bg-success-muted text-success-muted-foreground' : 'bg-neutral-muted text-neutral-muted-foreground'}`}>
                       {project.is_active ? 'Active' : 'Inactive'}
                     </span>
@@ -272,12 +288,22 @@ const AdminPortfolio = () => {
               <Textarea id="description_en" value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={3} />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="description_bn">Description (Bangla)</Label>
+              <Textarea id="description_bn" value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={3} className="font-bangla" />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="tags">Tags (comma separated)</Label>
               <Input id="tags" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="React, Node.js, AWS" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="result_en">Result (English)</Label>
-              <Input id="result_en" value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="result_en">Result (English)</Label>
+                <Input id="result_en" value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="result_bn">Result (Bangla)</Label>
+                <Input id="result_bn" value={formData.result_bn} onChange={(e) => setFormData({ ...formData, result_bn: e.target.value })} placeholder="বিক্রয়ে ২০০% বৃদ্ধি" className="font-bangla" />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="image_url">Image URL</Label>
