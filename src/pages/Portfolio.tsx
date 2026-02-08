@@ -1,103 +1,59 @@
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ExternalLink, Award, TrendingUp } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import ScrollReveal from '@/components/common/ScrollReveal';
+import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
-const projects = [
-  {
-    id: '1',
-    titleEn: 'E-Commerce Platform',
-    titleBn: 'ই-কমার্স প্ল্যাটফর্ম',
-    category: 'Web Development',
-    clientEn: 'RetailMax Bangladesh',
-    clientBn: 'রিটেইলম্যাক্স বাংলাদেশ',
-    descEn: 'A full-featured e-commerce platform with inventory management, payment processing, and customer analytics.',
-    descBn: 'ইনভেন্টরি ম্যানেজমেন্ট, পেমেন্ট প্রসেসিং এবং কাস্টমার অ্যানালিটিক্স সহ সম্পূর্ণ ই-কমার্স প্ল্যাটফর্ম।',
-    tags: ['React', 'Node.js', 'PostgreSQL', 'Stripe'],
-    resultEn: '150% increase in online sales within 6 months',
-    resultBn: '৬ মাসের মধ্যে অনলাইন বিক্রয়ে ১৫০% বৃদ্ধি',
-    image: '/placeholder.svg',
-  },
-  {
-    id: '2',
-    titleEn: 'Healthcare Mobile App',
-    titleBn: 'স্বাস্থ্যসেবা মোবাইল অ্যাপ',
-    category: 'Mobile Development',
-    clientEn: 'MediCare Plus',
-    clientBn: 'মেডিকেয়ার প্লাস',
-    descEn: 'A patient-doctor communication app with appointment booking, prescription management, and telemedicine features.',
-    descBn: 'অ্যাপয়েন্টমেন্ট বুকিং, প্রেসক্রিপশন ম্যানেজমেন্ট এবং টেলিমেডিসিন ফিচার সহ রোগী-ডাক্তার যোগাযোগ অ্যাপ।',
-    tags: ['React Native', 'Firebase', 'WebRTC'],
-    resultEn: '50,000+ active users in first year',
-    resultBn: 'প্রথম বছরে ৫০,০০০+ সক্রিয় ব্যবহারকারী',
-    image: '/placeholder.svg',
-  },
-  {
-    id: '3',
-    titleEn: 'Cloud Migration Project',
-    titleBn: 'ক্লাউড মাইগ্রেশন প্রজেক্ট',
-    category: 'Cloud Solutions',
-    clientEn: 'FinServ Corporation',
-    clientBn: 'ফিনসার্ভ কর্পোরেশন',
-    descEn: 'Complete migration of legacy infrastructure to AWS with zero downtime and enhanced security.',
-    descBn: 'শূন্য ডাউনটাইম এবং উন্নত নিরাপত্তা সহ AWS-এ লিগ্যাসি ইনফ্রাস্ট্রাকচারের সম্পূর্ণ মাইগ্রেশন।',
-    tags: ['AWS', 'Docker', 'Kubernetes', 'Terraform'],
-    resultEn: '40% reduction in infrastructure costs',
-    resultBn: 'ইনফ্রাস্ট্রাকচার খরচে ৪০% হ্রাস',
-    image: '/placeholder.svg',
-  },
-  {
-    id: '4',
-    titleEn: 'Security Audit & Implementation',
-    titleBn: 'সিকিউরিটি অডিট এবং বাস্তবায়ন',
-    category: 'Cybersecurity',
-    clientEn: 'National Bank Ltd',
-    clientBn: 'ন্যাশনাল ব্যাংক লিমিটেড',
-    descEn: 'Comprehensive security audit followed by implementation of enterprise-grade security measures.',
-    descBn: 'এন্টারপ্রাইজ-গ্রেড নিরাপত্তা ব্যবস্থা বাস্তবায়ন সহ ব্যাপক নিরাপত্তা অডিট।',
-    tags: ['Penetration Testing', 'SIEM', 'Compliance'],
-    resultEn: 'Achieved ISO 27001 certification',
-    resultBn: 'ISO 27001 সার্টিফিকেশন অর্জন',
-    image: '/placeholder.svg',
-  },
-  {
-    id: '5',
-    titleEn: 'Business Intelligence Dashboard',
-    titleBn: 'বিজনেস ইন্টেলিজেন্স ড্যাশবোর্ড',
-    category: 'Data Analytics',
-    clientEn: 'LogiTech Solutions',
-    clientBn: 'লজিটেক সলিউশনস',
-    descEn: 'Real-time analytics dashboard providing insights into logistics operations and supply chain efficiency.',
-    descBn: 'লজিস্টিক্স অপারেশন এবং সাপ্লাই চেইন দক্ষতার অন্তর্দৃষ্টি প্রদানকারী রিয়েল-টাইম অ্যানালিটিক্স ড্যাশবোর্ড।',
-    tags: ['Power BI', 'Python', 'Machine Learning'],
-    resultEn: '25% improvement in delivery efficiency',
-    resultBn: 'ডেলিভারি দক্ষতায় ২৫% উন্নতি',
-    image: '/placeholder.svg',
-  },
-  {
-    id: '6',
-    titleEn: 'Corporate Website Redesign',
-    titleBn: 'কর্পোরেট ওয়েবসাইট রিডিজাইন',
-    category: 'UI/UX Design',
-    clientEn: 'TechVentures BD',
-    clientBn: 'টেকভেঞ্চার্স বিডি',
-    descEn: 'Complete redesign of corporate website with focus on user experience and lead generation.',
-    descBn: 'ব্যবহারকারীর অভিজ্ঞতা এবং লিড জেনারেশনের উপর ফোকাস সহ কর্পোরেট ওয়েবসাইটের সম্পূর্ণ রিডিজাইন।',
-    tags: ['Figma', 'React', 'Tailwind CSS', 'Next.js'],
-    resultEn: '200% increase in lead conversion',
-    resultBn: 'লিড রূপান্তরে ২০০% বৃদ্ধি',
-    image: '/placeholder.svg',
-  },
-];
+// Local fallback images
+import ispImg from '@/assets/portfolio/isp-billing.jpg';
+import restaurantImg from '@/assets/portfolio/restaurant-pos.jpg';
+import somityImg from '@/assets/portfolio/somity-app.jpg';
+import ecommerceImg from '@/assets/portfolio/ecommerce.jpg';
+import healthcareImg from '@/assets/portfolio/healthcare-ehr.jpg';
+import logisticsImg from '@/assets/portfolio/logistics-tracker.jpg';
 
-const categories = ['All', 'Web Development', 'Mobile Development', 'Cloud Solutions', 'Cybersecurity', 'Data Analytics', 'UI/UX Design'];
+const fallbackImages: Record<string, string> = {
+  'isp-billing-system': ispImg,
+  'restaurant-pos': restaurantImg,
+  'somity-microfinance': somityImg,
+  'ecommerce-platform': ecommerceImg,
+  'healthcare-ehr': healthcareImg,
+  'logistics-tracker': logisticsImg,
+};
 
 const Portfolio = () => {
   const { t, language } = useLanguage();
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ['portfolio-all'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('portfolio_projects')
+        .select('*')
+        .eq('is_active', true)
+        .order('is_featured', { ascending: false })
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Extract unique categories
+  const categories = ['All', ...Array.from(new Set(projects?.map(p => p.category).filter(Boolean) as string[]))];
+
+  const filtered = activeCategory === 'All'
+    ? projects
+    : projects?.filter(p => p.category === activeCategory);
 
   return (
     <>
@@ -112,29 +68,40 @@ const Portfolio = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="gradient-hero py-24 lg:py-32">
-          <div className="container-custom text-center">
-            <h1 className="mb-5 text-4xl font-bold text-primary-foreground sm:text-5xl animate-fade-up" style={{ letterSpacing: '-0.03em' }}>
-              {language === 'en' ? 'Software Development Case Studies' : 'সফটওয়্যার ডেভেলপমেন্ট কেস স্টাডি'}
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/75 leading-relaxed animate-fade-up animation-delay-100">
-              {t('portfolio.subtitle')}
-            </p>
+        <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 lg:py-24">
+          <div className="absolute inset-0">
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary-foreground/5 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-accent/10 blur-3xl" />
+          </div>
+          <div className="container-custom relative text-center">
+            <ScrollReveal animation="fade-up">
+              <h1 className="mb-4 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
+                {language === 'en' ? 'Our Portfolio' : 'আমাদের পোর্টফোলিও'}
+              </h1>
+            </ScrollReveal>
+            <ScrollReveal animation="fade-up" delay={100}>
+              <p className="mx-auto max-w-2xl text-base text-primary-foreground/70 leading-relaxed sm:text-lg">
+                {language === 'en'
+                  ? 'Real solutions we\'ve built for real businesses — explore our case studies and project highlights.'
+                  : 'বাস্তব ব্যবসার জন্য আমাদের তৈরি সমাধান — আমাদের কেস স্টাডি ও প্রজেক্ট হাইলাইট দেখুন।'}
+              </p>
+            </ScrollReveal>
           </div>
         </section>
 
-        {/* Filter */}
-        <section className="border-b border-border/50 py-6">
+        {/* Category Filter */}
+        <section className="border-b border-border/50 py-5 bg-background sticky top-0 z-10">
           <div className="container-custom">
             <div className="flex flex-wrap gap-2 justify-center">
-              {categories.map((category) => (
+              {categories.map((cat) => (
                 <Button
-                  key={category}
-                  variant={category === 'All' ? 'default' : 'outline'}
+                  key={cat}
+                  variant={activeCategory === cat ? 'default' : 'outline'}
                   size="sm"
                   className="rounded-full"
+                  onClick={() => setActiveCategory(cat)}
                 >
-                  {category}
+                  {cat}
                 </Button>
               ))}
             </div>
@@ -142,72 +109,159 @@ const Portfolio = () => {
         </section>
 
         {/* Projects Grid */}
-        <section className="section-padding">
+        <section className="py-12 lg:py-16">
           <div className="container-custom">
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {projects.map((project) => (
-                <Card key={project.id} className="group overflow-hidden card-interactive border-border/40">
-                  {/* Image */}
-                  <div className="aspect-video overflow-hidden bg-muted">
-                    <img
-                      src={project.image}
-                      alt={language === 'en' ? project.titleEn : project.titleBn}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-                  <CardHeader className="pb-3">
-                    <div className="mb-3">
-                      <Badge variant="secondary" className="text-xs font-medium">{project.category}</Badge>
-                    </div>
-                    <CardTitle className="text-lg font-semibold leading-snug">
-                      {language === 'en' ? project.titleEn : project.titleBn}
-                    </CardTitle>
-                    <CardDescription className="text-sm">
-                      {language === 'en' ? project.clientEn : project.clientBn}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="mb-5 text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                      {language === 'en' ? project.descEn : project.descBn}
-                    </p>
-                    <div className="mb-5 flex flex-wrap gap-1.5">
-                      {project.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs font-normal">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="rounded-lg bg-accent/8 p-4 border border-accent/15">
-                      <p className="text-sm font-medium text-accent">
-                        {language === 'en' ? project.resultEn : project.resultBn}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="grid gap-8 md:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i} className="overflow-hidden">
+                    <Skeleton className="h-56 w-full rounded-none" />
+                    <CardContent className="p-6 space-y-3">
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filtered && filtered.length > 0 ? (
+              <div className="grid gap-8 md:grid-cols-2">
+                {filtered.map((project, index) => {
+                  const imgSrc = project.image_url || fallbackImages[project.slug] || '';
+                  const title = language === 'en' ? project.title_en : (project.title_bn || project.title_en);
+                  const desc = language === 'en' ? project.description_en : (project.description_bn || project.description_en);
+                  const client = language === 'en' ? project.client_en : (project.client_bn || project.client_en);
+                  const result = language === 'en' ? project.result_en : (project.result_bn || project.result_en);
+                  const tags = Array.isArray(project.tags) ? project.tags as string[] : [];
+
+                  return (
+                    <ScrollReveal key={project.id} animation="fade-up" delay={index * 80}>
+                      <Card
+                        id={project.slug}
+                        className={cn(
+                          'group overflow-hidden h-full border-border/50',
+                          'hover:border-primary/30 hover:shadow-xl hover:-translate-y-1',
+                          'transition-all duration-300',
+                          project.is_featured && 'ring-2 ring-primary/20 border-primary/30',
+                        )}
+                      >
+                        {/* Image */}
+                        <div className="relative h-56 overflow-hidden bg-muted">
+                          {imgSrc ? (
+                            <img
+                              src={imgSrc}
+                              alt={title}
+                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                              <ExternalLink className="h-12 w-12 text-primary/30" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          {project.is_featured && (
+                            <div className="absolute top-3 left-3">
+                              <Badge variant="default" className="bg-primary text-primary-foreground text-xs shadow-md gap-1">
+                                <Award className="h-3 w-3" />
+                                {language === 'en' ? 'Featured' : 'বৈশিষ্ট্যযুক্ত'}
+                              </Badge>
+                            </div>
+                          )}
+                          {project.category && (
+                            <div className="absolute top-3 right-3">
+                              <Badge variant="secondary" className="text-xs shadow-md bg-background/90 backdrop-blur-sm">
+                                {project.category}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+
+                        <CardContent className="p-6">
+                          {/* Client */}
+                          {client && (
+                            <p className="mb-1 text-xs font-medium text-primary/70 uppercase tracking-wider">
+                              {client}
+                            </p>
+                          )}
+
+                          {/* Title */}
+                          <h3 className="mb-2 text-xl font-semibold text-foreground">
+                            {title}
+                          </h3>
+
+                          {/* Description */}
+                          {desc && (
+                            <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
+                              {desc}
+                            </p>
+                          )}
+
+                          {/* Tags */}
+                          {tags.length > 0 && (
+                            <div className="mb-4 flex flex-wrap gap-1.5">
+                              {tags.map((tag, i) => (
+                                <Badge
+                                  key={i}
+                                  variant="outline"
+                                  className="text-[10px] font-medium px-2 py-0.5"
+                                >
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Result */}
+                          {result && (
+                            <div className="rounded-lg bg-accent/8 border border-accent/15 p-3 flex items-start gap-2">
+                              <TrendingUp className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                              <p className="text-sm font-medium text-accent">
+                                {result}
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </ScrollReveal>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-16 text-muted-foreground">
+                {language === 'en' ? 'No projects found in this category.' : 'এই ক্যাটাগরিতে কোনো প্রজেক্ট পাওয়া যায়নি।'}
+              </div>
+            )}
           </div>
         </section>
 
         {/* CTA */}
-        <section className="section-padding bg-section-alt">
-          <div className="container-custom text-center">
-            <h2 className="mb-5 text-3xl font-bold tracking-tight sm:text-4xl">
-              {language === 'en' ? 'Ready to Start Your Project?' : 'আপনার প্রকল্প শুরু করতে প্রস্তুত?'}
-            </h2>
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground leading-relaxed">
-              {language === 'en'
-                ? "Let's discuss how we can help bring your ideas to life."
-                : 'আসুন আলোচনা করি কীভাবে আমরা আপনার ধারণাগুলি বাস্তবায়িত করতে সাহায্য করতে পারি।'}
-            </p>
-            <Button size="lg" asChild className="group">
-              <Link to="/contact">
-                {t('common.getQuote')}
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Link>
-            </Button>
+        <section className="py-12 lg:py-16 bg-gradient-to-br from-primary via-primary/95 to-primary/90 relative overflow-hidden">
+          <div className="absolute inset-0">
+            <div className="absolute top-0 left-1/4 w-[300px] h-[300px] rounded-full bg-white/5 blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 w-[250px] h-[250px] rounded-full bg-accent/10 blur-3xl" />
+          </div>
+          <div className="container-custom relative text-center">
+            <ScrollReveal animation="fade-up">
+              <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
+                {language === 'en' ? 'Ready to Start Your Project?' : 'আপনার প্রকল্প শুরু করতে প্রস্তুত?'}
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal animation="fade-up" delay={100}>
+              <p className="mx-auto mb-8 max-w-xl text-base text-white/70 leading-relaxed">
+                {language === 'en'
+                  ? "Let's discuss how we can help bring your ideas to life."
+                  : 'আসুন আলোচনা করি কীভাবে আমরা আপনার ধারণাগুলি বাস্তবায়িত করতে পারি।'}
+              </p>
+            </ScrollReveal>
+            <ScrollReveal animation="fade-up" delay={150}>
+              <Button size="lg" variant="secondary" asChild className="font-semibold">
+                <Link to="/contact">
+                  {t('common.getQuote')}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </ScrollReveal>
           </div>
         </section>
       </Layout>
