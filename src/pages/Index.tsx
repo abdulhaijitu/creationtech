@@ -9,6 +9,7 @@ import TestimonialsSection from '@/components/home/TestimonialsSection';
 import DevelopmentProcessSection from '@/components/home/DevelopmentProcessSection';
 import PartnersSection from '@/components/home/PartnersSection';
 import CTASection from '@/components/home/CTASection';
+import PortfolioSection from '@/components/home/PortfolioSection';
 
 const Index = () => {
   return (
@@ -30,6 +31,7 @@ const Index = () => {
         <PartnersSection />
         <ServicesSection />
         <ProductsSection />
+        <PortfolioSection limit={3} showViewAll className="bg-muted/30" />
         <IndustriesSection />
         <TrustIndicators />
         <DevelopmentProcessSection />

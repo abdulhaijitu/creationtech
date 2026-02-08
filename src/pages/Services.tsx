@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCMSContent } from '@/hooks/useCMSContent';
 import ScrollReveal from '@/components/common/ScrollReveal';
+import PortfolioSection from '@/components/home/PortfolioSection';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -275,6 +276,15 @@ const Services = () => {
             )}
           </div>
         </section>
+
+        {/* Portfolio */}
+        <PortfolioSection
+          limit={3}
+          title={language === 'en' ? 'Projects Related to Our Services' : 'আমাদের সেবা সম্পর্কিত প্রজেক্ট'}
+          subtitle={language === 'en' ? 'See how we\'ve helped businesses like yours' : 'দেখুন আমরা কিভাবে আপনার মতো ব্যবসাকে সাহায্য করেছি'}
+          showViewAll
+          className="bg-muted/30"
+        />
 
         {/* Why Choose Us */}
         <section className="py-12 lg:py-16 bg-muted/30">
