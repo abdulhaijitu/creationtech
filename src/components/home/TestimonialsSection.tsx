@@ -13,6 +13,16 @@ import {
 } from '@/components/ui/carousel';
 import Autoplay from 'embla-carousel-autoplay';
 import { useRef } from 'react';
+import rafiqImg from '@/assets/testimonials/rafiq-ahmed.jpg';
+import sarahImg from '@/assets/testimonials/sarah-rahman.jpg';
+import hassanImg from '@/assets/testimonials/mohammad-hassan.jpg';
+
+// Fallback avatars keyed by name for testimonials without uploaded photos
+const fallbackAvatars: Record<string, string> = {
+  'Rafiq Ahmed': rafiqImg,
+  'Sarah Rahman': sarahImg,
+  'Mohammad Hassan': hassanImg,
+};
 
 const TestimonialsSection = () => {
   const { language } = useLanguage();
@@ -94,17 +104,20 @@ const TestimonialsSection = () => {
                       
                       {/* Author */}
                       <div className="flex items-center gap-4 border-t border-border/40 pt-5">
-                        {testimonial.avatar_url ? (
-                          <img
-                            src={testimonial.avatar_url}
-                            alt={testimonial.name_en}
-                            className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20 transition-all duration-300 group-hover:ring-primary/40"
-                          />
-                        ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-base font-semibold text-primary-foreground shadow-md">
-                            {testimonial.company?.charAt(0) || testimonial.name_en.charAt(0)}
-                          </div>
-                        )}
+                        {(() => {
+                          const avatarSrc = testimonial.avatar_url || fallbackAvatars[testimonial.name_en];
+                          return avatarSrc ? (
+                            <img
+                              src={avatarSrc}
+                              alt={testimonial.name_en}
+                              className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20 transition-all duration-300 group-hover:ring-primary/40"
+                            />
+                          ) : (
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-base font-semibold text-primary-foreground shadow-md">
+                              {testimonial.company?.charAt(0) || testimonial.name_en.charAt(0)}
+                            </div>
+                          );
+                        })()}
                         <div>
                           <p className="font-semibold text-foreground">
                             {language === 'en' ? testimonial.name_en : (testimonial.name_bn || testimonial.name_en)}
