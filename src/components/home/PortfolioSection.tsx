@@ -184,7 +184,7 @@ const PortfolioSection = ({
 
                       {/* CTA */}
                       <Link
-                        to={`/portfolio#${project.slug}`}
+                        to={`/portfolio/${project.slug}`}
                         className="inline-flex items-center text-sm font-medium text-primary hover:underline group/link"
                       >
                         {language === 'en' ? 'View Project' : 'প্রজেক্ট দেখুন'}
