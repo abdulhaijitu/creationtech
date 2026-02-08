@@ -7,6 +7,12 @@ import { useState, useEffect } from 'react';
 import heroOffice1 from '@/assets/hero-office-1.jpg';
 import heroOffice2 from '@/assets/hero-office-2.jpg';
 import heroOffice3 from '@/assets/hero-office-3.jpg';
+import client1 from '@/assets/clients/client-1.jpg';
+import client2 from '@/assets/clients/client-2.jpg';
+import client3 from '@/assets/clients/client-3.jpg';
+import client4 from '@/assets/clients/client-4.jpg';
+
+const clientAvatars = [client1, client2, client3, client4];
 
 const stats = [
   { 
@@ -212,10 +218,13 @@ const HeroSection = () => {
             <div className="mt-10 flex items-center justify-center gap-6 lg:justify-start hero-animate hero-animate-delay-4">
               <div className="flex items-center gap-2 text-white/40">
                 <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div 
+                  {clientAvatars.map((avatar, i) => (
+                    <img 
                       key={i} 
-                      className="h-8 w-8 rounded-full border-2 border-[#0a1628] bg-gradient-to-br from-teal-400 to-teal-600"
+                      src={avatar} 
+                      alt={`Client ${i + 1}`}
+                      className="h-8 w-8 rounded-full border-2 border-[#0a1628] object-cover"
+                      loading="lazy"
                     />
                   ))}
                 </div>
