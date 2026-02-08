@@ -181,7 +181,9 @@ const Header = () => {
                         : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                     )}
                   >
-                    Products
+                    <Link to="/products" onClick={(e) => e.stopPropagation()}>
+                      Products
+                    </Link>
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid w-[400px] gap-3 p-4 md:grid-cols-1">
