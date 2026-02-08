@@ -16,12 +16,19 @@ import { useRef } from 'react';
 import rafiqImg from '@/assets/testimonials/rafiq-ahmed.jpg';
 import sarahImg from '@/assets/testimonials/sarah-rahman.jpg';
 import hassanImg from '@/assets/testimonials/mohammad-hassan.jpg';
+import kamalImg from '@/assets/testimonials/kamal-hossain.jpg';
+import nusratImg from '@/assets/testimonials/nusrat-jahan.jpg';
+import tariqImg from '@/assets/testimonials/tariq-islam.jpg';
+import arifImg from '@/assets/testimonials/arif-chowdhury.jpg';
 
-// Fallback avatars keyed by name for testimonials without uploaded photos
 const fallbackAvatars: Record<string, string> = {
   'Rafiq Ahmed': rafiqImg,
   'Sarah Rahman': sarahImg,
   'Mohammad Hassan': hassanImg,
+  'Kamal Hossain': kamalImg,
+  'Nusrat Jahan': nusratImg,
+  'Tariq Islam': tariqImg,
+  'Arif Chowdhury': arifImg,
 };
 
 const TestimonialsSection = () => {
