@@ -221,6 +221,15 @@ const Portfolio = () => {
                               </p>
                             </div>
                           )}
+
+                          {/* CTA */}
+                          <Link
+                            to={`/portfolio/${project.slug}`}
+                            className="mt-4 inline-flex items-center text-sm font-medium text-primary hover:underline group/link"
+                          >
+                            {language === 'en' ? 'View Case Study' : 'কেস স্টাডি দেখুন'}
+                            <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-200 group-hover/link:translate-x-0.5" />
+                          </Link>
                         </CardContent>
                       </Card>
                     </ScrollReveal>
