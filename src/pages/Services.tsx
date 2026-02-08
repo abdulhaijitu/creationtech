@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import servicesHeroImg from '@/assets/services-hero.jpg';
 
 // Icon map for dynamic icon resolution
 const iconMap: Record<string, LucideIcon> = {
@@ -96,26 +97,78 @@ const Services = () => {
         {/* Hero */}
         <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 lg:py-24">
           <div className="absolute inset-0">
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-white/5 blur-3xl" />
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary-foreground/5 blur-3xl" />
             <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-accent/10 blur-3xl" />
+            <div
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `linear-gradient(to right, white 1px, transparent 1px),
+                                 linear-gradient(to bottom, white 1px, transparent 1px)`,
+                backgroundSize: '50px 50px',
+              }}
+            />
           </div>
-          <div className="container-custom relative text-center">
-            <ScrollReveal animation="fade-up">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
-                <Sparkles className="h-4 w-4" />
-                {language === 'en' ? 'What We Offer' : 'আমরা যা অফার করি'}
+          <div className="container-custom relative">
+            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div className="text-center lg:text-left">
+                <ScrollReveal animation="fade-up">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-sm font-medium text-primary-foreground backdrop-blur-sm">
+                    <Sparkles className="h-4 w-4" />
+                    {language === 'en' ? 'What We Offer' : 'আমরা যা অফার করি'}
+                  </div>
+                </ScrollReveal>
+                <ScrollReveal animation="fade-up" delay={100}>
+                  <h1 className="mb-4 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
+                    {language === 'en' ? 'Custom Software Development Services' : 'কাস্টম সফটওয়্যার ডেভেলপমেন্ট সেবা'}
+                  </h1>
+                </ScrollReveal>
+                <ScrollReveal animation="fade-up" delay={150}>
+                  <p className="max-w-xl text-base text-primary-foreground/70 leading-relaxed sm:text-lg mx-auto lg:mx-0">
+                    {heroSubtitle}
+                  </p>
+                </ScrollReveal>
+                <ScrollReveal animation="fade-up" delay={200}>
+                  <div className="mt-8 flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
+                    <Button size="lg" variant="secondary" asChild className="font-semibold min-w-[160px]">
+                      <Link to="/contact?type=quote">
+                        {language === 'en' ? 'Get Started' : 'শুরু করুন'}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button size="lg" variant="outline" asChild className="min-w-[160px] border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
+                      <a href="#services-grid">
+                        {language === 'en' ? 'Explore Services' : 'সেবাসমূহ দেখুন'}
+                      </a>
+                    </Button>
+                  </div>
+                </ScrollReveal>
               </div>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-up" delay={100}>
-              <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
-                {language === 'en' ? 'Custom Software Development Services' : 'কাস্টম সফটওয়্যার ডেভেলপমেন্ট সেবা'}
-              </h1>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-up" delay={150}>
-              <p className="mx-auto max-w-2xl text-base text-white/70 leading-relaxed sm:text-lg">
-                {heroSubtitle}
-              </p>
-            </ScrollReveal>
+
+              {/* Hero Image */}
+              <ScrollReveal animation="fade-left" className="hidden lg:block">
+                <div className="relative">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-primary-foreground/10 via-accent/15 to-primary-foreground/10 rounded-3xl blur-2xl opacity-60" />
+                  <div className="relative rounded-2xl overflow-hidden border border-primary-foreground/10 shadow-2xl">
+                    <img
+                      src={servicesHeroImg}
+                      alt="CreationTech IT Services - Software Development, Cloud, Mobile, AI Consulting"
+                      className="w-full h-auto object-cover"
+                      loading="eager"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
+                  </div>
+                  <div className="absolute -top-3 -right-3 bg-accent text-accent-foreground rounded-xl px-4 py-2 text-sm font-semibold shadow-lg animate-[floatSlow_6s_ease-in-out_infinite]">
+                    {language === 'en' ? '🛠️ Full-Stack Services' : '🛠️ ফুল-স্ট্যাক সেবা'}
+                  </div>
+                  <div className="absolute -bottom-3 -left-3 bg-background/90 backdrop-blur-md border border-border/50 rounded-xl px-4 py-2 text-sm font-medium shadow-lg animate-[floatSlow_7s_ease-in-out_infinite_reverse]">
+                    <span className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                      {language === 'en' ? '100+ Projects Delivered' : '১০০+ প্রজেক্ট সম্পন্ন'}
+                    </span>
+                  </div>
+                </div>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 

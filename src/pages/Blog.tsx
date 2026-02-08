@@ -1,12 +1,14 @@
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { Calendar, User, ArrowRight } from 'lucide-react';
+import { Calendar, User, ArrowRight, Sparkles } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import ScrollReveal from '@/components/common/ScrollReveal';
+import blogHeroImg from '@/assets/blog-hero.jpg';
 
 const blogPosts = [
   {
@@ -114,14 +116,59 @@ const Blog = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="gradient-hero py-24 lg:py-32">
-          <div className="container-custom text-center">
-            <h1 className="mb-5 text-4xl font-bold text-primary-foreground sm:text-5xl animate-fade-up" style={{ letterSpacing: '-0.03em' }}>
-              {language === 'en' ? 'Software Development Insights' : 'সফটওয়্যার ডেভেলপমেন্ট ইনসাইটস'}
-            </h1>
-            <p className="mx-auto max-w-2xl text-lg text-primary-foreground/75 leading-relaxed animate-fade-up animation-delay-100">
-              {t('blog.subtitle')}
-            </p>
+        <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 lg:py-24">
+          <div className="absolute inset-0">
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary-foreground/5 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-accent/10 blur-3xl" />
+            <div
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `linear-gradient(to right, white 1px, transparent 1px),
+                                 linear-gradient(to bottom, white 1px, transparent 1px)`,
+                backgroundSize: '50px 50px',
+              }}
+            />
+          </div>
+          <div className="container-custom relative">
+            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div className="text-center lg:text-left">
+                <ScrollReveal animation="fade-up">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-sm font-medium text-primary-foreground backdrop-blur-sm">
+                    <Sparkles className="h-4 w-4" />
+                    {language === 'en' ? 'News & Insights' : 'খবর ও ইনসাইটস'}
+                  </div>
+                </ScrollReveal>
+                <ScrollReveal animation="fade-up" delay={100}>
+                  <h1 className="mb-4 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
+                    {language === 'en' ? 'Software Development Insights' : 'সফটওয়্যার ডেভেলপমেন্ট ইনসাইটস'}
+                  </h1>
+                </ScrollReveal>
+                <ScrollReveal animation="fade-up" delay={150}>
+                  <p className="max-w-xl text-base text-primary-foreground/70 leading-relaxed sm:text-lg mx-auto lg:mx-0">
+                    {t('blog.subtitle')}
+                  </p>
+                </ScrollReveal>
+              </div>
+
+              {/* Hero Image */}
+              <ScrollReveal animation="fade-left" className="hidden lg:block">
+                <div className="relative">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-primary-foreground/10 via-accent/15 to-primary-foreground/10 rounded-3xl blur-2xl opacity-60" />
+                  <div className="relative rounded-2xl overflow-hidden border border-primary-foreground/10 shadow-2xl">
+                    <img
+                      src={blogHeroImg}
+                      alt="CreationTech Blog - Software Development Insights and Technology News"
+                      className="w-full h-auto object-cover"
+                      loading="eager"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
+                  </div>
+                  <div className="absolute -top-3 -right-3 bg-accent text-accent-foreground rounded-xl px-4 py-2 text-sm font-semibold shadow-lg animate-[floatSlow_6s_ease-in-out_infinite]">
+                    {language === 'en' ? '📚 Knowledge Hub' : '📚 জ্ঞান ভাণ্ডার'}
+                  </div>
+                </div>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 
