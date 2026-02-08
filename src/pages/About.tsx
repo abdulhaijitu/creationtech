@@ -9,7 +9,7 @@ import CountUp from '@/components/common/CountUp';
 import { cn } from '@/lib/utils';
 
 // Images
-import aboutOfficeImg from '@/assets/about-office.jpg';
+import aboutHeroImg from '@/assets/about-hero.jpg';
 import ceoImg from '@/assets/team/ceo.jpg';
 import ctoImg from '@/assets/team/cto.jpg';
 import headEngineeringImg from '@/assets/team/head-engineering.jpg';
@@ -152,28 +152,36 @@ const About = () => {
         {/* Hero */}
         <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 lg:py-24">
           <div className="absolute inset-0">
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-white/5 blur-3xl" />
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary-foreground/5 blur-3xl" />
             <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-accent/10 blur-3xl" />
+            <div
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `linear-gradient(to right, white 1px, transparent 1px),
+                                 linear-gradient(to bottom, white 1px, transparent 1px)`,
+                backgroundSize: '50px 50px',
+              }}
+            />
           </div>
           
           <div className="container-custom relative">
             <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
               <div className="text-center lg:text-left">
                 <ScrollReveal animation="fade-up">
-                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-sm font-medium text-primary-foreground backdrop-blur-sm">
                     <Sparkles className="h-4 w-4" />
                     {language === 'en' ? 'About Creation Tech' : 'Creation Tech সম্পর্কে'}
                   </div>
                 </ScrollReveal>
                 
                 <ScrollReveal animation="fade-up" delay={100}>
-                  <h1 className="mb-4 text-3xl font-bold text-white sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
+                  <h1 className="mb-4 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
                     {language === 'en' ? 'Trusted Software Company in Bangladesh' : 'বাংলাদেশের বিশ্বস্ত সফটওয়্যার কোম্পানি'}
                   </h1>
                 </ScrollReveal>
                 
                 <ScrollReveal animation="fade-up" delay={150}>
-                  <p className="text-base text-white/70 leading-relaxed max-w-xl mx-auto lg:mx-0 sm:text-lg">
+                  <p className="text-base text-primary-foreground/70 leading-relaxed max-w-xl mx-auto lg:mx-0 sm:text-lg">
                     {heroSection.content || t('about.subtitle')}
                   </p>
                 </ScrollReveal>
@@ -182,10 +190,10 @@ const About = () => {
                   <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                     {stats.map((stat, index) => (
                       <div key={index} className="text-center lg:text-left">
-                        <div className="text-xl font-bold text-white sm:text-2xl">
+                        <div className="text-xl font-bold text-primary-foreground sm:text-2xl">
                           <CountUp end={stat.value} duration={2000} />{stat.suffix}
                         </div>
-                        <div className="text-xs text-white/60 sm:text-sm">
+                        <div className="text-xs text-primary-foreground/60 sm:text-sm">
                           {language === 'en' ? stat.labelEn : stat.labelBn}
                         </div>
                       </div>
@@ -196,10 +204,20 @@ const About = () => {
               
               <ScrollReveal animation="fade-left" className="hidden lg:block">
                 <div className="relative">
-                  <div className="overflow-hidden rounded-2xl shadow-2xl">
-                    <img src={aboutOfficeImg} alt="Creation Tech Office" className="w-full h-auto object-cover" loading="lazy" />
+                  <div className="absolute -inset-4 bg-gradient-to-r from-primary-foreground/10 via-accent/15 to-primary-foreground/10 rounded-3xl blur-2xl opacity-60" />
+                  <div className="relative overflow-hidden rounded-2xl border border-primary-foreground/10 shadow-2xl">
+                    <img src={aboutHeroImg} alt="Creation Tech Office" className="w-full h-auto object-cover" loading="eager" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
                   </div>
-                  <div className="absolute -inset-3 rounded-2xl border border-white/10 -z-10" />
+                  <div className="absolute -top-3 -right-3 bg-accent text-accent-foreground rounded-xl px-4 py-2 text-sm font-semibold shadow-lg animate-[floatSlow_6s_ease-in-out_infinite]">
+                    {language === 'en' ? '🏢 Since 2015' : '🏢 ২০১৫ থেকে'}
+                  </div>
+                  <div className="absolute -bottom-3 -left-3 bg-background/90 backdrop-blur-md border border-border/50 rounded-xl px-4 py-2 text-sm font-medium shadow-lg animate-[floatSlow_7s_ease-in-out_infinite_reverse]">
+                    <span className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                      {language === 'en' ? '200+ Clients Served' : '২০০+ ক্লায়েন্ট'}
+                    </span>
+                  </div>
                 </div>
               </ScrollReveal>
             </div>
