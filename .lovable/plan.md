@@ -1,13 +1,18 @@
 
 
-## পরিকল্পনা: Offer Letter End ফিল্ড যোগ
+## পরিকল্পনা: RichTextEditor-এ টেবিল ও জাস্টিফাই অপশন যোগ
 
-### ডাটাবেজ মাইগ্রেশন
-- `proposals` টেবিলে `offer_letter_end TEXT` কলাম যোগ
+### ফাইল: `src/components/ui/rich-text-editor.tsx`
 
-### ফাইল: `src/components/admin/ProposalForm.tsx`
-1. `formData` state-এ `offer_letter_end: ''` যোগ
-2. Edit মোডে `offer_letter_end` লোড
-3. Budget Details কার্ডের **পরে** এবং Notes & Terms সেকশনের **আগে** একটি নতুন Card-এ RichTextEditor সহ "Offer Letter End" ফিল্ড যোগ
-4. `handleSave`-এ `offer_letter_end` ফিল্ড insert/update-এ যোগ
+**নতুন TipTap এক্সটেনশন ইনস্টল ও যোগ:**
+- `@tiptap/extension-table`, `@tiptap/extension-table-row`, `@tiptap/extension-table-cell`, `@tiptap/extension-table-header` — টেবিল সাপোর্টের জন্য
+
+**পরিবর্তনসমূহ:**
+1. **TextAlign কনফিগারেশনে `'justify'` যোগ** — বর্তমানে শুধু left/center/right আছে
+2. **টুলবারে Justify বাটন যোগ** — AlignRight এর পরে `AlignJustify` আইকন সহ
+3. **Table এক্সটেনশন রেজিস্টার** — editor extensions এ Table, TableRow, TableCell, TableHeader যোগ
+4. **টুলবারে Table বাটন গ্রুপ যোগ** — Insert Table (3x3), Add Row, Add Column, Delete Row, Delete Column, Delete Table, Merge/Split Cells
+5. **টেবিলের জন্য CSS স্টাইল যোগ** — bordered table styling যাতে editor-এ টেবিল সুন্দরভাবে দেখায়
+
+যেহেতু RichTextEditor একটি শেয়ার্ড কম্পোনেন্ট, এই পরিবর্তন স্বয়ংক্রিয়ভাবে Proposals সহ সব জায়গায় কাজ করবে।
 
