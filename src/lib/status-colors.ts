@@ -62,14 +62,15 @@
    sent: 'success',
    accepted: 'success',
    
-   // Warning
-   pending: 'warning',
-   in_progress: 'warning',
-   contacted: 'warning',
-   reviewed: 'warning',
-   late: 'warning',
-   half_day: 'warning',
-   expired: 'warning',
+    // Warning
+    pending: 'warning',
+    in_progress: 'warning',
+    contacted: 'warning',
+    reviewed: 'warning',
+    late: 'warning',
+    half_day: 'warning',
+    expired: 'warning',
+    revised: 'warning',
    
    // Info
    new: 'info',

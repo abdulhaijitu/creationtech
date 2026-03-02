@@ -34,7 +34,7 @@ import {
   Merge,
   Split,
 } from 'lucide-react';
-import { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
@@ -44,7 +44,7 @@ interface RichTextEditorProps {
   className?: string;
 }
 
-const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextEditorProps) => {
+const RichTextEditor = React.forwardRef<HTMLDivElement, RichTextEditorProps>(({ content, onChange, placeholder, className }, ref) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -109,7 +109,7 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
   const ToolbarDivider = () => <div className="mx-0.5 h-5 w-px bg-border self-center" />;
 
   return (
-    <div className={cn('rounded-md border border-input bg-background', className)}>
+    <div ref={ref} className={cn('rounded-md border border-input bg-background', className)}>
       {/* Compact Toolbar */}
       <div className="flex flex-wrap gap-0.5 border-b border-border p-1.5">
         {/* Text formatting */}
@@ -227,6 +227,8 @@ const RichTextEditor = ({ content, onChange, placeholder, className }: RichTextE
       <EditorContent editor={editor} />
     </div>
   );
-};
+});
+
+RichTextEditor.displayName = 'RichTextEditor';
 
 export default RichTextEditor;
