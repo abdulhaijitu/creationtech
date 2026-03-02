@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, ExternalLink } from 'lucide-react';
+import { useMemo, useState, useCallback } from 'react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, ExternalLink, FileEdit, Send, XCircle, LayoutList, Table2, DollarSign, Clock, FileCheck } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,12 +22,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ProposalForm } from '@/components/admin/ProposalForm';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getStatusColor } from '@/lib/status-colors';
 import { generateProposalPDF, CompanyInfo } from '@/utils/proposalPdfGenerator';
 import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import companyLogo from '@/assets/logo.png';
 import watermarkImage from '@/assets/jolchap.png';
 
@@ -59,18 +70,40 @@ interface Proposal {
 }
 
 type ViewMode = 'list' | 'form';
+type ListMode = 'card' | 'table';
+
+// Utilities outside component to avoid re-creation
+const formatDate = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+const formatCurrency = (amount: number | null) =>
+  amount ? `৳${amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}` : '-';
+
+const fetchProposals = async (): Promise<Proposal[]> => {
+  const { data, error } = await supabase
+    .from('proposals')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []) as Proposal[];
+};
 
 const AdminProposals = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: businessInfo } = useBusinessInfoMap();
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [listMode, setListMode] = useState<ListMode>('card');
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
 
-  const getCompanyInfo = (): CompanyInfo => ({
+  const { data: proposals = [], isLoading } = useQuery({
+    queryKey: ['proposals'],
+    queryFn: fetchProposals,
+  });
+
+  const getCompanyInfo = useCallback((): CompanyInfo => ({
     name: businessInfo?.company_name?.value_en || 'Creation Tech',
     tagline: businessInfo?.tagline?.value_en || '-PRIME TECH PARTNER-',
     address: businessInfo?.address?.value_en || 'Dhaka, Bangladesh',
@@ -79,62 +112,24 @@ const AdminProposals = () => {
     website: businessInfo?.website?.value_en || 'www.creationtech.com',
     logo_url: businessInfo?.company_logo?.value_en || companyLogo,
     watermark_url: watermarkImage,
-  });
+  }), [businessInfo]);
 
-  const fetchProposals = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('proposals')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setProposals(data || []);
-    } catch (error) {
-      console.error('Error fetching proposals:', error);
-      toast({ title: 'Error', description: 'Failed to load proposals', variant: 'destructive' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProposals();
-  }, []);
-
-  const openCreateDialog = () => {
-    setSelectedProposal(null);
-    setViewMode('form');
-  };
-
-  const openEditDialog = (proposal: Proposal) => {
-    setSelectedProposal(proposal);
-    setViewMode('form');
-  };
-
-  const handleFormSave = () => {
-    setViewMode('list');
-    fetchProposals();
-  };
-
-  const handleFormCancel = () => {
-    setViewMode('list');
-    setSelectedProposal(null);
-  };
-
-  const updateStatus = async (id: string, status: string) => {
-    try {
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase.from('proposals').update({ status }).eq('id', id);
       if (error) throw error;
+    },
+    onSuccess: () => {
       toast({ title: 'Success', description: 'Status updated' });
-      fetchProposals();
-    } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+    },
+    onError: (error: any) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
+    },
+  });
 
-  const createNewVersion = async (proposal: Proposal) => {
-    try {
+  const versionMutation = useMutation({
+    mutationFn: async (proposal: Proposal) => {
       const { data: numData } = await supabase.rpc('generate_proposal_number');
       const proposalNumber = numData || `PRO-${Date.now()}`;
 
@@ -179,14 +174,57 @@ const AdminProposals = () => {
       }
 
       await supabase.from('proposals').update({ status: 'revised' }).eq('id', proposal.id);
+    },
+    onSuccess: () => {
       toast({ title: 'Success', description: 'New version created' });
-      fetchProposals();
-    } catch (error: any) {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+    },
+    onError: (error: any) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    }
-  };
+    },
+  });
 
-  const emailToClient = (proposal: Proposal) => {
+  const filteredProposals = useMemo(() => {
+    return proposals.filter((p) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        p.proposal_number.toLowerCase().includes(q) ||
+        p.title.toLowerCase().includes(q) ||
+        p.client_name.toLowerCase().includes(q);
+      const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [proposals, searchQuery, statusFilter]);
+
+  const stats = useMemo(() => {
+    const total = proposals.length;
+    const draft = proposals.filter(p => p.status === 'draft').length;
+    const active = proposals.filter(p => ['sent', 'accepted', 'approved'].includes(p.status)).length;
+    const totalValue = proposals.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+    return { total, draft, active, totalValue };
+  }, [proposals]);
+
+  const openCreateDialog = useCallback(() => {
+    setSelectedProposal(null);
+    setViewMode('form');
+  }, []);
+
+  const openEditDialog = useCallback((proposal: Proposal) => {
+    setSelectedProposal(proposal);
+    setViewMode('form');
+  }, []);
+
+  const handleFormSave = useCallback(() => {
+    setViewMode('list');
+    queryClient.invalidateQueries({ queryKey: ['proposals'] });
+  }, [queryClient]);
+
+  const handleFormCancel = useCallback(() => {
+    setViewMode('list');
+    setSelectedProposal(null);
+  }, []);
+
+  const emailToClient = useCallback((proposal: Proposal) => {
     if (!proposal.client_email) {
       toast({ title: 'No Email', description: 'This client has no email address set.', variant: 'destructive' });
       return;
@@ -194,21 +232,17 @@ const AdminProposals = () => {
     const subject = encodeURIComponent(`Proposal: ${proposal.proposal_number} - ${proposal.title}`);
     const body = encodeURIComponent(`Dear ${proposal.client_name},\n\nPlease find the proposal details for "${proposal.title}".\n\nProposal Number: ${proposal.proposal_number}\nTotal Amount: ৳${proposal.total_amount?.toLocaleString('en-BD') || '0'}\n\nBest regards`);
     window.open(`mailto:${proposal.client_email}?subject=${subject}&body=${body}`, '_self');
-  };
+  }, [toast]);
 
-  const handlePdfAction = async (proposal: Proposal, action: 'download' | 'print' | 'email' | 'preview') => {
+  const handlePdfAction = useCallback(async (proposal: Proposal, action: 'download' | 'print' | 'email' | 'preview') => {
     try {
-      // Fetch proposal items
       const { data: items } = await supabase
         .from('proposal_items')
         .select('description, quantity, unit_price, amount')
         .eq('proposal_id', proposal.id)
         .order('display_order');
 
-      const pdfData = {
-        ...proposal,
-        items: items || [],
-      };
+      const pdfData = { ...proposal, items: items || [] };
 
       if (action === 'email') {
         emailToClient(proposal);
@@ -219,19 +253,47 @@ const AdminProposals = () => {
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
-  };
+  }, [emailToClient, getCompanyInfo, toast]);
 
-  const filteredProposals = proposals.filter((p) => {
-    const matchesSearch =
-      p.proposal_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.client_name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  const formatCurrency = (amount: number | null) => amount ? `৳${amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}` : '-';
+  const renderDropdownActions = useCallback((proposal: Proposal) => (
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem onClick={() => statusMutation.mutate({ id: proposal.id, status: 'draft' })}>
+        <FileEdit className="h-4 w-4 mr-2" /> Mark as Draft
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => statusMutation.mutate({ id: proposal.id, status: 'sent' })}>
+        <Send className="h-4 w-4 mr-2" /> Mark as Sent
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => statusMutation.mutate({ id: proposal.id, status: 'accepted' })}>
+        <CheckCircle className="h-4 w-4 mr-2" /> Mark as Accepted
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => statusMutation.mutate({ id: proposal.id, status: 'approved' })}>
+        <CheckCircle className="h-4 w-4 mr-2" /> Mark as Approved
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => statusMutation.mutate({ id: proposal.id, status: 'negotiation' })}>
+        <MessageSquare className="h-4 w-4 mr-2" /> Mark as Negotiation
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => statusMutation.mutate({ id: proposal.id, status: 'rejected' })}>
+        <XCircle className="h-4 w-4 mr-2" /> Mark as Rejected
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'preview')}>
+        <ExternalLink className="h-4 w-4 mr-2" /> Preview PDF
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'download')}>
+        <Download className="h-4 w-4 mr-2" /> Download PDF
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'print')}>
+        <Printer className="h-4 w-4 mr-2" /> Print
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'email')}>
+        <Mail className="h-4 w-4 mr-2" /> Email to Client
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={() => versionMutation.mutate(proposal)}>
+        <FileText className="h-4 w-4 mr-2" /> Create New Version
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  ), [statusMutation, versionMutation, handlePdfAction]);
 
   // Form View
   if (viewMode === 'form') {
@@ -273,7 +335,56 @@ const AdminProposals = () => {
           }
         />
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <Card>
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-lg font-semibold">{stats.total}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <div className="rounded-lg bg-muted p-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Draft</p>
+                <p className="text-lg font-semibold">{stats.draft}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <div className="rounded-lg bg-green-500/10 p-2">
+                <FileCheck className="h-4 w-4 text-green-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Active</p>
+                <p className="text-lg font-semibold">{stats.active}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-3 px-4 flex items-center gap-3">
+              <div className="rounded-lg bg-blue-500/10 p-2">
+                <DollarSign className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total Value</p>
+                <p className="text-lg font-semibold">{formatCurrency(stats.totalValue)}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters & View Toggle */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -283,37 +394,123 @@ const AdminProposals = () => {
               className="pl-10"
             />
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent</SelectItem>
-              <SelectItem value="accepted">Accepted</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="negotiation">Negotiation</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="revised">Revised</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Filter status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="accepted">Accepted</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="negotiation">Negotiation</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="revised">Revised</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="hidden md:flex border rounded-md">
+              <Button
+                variant={listMode === 'card' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-9 w-9 rounded-r-none"
+                onClick={() => setListMode('card')}
+              >
+                <LayoutList className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={listMode === 'table' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-9 w-9 rounded-l-none"
+                onClick={() => setListMode('table')}
+              >
+                <Table2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <div className="grid gap-4">
-          {isLoading ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Loading proposals...</CardContent></Card>
-          ) : filteredProposals.length === 0 ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">No proposals found.</CardContent></Card>
-          ) : (
-            filteredProposals.map((proposal) => (
+        {/* Content */}
+        {isLoading ? (
+          <AdminLoadingSkeleton rows={4} type={listMode === 'table' ? 'table' : 'card'} />
+        ) : filteredProposals.length === 0 ? (
+          <AdminEmptyState
+            icon={FileText}
+            title="No proposals found"
+            description="Create your first proposal to get started, or adjust your filters."
+            action={
+              <Button onClick={openCreateDialog} size="sm">
+                <Plus className="h-4 w-4 mr-2" /> New Proposal
+              </Button>
+            }
+          />
+        ) : listMode === 'table' ? (
+          /* Table View */
+          <Card>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Number</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="w-[80px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProposals.map((proposal) => (
+                    <TableRow key={proposal.id} className="cursor-pointer" onClick={() => openEditDialog(proposal)}>
+                      <TableCell className="font-medium whitespace-nowrap">
+                        {proposal.proposal_number}
+                        {(proposal.version || 1) > 1 && (
+                          <Badge variant="outline" className="ml-1.5 text-[10px] px-1 py-0">v{proposal.version}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="max-w-[200px] truncate">{proposal.title}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {proposal.client_name}
+                        {proposal.client_company && (
+                          <span className="text-muted-foreground text-xs ml-1">({proposal.client_company})</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={`${getStatusColor(proposal.status)} capitalize`} variant="secondary">
+                          {proposal.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-medium whitespace-nowrap">{formatCurrency(proposal.total_amount)}</TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground text-sm">{formatDate(proposal.created_at)}</TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          {renderDropdownActions(proposal)}
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+        ) : (
+          /* Card View */
+          <div className="grid gap-3">
+            {filteredProposals.map((proposal) => (
               <Card key={proposal.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="py-4">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h3 className="font-medium">{proposal.proposal_number}</h3>
-                        <Badge className={getStatusColor(proposal.status)} variant="secondary">
+                        <Badge className={`${getStatusColor(proposal.status)} capitalize`} variant="secondary">
                           {proposal.status}
                         </Badge>
                         {(proposal.version || 1) > 1 && (
@@ -321,7 +518,12 @@ const AdminProposals = () => {
                         )}
                       </div>
                       <p className="text-sm font-medium text-foreground">{proposal.title}</p>
-                      <p className="text-sm text-muted-foreground">{proposal.client_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {proposal.client_name}
+                        {proposal.client_company && (
+                          <span className="text-xs ml-1">· {proposal.client_company}</span>
+                        )}
+                      </p>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" /> {formatDate(proposal.created_at)}
@@ -329,53 +531,25 @@ const AdminProposals = () => {
                         <span className="font-medium text-foreground">{formatCurrency(proposal.total_amount)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 self-end sm:self-start">
                       <Button variant="outline" size="sm" onClick={() => openEditDialog(proposal)}>
                         <Eye className="h-4 w-4 mr-1" /> View
                       </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'draft')}>Mark as Draft</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'sent')}>Mark as Sent</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'accepted')}>
-                            <CheckCircle className="h-4 w-4 mr-2" /> Mark as Accepted
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'approved')}>
-                            <CheckCircle className="h-4 w-4 mr-2" /> Mark as Approved
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'negotiation')}>
-                            <MessageSquare className="h-4 w-4 mr-2" /> Mark as Negotiation
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'rejected')}>Mark as Rejected</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'preview')}>
-                            <ExternalLink className="h-4 w-4 mr-2" /> Preview PDF
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'download')}>
-                            <Download className="h-4 w-4 mr-2" /> Download PDF
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'print')}>
-                            <Printer className="h-4 w-4 mr-2" /> Print
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'email')}>
-                            <Mail className="h-4 w-4 mr-2" /> Email to Client
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => createNewVersion(proposal)}>
-                            <FileText className="h-4 w-4 mr-2" /> Create New Version
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
+                        {renderDropdownActions(proposal)}
                       </DropdownMenu>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </AdminLayout>
   );
