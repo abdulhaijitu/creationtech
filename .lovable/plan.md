@@ -1,39 +1,49 @@
 
 
-## Proposal PDF Output Adjustments + Print Preview
+## Proposal PDF Fixes
 
-### Changes to `src/utils/proposalPdfGenerator.ts`
+### File: `src/utils/proposalPdfGenerator.ts`
 
-1. **Header — Logo only, no text name/tagline**: Remove `doc.text(company.name...)` and `doc.text(company.tagline...)` from `addHeader()`. Keep only the logo image on the left side.
+**1. Logo aspect ratio fix**
+- Current: `doc.addImage(logoData, 'PNG', MARGIN, 6, 12, 12)` — forced square
+- Fix: Load image into an `Image()` element to get `naturalWidth`/`naturalHeight`, calculate proper ratio, keep height at 12 and scale width proportionally
+- Update `loadImageAsDataUrl` to also return dimensions, or calculate ratio separately in `addHeader`
 
-2. **Remove horizontal line above PROPOSAL**: Delete the separator lines at lines 503-506 (between Subject and sections).
+**2. Remove separator line above PROPOSAL**
+- Lines 238-245: Remove both horizontal lines (`doc.line(...)`) drawn at `lineY` and `lineY + 1.5`
+- Just return `lineY + 2` (small gap after header info) without drawing any lines
 
-3. **Remove underline below Subject**: The line at y after subject (lines 502-506) will be removed entirely.
+**3. Bold text support in rich text rendering**
+- Current `htmlToPlainText()` strips `<strong>` and `<b>` tags entirely
+- New approach: Parse text chunks into segments with bold/normal style markers
+- Create `htmlToStyledSegments()` that returns `Array<{ text: string, bold: boolean }>` per paragraph
+- In `addSection` text rendering, iterate segments and switch `doc.setFont('helvetica', 'bold'/'normal')` per segment
+- For each line, measure segment widths and render inline with proper font switching
 
-4. **Section title "Offer Letter"**: Currently renders as `'Offer Letter'` — already correct (line 509). No change needed.
+**4. Fix bullet point letter spacing (Expected Outcome)**
+- The `• ` bullet character may render with extra spacing in Helvetica
+- Replace `\n• ` in `htmlToPlainText` with `\n- ` (dash) or use a simpler bullet marker
+- Also ensure no `setCharSpace()` calls exist (already confirmed none)
 
-5. **Remove letter spacing**: Check all `doc.text()` calls — jsPDF doesn't add letter spacing by default; however if `setCharSpace` is called anywhere, remove it. Currently none found, so no change needed.
+**5. Fix font size reset on page 4+**
+- After `autoTable` renders, it changes the document's font state
+- After every `autoTable` call and after every `addNewPage`, explicitly reset: `doc.setFontSize(BODY_FONT)` and `doc.setFont('helvetica', 'normal')`
+- Ensure `addSection` always sets font before rendering text (already does at line 364-366, but the offer_letter_end inline rendering at lines 579-606 also needs explicit font reset after tables)
 
-6. **Timeline as table**: Currently `timeline` is rendered via `addSection` as rich text. Since the user enters timeline as an HTML table in the rich text editor, it should already render as a table via `splitContentByTables` + `parseHtmlTable`. No code change needed — this is handled by the existing table detection logic.
+### Implementation detail for bold support:
 
-7. **Budget Details — Remove Subtotal row**: Remove the subtotal rendering block (lines 559-563) where `data.subtotal` is displayed.
+```text
+Input HTML: "This is <strong>important</strong> text"
+Parsed segments: [
+  { text: "This is ", bold: false },
+  { text: "important", bold: true },
+  { text: " text", bold: false }
+]
+Rendering: measure each segment width, draw inline switching fonts
+```
 
-8. **Remove "Closing" section title**: Change line 595 from `'Closing'` to render the `offer_letter_end` content without a section heading, or simply remove the "Closing" label. Will render `offer_letter_end` content inline without a heading.
-
-9. **Add PDF/Print Preview**: Add a preview mode that opens the PDF in a new browser tab (using `doc.output('bloburl')`) without auto-print or download. Update `AdminProposals.tsx` to add a "Preview" dropdown option.
-
-### Changes to `src/pages/admin/AdminProposals.tsx`
-- Add "Preview PDF" option in the dropdown menu
-- Pass `'preview'` action to `generateProposalPDF`
-
-### Specific code changes in `proposalPdfGenerator.ts`:
-
-| Line(s) | Change |
-|---|---|
-| 228-237 | Remove company name text and tagline text from header |
-| 400 | Update action type to include `'preview'` |
-| 502-506 | Remove separator line after Subject |
-| 559-563 | Remove Subtotal display in Budget Details |
-| 595 | Remove "Closing" heading — render `offer_letter_end` without section title |
-| 636-641 | Add `'preview'` case that opens bloburl in new tab without autoPrint |
+The key challenge is handling line wrapping with mixed bold/normal text. Approach:
+- Flatten all segments into a single string for `splitTextToSize` to determine line breaks
+- Then for each line, re-map which characters are bold vs normal
+- Render each sub-segment at calculated X offsets
 
