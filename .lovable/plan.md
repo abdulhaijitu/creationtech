@@ -1,58 +1,52 @@
 
 
-## পরিকল্পনা: রিচ টেক্সট বুলেট/নাম্বারিং ফিক্স, প্রপোজাল PDF, এবং কাস্টমার অ্যাকশন
+## প্রপোজাল সিস্টেম পূর্ণ অডিট ও ফিক্স পরিকল্পনা
 
-### ১. বুলেট/নাম্বারিং ফিক্স
+### সমস্যা চিহ্নিত
 
-**সমস্যা**: TipTap এর `prose` ক্লাসে Tailwind Typography প্লাগইন ছাড়া `list-style` এবং `padding` কাজ করে না। বুলেট/নাম্বারিং রেন্ডার হচ্ছে না কারণ CSS-এ `ul`/`ol` স্টাইল নেই।
+1. **Duplicate Link extension warning**: Console-এ `Duplicate extension names found: ['link']` — StarterKit-এ Link আছে, আবার আলাদা `Link.configure()` যোগ করা হয়েছে
+2. **PDF-এ Budget item description HTML strip হচ্ছে না**: `item.description` rich text (HTML) কিন্তু autoTable-এ raw HTML যাচ্ছে
+3. **PDF footer শুধু শেষ পেজে** — মাল্টি-পেজ প্রপোজালে প্রতি পেজে footer/page number নেই
+4. **Terms & Conditions দুই কলামে** আছে (Notes এর সাথে) — এক কলাম করতে হবে
+5. **Duplicate supabase import**: `AdminProposals.tsx`-এ `supabase` এবং `supabaseClient` দুটোই একই import
+6. **PDF-তে কোম্পানি তথ্য নেই** — বাংলাদেশ স্ট্যান্ডার্ডে কোম্পানি header/letterhead থাকা উচিত
+7. **PDF-তে Bangla currency** সঠিক আছে (৳) কিন্তু "Amount in Words" নেই
 
-**ফিক্স — `src/index.css`**: ProseMirror-এর জন্য list styles যোগ:
-```css
-.ProseMirror ul { list-style: disc; padding-left: 1.5rem; }
-.ProseMirror ol { list-style: decimal; padding-left: 1.5rem; }
-.ProseMirror li p { margin: 0; }
-```
+---
 
-### ২. প্রপোজাল A4 PDF জেনারেশন
+### পরিবর্তনসমূহ
 
-**নতুন ফাংশন — `src/utils/pdfGenerator.ts`**: `generateProposalPDF()` ফাংশন যোগ যা পুরো প্রপোজাল রেন্ডার করবে:
-- Proposal header (নম্বর, তারিখ, স্ট্যাটাস)
-- Client info
-- Offer Letter (HTML → plain text stripped)
-- Scope of Work, Timeline, Deliverables, Expected Outcome
-- Budget items table (autoTable)
-- Totals (subtotal, tax, discount, total)
-- Offer Letter End
-- Notes & Terms
-- Footer
+#### 1. `src/components/ui/rich-text-editor.tsx` — Duplicate Link fix
+- StarterKit থেকে `link: false` করে আলাদা Link extension রাখা (কারণ আলাদা configure দরকার)
 
-HTML rich text থেকে plain text extract করতে একটি `stripHtml()` helper ব্যবহার হবে।
+#### 2. `src/utils/proposalPdfGenerator.ts` — PDF অডিট ও ফিক্স
+- **Budget item description**: `stripHtml()` দিয়ে HTML strip করা
+- **মাল্টি-পেজ footer**: প্রতি পেজে page number যোগ (`Page X of Y`)
+- **কোম্পানি header**: PDF-র টপে কোম্পানি নাম, ঠিকানা, ফোন, ইমেইল (business_info থেকে parameter হিসেবে নেওয়া, অথবা static fallback)
+- **Amount in Words**: Total amount-এর পরে "Amount in Words" (English) যোগ
+- **Signature section**: PDF শেষে "Authorized Signature" ও "Client Acceptance" লাইন যোগ — বাংলাদেশ স্ট্যান্ডার্ড
+- **Reference number format**: Proposal নম্বরের ফরম্যাট ঠিক রাখা
 
-### ৩. AdminProposals — PDF ডাউনলোড / প্রিন্ট / মেইল অপশন
+#### 3. `src/components/admin/ProposalForm.tsx` — Terms একক কলাম
+- Notes & Terms সেকশনকে `lg:grid-cols-2` থেকে বের করে Terms আলাদা full-width Card-এ রাখা
+- Notes Budget Summary-র সাথে থাকবে, Terms আলাদা full-width
 
-**ফাইল — `src/pages/admin/AdminProposals.tsx`**:
-- Dropdown menu-তে নতুন অপশন যোগ:
-  - **Download PDF** — `generateProposalPDF()` কল
-  - **Print** — PDF generate করে `window.open` দিয়ে প্রিন্ট
-  - **Email with PDF** — mailto link (PDF সরাসরি attach সম্ভব নয়, তাই email body-তে সারাংশ)
+#### 4. `src/pages/admin/AdminProposals.tsx` — Cleanup
+- Duplicate `supabaseClient` import সরানো, শুধু `supabase` ব্যবহার
 
-### ৪. কাস্টমার Accept / Negotiation অপশন
-
-**ফাইল — `src/pages/admin/AdminProposals.tsx`**:
-- Dropdown-এ দুটি নতুন status option:
-  - **Mark as Negotiation** — status `negotiation` এ আপডেট
-  - (Accepted আগেই `accepted` হিসেবে আছে)
-
-**ফাইল — `src/lib/status-colors.ts`**:
-- `negotiation` status যোগ → `warning` variant
+#### 5. বাংলাদেশ স্ট্যান্ডার্ড অতিরিক্ত ফিচার (PDF)
+- **VAT/Tax**: "VAT/Tax" লেবেল (বাংলাদেশে VAT 15% standard)
+- **Payment Terms**: PDF-তে payment terms section
+- **Validity Period**: "This proposal is valid for X days" স্পষ্টভাবে
+- **Confidentiality Notice**: PDF footer-এ confidentiality disclaimer
 
 ### Technical Details
 
 ```text
 Files to modify:
-├── src/index.css                    (list styles for ProseMirror)
-├── src/utils/pdfGenerator.ts        (add generateProposalPDF function)
-├── src/pages/admin/AdminProposals.tsx (PDF/print/email/negotiation options)
-└── src/lib/status-colors.ts         (add 'negotiation' status)
+├── src/components/ui/rich-text-editor.tsx      (fix duplicate Link extension)
+├── src/utils/proposalPdfGenerator.ts           (PDF audit: HTML strip, pagination, company header, signature, amount in words)
+├── src/components/admin/ProposalForm.tsx        (Terms full-width layout)
+└── src/pages/admin/AdminProposals.tsx           (remove duplicate import)
 ```
 
