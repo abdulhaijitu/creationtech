@@ -48,9 +48,12 @@ interface ProposalData {
 // ── Constants ──
 const MARGIN = 20;
 const HEADER_HEIGHT = 38;
-const CONTENT_START_Y = HEADER_HEIGHT + 8;
 const FOOTER_RESERVE = 22;
 const ACCENT_COLOR: [number, number, number] = [34, 55, 94];
+const LINE_HEIGHT = 5.5;
+const PARAGRAPH_GAP = 3;
+const BODY_FONT = 12;
+const HEADING_FONT = 14;
 
 // ── Helpers ──
 
@@ -103,6 +106,81 @@ function htmlToPlainText(html: string): string {
   return text.trim();
 }
 
+/** Parse an HTML <table> string into head and body arrays for autoTable */
+function parseHtmlTable(tableHtml: string): { head: string[][]; body: string[][] } {
+  const div = document.createElement('div');
+  div.innerHTML = tableHtml;
+  const table = div.querySelector('table');
+  if (!table) return { head: [], body: [] };
+
+  const head: string[][] = [];
+  const body: string[][] = [];
+
+  // Process thead rows
+  const theadRows = table.querySelectorAll('thead tr');
+  theadRows.forEach(tr => {
+    const cells: string[] = [];
+    tr.querySelectorAll('th, td').forEach(cell => {
+      cells.push((cell.textContent || '').trim());
+    });
+    if (cells.length) head.push(cells);
+  });
+
+  // Process tbody rows
+  const tbodyRows = table.querySelectorAll('tbody tr');
+  if (tbodyRows.length) {
+    tbodyRows.forEach(tr => {
+      const cells: string[] = [];
+      tr.querySelectorAll('td, th').forEach(cell => {
+        cells.push((cell.textContent || '').trim());
+      });
+      if (cells.length) body.push(cells);
+    });
+  } else {
+    // No explicit thead/tbody — first row with <th> is head, rest is body
+    const allRows = table.querySelectorAll('tr');
+    let headDone = head.length > 0;
+    allRows.forEach(tr => {
+      const ths = tr.querySelectorAll('th');
+      const tds = tr.querySelectorAll('td');
+      if (!headDone && ths.length > 0 && tds.length === 0) {
+        const cells: string[] = [];
+        ths.forEach(cell => cells.push((cell.textContent || '').trim()));
+        head.push(cells);
+      } else {
+        headDone = true;
+        const cells: string[] = [];
+        tr.querySelectorAll('td, th').forEach(cell => {
+          cells.push((cell.textContent || '').trim());
+        });
+        if (cells.length) body.push(cells);
+      }
+    });
+  }
+
+  return { head, body };
+}
+
+/** Split HTML content into chunks of text and table segments */
+function splitContentByTables(html: string): Array<{ type: 'text' | 'table'; content: string }> {
+  const chunks: Array<{ type: 'text' | 'table'; content: string }> = [];
+  const tableRegex = /<table[\s\S]*?<\/table>/gi;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tableRegex.exec(html)) !== null) {
+    const before = html.substring(lastIndex, match.index);
+    if (before.trim()) chunks.push({ type: 'text', content: before });
+    chunks.push({ type: 'table', content: match[0] });
+    lastIndex = match.index + match[0].length;
+  }
+
+  const remaining = html.substring(lastIndex);
+  if (remaining.trim()) chunks.push({ type: 'text', content: remaining });
+
+  return chunks;
+}
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
@@ -137,11 +215,9 @@ function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): n
   const pageWidth = doc.internal.pageSize.getWidth();
   const rightX = pageWidth - MARGIN;
 
-  // Blue accent bar at top
   doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.rect(0, 0, pageWidth, 3, 'F');
 
-  // Logo + Company name (left)
   let nameX = MARGIN;
   if (logoData) {
     doc.addImage(logoData, 'PNG', MARGIN, 6, 12, 12);
@@ -160,7 +236,6 @@ function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): n
     doc.text(company.tagline, nameX, 17);
   }
 
-  // Company info (right-aligned)
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
@@ -170,13 +245,11 @@ function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): n
   if (company.email) { doc.text(`Email: ${company.email}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
   if (company.website) { doc.text(`Web: ${company.website}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
 
-  // Separator line
   const lineY = Math.max(infoY + 2, 22);
   doc.setDrawColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.setLineWidth(0.6);
   doc.line(MARGIN, lineY, rightX, lineY);
 
-  // Thin decorative line
   doc.setDrawColor(200, 210, 230);
   doc.setLineWidth(0.2);
   doc.line(MARGIN, lineY + 1.5, rightX, lineY + 1.5);
@@ -202,7 +275,6 @@ function addWatermark(doc: jsPDF, watermarkData: string | null) {
 function addAccentStrip(doc: jsPDF) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  // Subtle gradient-like strip on right edge
   for (let i = 0; i < 3; i++) {
     const opacity = 0.08 - i * 0.025;
     const gState = new (doc as any).GState({ opacity });
@@ -214,7 +286,7 @@ function addAccentStrip(doc: jsPDF) {
   }
 }
 
-// ── Page footers + watermark (called after all content) ──
+// ── Page footers + watermark ──
 
 function addPageFooters(doc: jsPDF, watermarkData: string | null) {
   const totalPages = doc.getNumberOfPages();
@@ -226,7 +298,6 @@ function addPageFooters(doc: jsPDF, watermarkData: string | null) {
     addWatermark(doc, watermarkData);
     addAccentStrip(doc);
 
-    // Footer line
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.2);
     doc.line(MARGIN, pageHeight - 16, pageWidth - MARGIN, pageHeight - 16);
@@ -245,7 +316,7 @@ function addNewPage(doc: jsPDF, company: CompanyInfo, logoData: string | null): 
   return addHeader(doc, company, logoData);
 }
 
-// ── Section renderer ──
+// ── Section renderer with rich text table support ──
 
 function addSection(
   doc: jsPDF, title: string, content: string, y: number,
@@ -255,31 +326,71 @@ function addSection(
   const maxY = pageHeight - FOOTER_RESERVE;
   const contentWidth = pageWidth - MARGIN * 2;
 
-  if (y > maxY - 20) { y = addNewPage(doc, company, logoData); }
+  if (y > maxY - 25) { y = addNewPage(doc, company, logoData); }
 
-  doc.setFontSize(11);
+  // Section heading
+  doc.setFontSize(HEADING_FONT);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.text(title, MARGIN, y);
-  y += 6;
+  y += 7;
 
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(55, 55, 55);
+  // Split content into text and table chunks
+  const chunks = splitContentByTables(content);
 
-  const plainText = htmlToPlainText(content);
-  const paragraphs = plainText.split('\n');
+  for (const chunk of chunks) {
+    if (chunk.type === 'table') {
+      // Render HTML table using autoTable
+      const tableData = parseHtmlTable(chunk.content);
+      if (tableData.body.length > 0 || tableData.head.length > 0) {
+        if (y > maxY - 30) { y = addNewPage(doc, company, logoData); }
 
-  for (const paragraph of paragraphs) {
-    if (paragraph.trim() === '') { y += 2; continue; }
-    const lines = doc.splitTextToSize(paragraph, contentWidth);
-    for (const line of lines) {
-      if (y > maxY) { y = addNewPage(doc, company, logoData); }
-      doc.text(line, MARGIN, y);
-      y += 4.5;
+        autoTable(doc, {
+          startY: y,
+          head: tableData.head.length > 0 ? tableData.head : undefined,
+          body: tableData.body,
+          theme: 'grid',
+          headStyles: {
+            fillColor: ACCENT_COLOR,
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 10,
+            cellPadding: 3,
+          },
+          bodyStyles: {
+            fontSize: 10,
+            cellPadding: 3,
+            textColor: [55, 55, 55],
+          },
+          alternateRowStyles: { fillColor: [245, 247, 252] },
+          margin: { left: MARGIN, right: MARGIN },
+          tableWidth: contentWidth,
+        });
+
+        y = (doc as any).lastAutoTable.finalY + PARAGRAPH_GAP + 2;
+      }
+    } else {
+      // Render as plain text
+      doc.setFontSize(BODY_FONT);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(55, 55, 55);
+
+      const plainText = htmlToPlainText(chunk.content);
+      const paragraphs = plainText.split('\n');
+
+      for (const paragraph of paragraphs) {
+        if (paragraph.trim() === '') { y += PARAGRAPH_GAP; continue; }
+        const lines = doc.splitTextToSize(paragraph, contentWidth);
+        for (const line of lines) {
+          if (y > maxY) { y = addNewPage(doc, company, logoData); }
+          doc.text(line, MARGIN, y);
+          y += LINE_HEIGHT;
+        }
+      }
     }
   }
-  return y + 4;
+
+  return y + PARAGRAPH_GAP + 1;
 }
 
 // ── Main generator ──
@@ -328,7 +439,7 @@ export async function generateProposalPDF(
   doc.text('PROPOSAL', MARGIN, y);
 
   const rightX = pageWidth - MARGIN;
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(70, 70, 70);
   doc.text(`Proposal #: ${data.proposal_number}`, rightX, y - 4, { align: 'right' });
@@ -343,34 +454,34 @@ export async function generateProposalPDF(
     const validTo = new Date(data.valid_until);
     const diffDays = Math.ceil((validTo.getTime() - validFrom.getTime()) / (1000 * 60 * 60 * 24));
     y += 6;
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(120, 120, 120);
     doc.text(`This proposal is valid for ${diffDays} days from the date of issue.`, MARGIN, y);
   }
 
-  y += 8;
+  y += 10;
 
   // ── "To," client block ──
-  doc.setFontSize(10);
+  doc.setFontSize(BODY_FONT);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.text('To,', MARGIN, y);
-  y += 5;
+  y += LINE_HEIGHT;
 
-  doc.setFontSize(9);
+  doc.setFontSize(BODY_FONT);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(55, 55, 55);
-  
-  if (data.client_company) { doc.text(data.client_company, MARGIN, y); y += 4.5; }
-  doc.text(data.client_name, MARGIN, y); y += 4.5;
-  if (data.client_email) { doc.text(data.client_email, MARGIN, y); y += 4.5; }
-  if (data.client_phone) { doc.text(`Mobile: ${data.client_phone}`, MARGIN, y); y += 4.5; }
 
-  y += 4;
+  if (data.client_company) { doc.text(data.client_company, MARGIN, y); y += LINE_HEIGHT; }
+  doc.text(data.client_name, MARGIN, y); y += LINE_HEIGHT;
+  if (data.client_email) { doc.text(data.client_email, MARGIN, y); y += LINE_HEIGHT; }
+  if (data.client_phone) { doc.text(`Mobile: ${data.client_phone}`, MARGIN, y); y += LINE_HEIGHT; }
+
+  y += PARAGRAPH_GAP + 1;
 
   // ── Subject line ──
-  doc.setFontSize(10);
+  doc.setFontSize(BODY_FONT);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.text('Subject: ', MARGIN, y);
@@ -381,18 +492,18 @@ export async function generateProposalPDF(
   doc.text(subjectLines[0], subjectX, y);
   if (subjectLines.length > 1) {
     for (let i = 1; i < subjectLines.length; i++) {
-      y += 5;
+      y += LINE_HEIGHT;
       doc.text(subjectLines[i], MARGIN, y);
     }
   }
 
-  y += 8;
+  y += 10;
 
   // Separator
   doc.setDrawColor(200, 210, 230);
   doc.setLineWidth(0.3);
   doc.line(MARGIN, y, pageWidth - MARGIN, y);
-  y += 6;
+  y += 7;
 
   // ── Rich text sections ──
   if (data.offer_letter) y = addSection(doc, 'Offer Letter', data.offer_letter, y, pageWidth, company, logoData);
@@ -405,11 +516,11 @@ export async function generateProposalPDF(
   if (data.items.length > 0) {
     if (y > maxY - 40) { y = addNewPage(doc, company, logoData); }
 
-    doc.setFontSize(11);
+    doc.setFontSize(HEADING_FONT);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
     doc.text('Budget Details', MARGIN, y);
-    y += 4;
+    y += 5;
 
     autoTable(doc, {
       startY: y,
@@ -422,8 +533,8 @@ export async function generateProposalPDF(
         formatCurrency(item.amount),
       ]),
       theme: 'striped',
-      headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-      bodyStyles: { fontSize: 8.5 },
+      headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+      bodyStyles: { fontSize: 10 },
       alternateRowStyles: { fillColor: [245, 247, 252] },
       columnStyles: {
         0: { cellWidth: 12, halign: 'center' },
@@ -433,13 +544,6 @@ export async function generateProposalPDF(
         4: { cellWidth: 32, halign: 'right' },
       },
       margin: { left: MARGIN, right: MARGIN },
-      didDrawPage: () => {
-        // Re-draw header on new pages created by autoTable
-        const currentPage = doc.getNumberOfPages();
-        if (currentPage > 1) {
-          // Header is added via addPageFooters pass
-        }
-      },
     });
 
     y = (doc as any).lastAutoTable.finalY + 8;
@@ -448,7 +552,7 @@ export async function generateProposalPDF(
 
     // Totals
     const totalsX = pageWidth - 70;
-    doc.setFontSize(9);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(55, 55, 55);
 
@@ -473,14 +577,14 @@ export async function generateProposalPDF(
     doc.line(totalsX - 5, y, pageWidth - MARGIN, y);
     y += 6;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
+    doc.setFontSize(13);
     doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
     doc.text('Total:', totalsX, y);
     doc.text(formatCurrency(data.total_amount || 0), pageWidth - MARGIN, y, { align: 'right' });
     y += 8;
 
     // Amount in Words
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(80, 80, 80);
     doc.text(`Amount in Words: ${numberToWords(data.total_amount || 0)}`, MARGIN, y);
@@ -501,30 +605,27 @@ export async function generateProposalPDF(
   doc.setDrawColor(100, 100, 100);
   doc.setLineWidth(0.3);
 
-  // Authorized Signature (left)
   doc.line(MARGIN, y + 15, MARGIN + 71, y + 15);
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
   doc.text('Authorized Signature', MARGIN, y + 20);
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.text(company.name || '', MARGIN, y + 25);
   doc.text('Date: ____________________', MARGIN, y + 30);
 
-  // Client Acceptance (right)
   const rightSigX = pageWidth - MARGIN - 71;
   doc.line(rightSigX, y + 15, pageWidth - MARGIN, y + 15);
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   doc.text('Client Acceptance', rightSigX, y + 20);
-  doc.setFontSize(8);
+  doc.setFontSize(9);
   doc.text(data.client_name, rightSigX, y + 25);
   doc.text('Date: ____________________', rightSigX, y + 30);
 
-  // ── Add headers to pages created by autoTable (pages > 1 that don't have headers) ──
+  // ── Add headers to autoTable-created pages ──
   const totalPages = doc.getNumberOfPages();
   for (let i = 2; i <= totalPages; i++) {
     doc.setPage(i);
-    // Check if header area is empty by drawing header
     addHeader(doc, company, logoData);
   }
 
