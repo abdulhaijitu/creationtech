@@ -1,83 +1,50 @@
 
 
-## Proposal PDF Professional Redesign Plan
+## Proposal PDF Typography & Rich Text Table Rendering Upgrade
 
-### Reference Design Analysis
-The uploaded design shows a significantly different layout from current:
+### Changes to `src/utils/proposalPdfGenerator.ts`
 
-1. **Header**: Logo on left, company contact info **right-aligned** (with icon labels like "Location Icon", "Phone Icon", "Email Icon", "Website Icon")
-2. **Header repeats on every page** (currently only page 1)
-3. **Watermark**: Faded logo image (`jolchap.png`) on bottom-right of every page
-4. **"To," block**: Client info listed as Company, Address, Email, Contact
-5. **"Subject:" line**: Bold subject/title line
-6. **Validity note**: Italic text under PROPOSAL title ("This proposal is valid for X days...")
-7. **Section headings**: Bold with clean paragraph text, bullet points preserved
-8. **Blue accent gradient** decorative element on right side (from the reference)
+**1. Font Size & Line Spacing Updates**
+- Base body font: `9pt` → `12pt`
+- Line spacing: `4.5mm` → `~5.5mm` (matching single line spacing at 12pt)
+- Section heading: `11pt` → `14pt` (standard heading proportion)
+- All other text elements scaled proportionally
 
-### Files to Modify
+**2. Rich Text HTML Table Rendering**
+Currently `htmlToPlainText()` strips all HTML including tables. The new approach:
+- Before converting to plain text, **detect `<table>` blocks** in the HTML
+- Extract each table and render it using `autoTable` with parsed rows/columns
+- For non-table content, continue using the existing plain text conversion
+- This means `addSection` will process content in chunks: text chunk → table → text chunk → etc.
 
-**1. Copy watermark asset**
-- Copy `user-uploads://jolchap.png` → `src/assets/jolchap.png`
+**Implementation approach:**
+- Split HTML content by `<table>...</table>` boundaries
+- For text segments: use existing `htmlToPlainText()` + line-by-line rendering
+- For table segments: parse `<tr>`, `<th>`, `<td>` elements from the HTML and feed them to `autoTable` with matching styles
+- Create a helper `parseHtmlTable(html: string)` that returns `{ head: string[][], body: string[][] }`
 
-**2. `src/utils/proposalPdfGenerator.ts` — Full redesign**
-- **Repeating header on every page**: Extract header rendering into a reusable function; call it on page 1 and via `addPage` wrapper
-- **Header layout change**: Logo left, company info right-aligned with text labels (Address, Phone, Email, Website)
-- **Watermark on every page**: Load `jolchap.png` as data URL, draw it semi-transparent on bottom-right of each page in the final footer pass
-- **"To," client block**: Format as "To, \n Company/Client Name \n Address \n Email \n Contact"
-- **"Subject:" line**: Bold prefix "Subject:" followed by proposal title
-- **addPage wrapper**: Custom function that adds a new page and draws the header + watermark automatically
-- **Content start Y**: After header (~45mm) on every page
+**3. Specific font size mapping:**
+| Element | Current | New |
+|---|---|---|
+| Body text | 9pt | 12pt |
+| Section heading | 11pt | 14pt |
+| "To," block | 9-10pt | 12pt |
+| Subject line | 10pt | 12pt |
+| PROPOSAL title | 18pt | 18pt (keep) |
+| Meta info (date, #) | 9pt | 10pt |
+| Budget table body | 8.5pt | 10pt |
+| Budget table head | 9pt | 10pt |
+| Totals | 9-11pt | 11-13pt |
+| Amount in words | 8pt | 9pt |
+| Validity note | 8pt | 9pt |
 
-**3. `src/utils/pdfGenerator.ts` — Same treatment for Invoice/Quotation**
-- Apply identical header, watermark, and per-page header logic
-- Same layout changes (logo left, info right, repeating header, watermark)
+**4. Line spacing constant:**
+- New constant `LINE_HEIGHT = 5.5` (for 12pt base, single spacing)
+- Paragraph gap: `3mm`
 
-**4. `src/pages/admin/AdminProposals.tsx`** — Pass watermark image
-- Import `jolchap.png` and pass it to `generateProposalPDF` as part of CompanyInfo or separate param
-
-**5. `src/pages/admin/AdminInvoices.tsx` & `AdminQuotations.tsx`** — Same watermark pass
-
-### Technical Details
-
-```text
-Header layout (per page):
-┌──────────────────────────────────────────────────┐
-│ [LOGO] CREATION TECH     House #71, Road #27... │
-│        -PRIME TECH PARTNER-    +880 1777656517  │
-│                              info@creation...   │
-│                              www.creation...    │
-├──────────────────────────────────────────────────┤
-│ PROPOSAL              Proposal #: PRO-00001     │
-│ Valid for 12 days...       Date: Mar 3, 2026    │
-│                       Valid Until: Mar 14, 2026  │
-│                                                  │
-│ To,                                              │
-│ Company / Client Name                            │
-│ Address                                          │
-│ Email                                            │
-│ Contact                                          │
-│                                                  │
-│ Subject: Proposal for High-Performance...        │
-│                                                  │
-│ [Content sections...]                            │
-│                                                  │
-│                              ┌─────────────┐     │
-│                              │  WATERMARK   │     │
-│                              │  (jolchap)   │     │
-│                              └─────────────┘     │
-│ CONFIDENTIAL...           Page 1 of N            │
-└──────────────────────────────────────────────────┘
-
-Key changes:
-- addHeader(doc, company, logoData) → reusable, returns startY
-- addWatermark(doc, watermarkData) → bottom-right, low opacity
-- addPageFooters() → also adds watermark to each page
-- CompanyInfo interface gets watermark_url field
-- Import jolchap.png statically as fallback watermark
-```
-
-### Scope
-- Proposal PDF: Full redesign matching reference
-- Invoice & Quotation PDF: Same header/watermark/footer treatment
-- All three document types get consistent professional look
+### File: `src/utils/proposalPdfGenerator.ts`
+- Update all font sizes per mapping above
+- Refactor `addSection` to handle mixed text+table content
+- Add `parseHtmlTable()` helper
+- Update line height constants
 
