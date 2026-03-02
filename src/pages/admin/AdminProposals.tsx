@@ -26,6 +26,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getStatusColor } from '@/lib/status-colors';
 import { generateProposalPDF, CompanyInfo } from '@/utils/proposalPdfGenerator';
 import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
+import companyLogo from '@/assets/logo.png';
 
 interface Proposal {
   id: string;
@@ -74,6 +75,7 @@ const AdminProposals = () => {
     phone: businessInfo?.phone_primary?.value_en || '+880 1XXX-XXXXXX',
     email: businessInfo?.email_primary?.value_en || 'info@creationtech.com',
     website: businessInfo?.website?.value_en || 'www.creationtech.com',
+    logo_url: businessInfo?.company_logo?.value_en || companyLogo,
   });
 
   const fetchProposals = async () => {
@@ -208,7 +210,7 @@ const AdminProposals = () => {
       if (action === 'email') {
         emailToClient(proposal);
       } else {
-        generateProposalPDF(pdfData, action, getCompanyInfo());
+        await generateProposalPDF(pdfData, action, getCompanyInfo());
         toast({ title: 'Success', description: action === 'print' ? 'Opening print dialog...' : 'PDF downloaded' });
       }
     } catch (error: any) {

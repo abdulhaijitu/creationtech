@@ -14,6 +14,25 @@ interface CompanyInfo {
   phone?: string;
   email?: string;
   website?: string;
+  logo_url?: string;
+}
+
+function loadImageAsDataUrl(url: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(null); return; }
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
 }
 
 interface ProposalData {
@@ -204,11 +223,11 @@ function addPageFooters(doc: jsPDF) {
 
 // ── Main generator ──
 
-export function generateProposalPDF(
+export async function generateProposalPDF(
   data: ProposalData,
   action: 'download' | 'print' = 'download',
   companyInfo?: CompanyInfo
-): void {
+): Promise<void> {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -224,19 +243,35 @@ export function generateProposalPDF(
     website: 'www.creationtech.com',
   };
 
+  // Logo
+  let logoTextStartX = MARGIN;
+  if (company.logo_url) {
+    try {
+      const logoData = await loadImageAsDataUrl(company.logo_url);
+      if (logoData) {
+        const logoH = 14; // mm height
+        const logoW = logoH; // square aspect for logo
+        doc.addImage(logoData, 'PNG', MARGIN, MARGIN - 4, logoW, logoH);
+        logoTextStartX = MARGIN + logoW + 4;
+      }
+    } catch {
+      // fallback: no logo
+    }
+  }
+
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(34, 55, 94);
-  doc.text(company.name || '', MARGIN, MARGIN);
+  doc.text(company.name || '', logoTextStartX, MARGIN);
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
   let headerY = MARGIN + 6;
-  if (company.address) { doc.text(company.address, MARGIN, headerY); headerY += 4; }
-  if (company.phone) { doc.text(`Phone: ${company.phone}`, MARGIN, headerY); headerY += 4; }
-  if (company.email) { doc.text(`Email: ${company.email}`, MARGIN, headerY); headerY += 4; }
-  if (company.website) { doc.text(company.website, MARGIN, headerY); headerY += 4; }
+  if (company.address) { doc.text(company.address, logoTextStartX, headerY); headerY += 4; }
+  if (company.phone) { doc.text(`Phone: ${company.phone}`, logoTextStartX, headerY); headerY += 4; }
+  if (company.email) { doc.text(`Email: ${company.email}`, logoTextStartX, headerY); headerY += 4; }
+  if (company.website) { doc.text(company.website, logoTextStartX, headerY); headerY += 4; }
 
   // Separator line
   doc.setDrawColor(34, 55, 94);
