@@ -24,7 +24,8 @@ import { ProposalForm } from '@/components/admin/ProposalForm';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getStatusColor } from '@/lib/status-colors';
-import { generateProposalPDF } from '@/utils/proposalPdfGenerator';
+import { generateProposalPDF, CompanyInfo } from '@/utils/proposalPdfGenerator';
+import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
 
 interface Proposal {
   id: string;
@@ -59,12 +60,21 @@ type ViewMode = 'list' | 'form';
 
 const AdminProposals = () => {
   const { toast } = useToast();
+  const { data: businessInfo } = useBusinessInfoMap();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
+
+  const getCompanyInfo = (): CompanyInfo => ({
+    name: businessInfo?.company_name?.value_en || 'Creation Tech',
+    address: businessInfo?.address?.value_en || 'Dhaka, Bangladesh',
+    phone: businessInfo?.phone_primary?.value_en || '+880 1XXX-XXXXXX',
+    email: businessInfo?.email_primary?.value_en || 'info@creationtech.com',
+    website: businessInfo?.website?.value_en || 'www.creationtech.com',
+  });
 
   const fetchProposals = async () => {
     try {
@@ -198,7 +208,7 @@ const AdminProposals = () => {
       if (action === 'email') {
         emailToClient(proposal);
       } else {
-        generateProposalPDF(pdfData, action);
+        generateProposalPDF(pdfData, action, getCompanyInfo());
         toast({ title: 'Success', description: action === 'print' ? 'Opening print dialog...' : 'PDF downloaded' });
       }
     } catch (error: any) {
