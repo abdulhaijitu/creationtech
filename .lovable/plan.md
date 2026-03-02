@@ -1,47 +1,58 @@
 
 
-## Proposal System Audit ও Enhancement Plan
+## পরিকল্পনা: রিচ টেক্সট বুলেট/নাম্বারিং ফিক্স, প্রপোজাল PDF, এবং কাস্টমার অ্যাকশন
 
-### সমস্যা চিহ্নিত
+### ১. বুলেট/নাম্বারিং ফিক্স
 
-1. **Console Warning**: `RichTextEditor` কে ref দেওয়া হচ্ছে কিন্তু `forwardRef` নেই
-2. **Proposal Interface mismatch**: `AdminProposals.tsx`-এ `Proposal` interface-এ `offer_letter`, `expected_outcome`, `offer_letter_end`, `subtotal`, `tax_rate`, `tax_amount`, `discount_amount` ফিল্ড নেই — `(proposal as any)` cast ব্যবহার হচ্ছে ProposalForm-এ
-3. **Unused Dialog import** in AdminProposals.tsx
-4. **Email ও Approval অপশন নেই**
+**সমস্যা**: TipTap এর `prose` ক্লাসে Tailwind Typography প্লাগইন ছাড়া `list-style` এবং `padding` কাজ করে না। বুলেট/নাম্বারিং রেন্ডার হচ্ছে না কারণ CSS-এ `ul`/`ol` স্টাইল নেই।
 
----
+**ফিক্স — `src/index.css`**: ProseMirror-এর জন্য list styles যোগ:
+```css
+.ProseMirror ul { list-style: disc; padding-left: 1.5rem; }
+.ProseMirror ol { list-style: decimal; padding-left: 1.5rem; }
+.ProseMirror li p { margin: 0; }
+```
 
-### পরিবর্তনসমূহ
+### ২. প্রপোজাল A4 PDF জেনারেশন
 
-#### 1. `src/components/ui/rich-text-editor.tsx` — forwardRef fix
-- Component-কে `React.forwardRef` দিয়ে wrap করা (console warning fix)
+**নতুন ফাংশন — `src/utils/pdfGenerator.ts`**: `generateProposalPDF()` ফাংশন যোগ যা পুরো প্রপোজাল রেন্ডার করবে:
+- Proposal header (নম্বর, তারিখ, স্ট্যাটাস)
+- Client info
+- Offer Letter (HTML → plain text stripped)
+- Scope of Work, Timeline, Deliverables, Expected Outcome
+- Budget items table (autoTable)
+- Totals (subtotal, tax, discount, total)
+- Offer Letter End
+- Notes & Terms
+- Footer
 
-#### 2. `src/pages/admin/AdminProposals.tsx` — Interface ও Design Enhancement
-- **Proposal interface আপডেট**: সকল missing ফিল্ড যোগ (`offer_letter`, `expected_outcome`, `offer_letter_end`, `subtotal`, `tax_rate`, `tax_amount`, `discount_amount`)
-- **Unused Dialog import সরানো**
-- **List view enhance**: কার্ডে status badge, amount, version আরও compact ও clean
-- **Email to Client অপশন**: Dropdown menu-তে "Email to Client" অপশন — ক্লিক করলে `mailto:` link open (client_email থাকলে) অথবা toast warning
-- **Approval অপশন**: Dropdown menu-তে "Mark as Approved" স্ট্যাটাস অপশন যোগ; `STATUS_MAP`-এ `approved` আগেই `success` হিসেবে আছে
+HTML rich text থেকে plain text extract করতে একটি `stripHtml()` helper ব্যবহার হবে।
 
-#### 3. `src/components/admin/ProposalForm.tsx` — Audit ও Enhancement
-- **`(proposal as any)` cast সরানো**: ProposalFormProps-এর Proposal interface আপডেট করে সব ফিল্ড properly type করা
-- **Design enhance**: Card headers compact, consistent spacing
-- **Budget Items description-এ RichTextEditor check**: ঠিক আছে, টেবিল ও জাস্টিফাই সাপোর্ট শেয়ার্ড কম্পোনেন্ট থেকে আসছে
+### ৩. AdminProposals — PDF ডাউনলোড / প্রিন্ট / মেইল অপশন
 
-#### 4. `src/lib/status-colors.ts` — "revised" স্ট্যাটাস mapping
-- `revised` কে `warning` বা `info` variant-এ যোগ (বর্তমানে নেই, তাই neutral fallback হচ্ছে)
+**ফাইল — `src/pages/admin/AdminProposals.tsx`**:
+- Dropdown menu-তে নতুন অপশন যোগ:
+  - **Download PDF** — `generateProposalPDF()` কল
+  - **Print** — PDF generate করে `window.open` দিয়ে প্রিন্ট
+  - **Email with PDF** — mailto link (PDF সরাসরি attach সম্ভব নয়, তাই email body-তে সারাংশ)
+
+### ৪. কাস্টমার Accept / Negotiation অপশন
+
+**ফাইল — `src/pages/admin/AdminProposals.tsx`**:
+- Dropdown-এ দুটি নতুন status option:
+  - **Mark as Negotiation** — status `negotiation` এ আপডেট
+  - (Accepted আগেই `accepted` হিসেবে আছে)
+
+**ফাইল — `src/lib/status-colors.ts`**:
+- `negotiation` status যোগ → `warning` variant
 
 ### Technical Details
 
 ```text
 Files to modify:
-├── src/components/ui/rich-text-editor.tsx     (forwardRef wrap)
-├── src/pages/admin/AdminProposals.tsx          (interface fix, email/approve options, cleanup)
-├── src/components/admin/ProposalForm.tsx       (remove `as any` casts, interface fix)
-└── src/lib/status-colors.ts                   (add 'revised' status)
+├── src/index.css                    (list styles for ProseMirror)
+├── src/utils/pdfGenerator.ts        (add generateProposalPDF function)
+├── src/pages/admin/AdminProposals.tsx (PDF/print/email/negotiation options)
+└── src/lib/status-colors.ts         (add 'negotiation' status)
 ```
-
-**Email to Client**: `mailto:` link with pre-filled subject (`Proposal: {proposal_number} - {title}`). No edge function needed — simple browser mailto.
-
-**Approval flow**: Status update to `approved` via existing `updateStatus` function. Badge color via existing `getStatusColor`.
 
