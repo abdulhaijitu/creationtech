@@ -295,7 +295,7 @@
                />
              </div>
              <div className="space-y-2">
-               <Label>Deliverables</Label>
+               <Label>Key Deliverables</Label>
                <RichTextEditor
                  content={formData.deliverables}
                  onChange={(value) => setFormData(prev => ({ ...prev, deliverables: value }))}
