@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare } from 'lucide-react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, ExternalLink } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -196,7 +196,7 @@ const AdminProposals = () => {
     window.open(`mailto:${proposal.client_email}?subject=${subject}&body=${body}`, '_self');
   };
 
-  const handlePdfAction = async (proposal: Proposal, action: 'download' | 'print' | 'email') => {
+  const handlePdfAction = async (proposal: Proposal, action: 'download' | 'print' | 'email' | 'preview') => {
     try {
       // Fetch proposal items
       const { data: items } = await supabase
@@ -351,6 +351,9 @@ const AdminProposals = () => {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'rejected')}>Mark as Rejected</DropdownMenuItem>
                           <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'preview')}>
+                            <ExternalLink className="h-4 w-4 mr-2" /> Preview PDF
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'download')}>
                             <Download className="h-4 w-4 mr-2" /> Download PDF
                           </DropdownMenuItem>

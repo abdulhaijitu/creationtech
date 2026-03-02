@@ -224,17 +224,7 @@ function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): n
     nameX = MARGIN + 14;
   }
 
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
-  doc.text(company.name || 'Creation Tech', nameX, 13);
-
-  if (company.tagline) {
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(120, 120, 120);
-    doc.text(company.tagline, nameX, 17);
-  }
+  // Logo only — no text company name or tagline
 
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
@@ -397,7 +387,7 @@ function addSection(
 
 export async function generateProposalPDF(
   data: ProposalData,
-  action: 'download' | 'print' = 'download',
+  action: 'download' | 'print' | 'preview' = 'download',
   companyInfo?: CompanyInfo
 ): Promise<void> {
   const doc = new jsPDF();
@@ -499,11 +489,7 @@ export async function generateProposalPDF(
 
   y += 10;
 
-  // Separator
-  doc.setDrawColor(200, 210, 230);
-  doc.setLineWidth(0.3);
-  doc.line(MARGIN, y, pageWidth - MARGIN, y);
-  y += 7;
+  y += 4;
 
   // ── Rich text sections ──
   if (data.offer_letter) y = addSection(doc, 'Offer Letter', data.offer_letter, y, pageWidth, company, logoData);
@@ -556,11 +542,6 @@ export async function generateProposalPDF(
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(55, 55, 55);
 
-    if (data.subtotal != null) {
-      doc.text('Subtotal:', totalsX, y);
-      doc.text(formatCurrency(data.subtotal), pageWidth - MARGIN, y, { align: 'right' });
-      y += 6;
-    }
     if (data.tax_rate && data.tax_amount) {
       doc.text(`VAT/Tax (${data.tax_rate}%):`, totalsX, y);
       doc.text(formatCurrency(data.tax_amount), pageWidth - MARGIN, y, { align: 'right' });
@@ -592,7 +573,41 @@ export async function generateProposalPDF(
   }
 
   // ── Offer Letter End ──
-  if (data.offer_letter_end) y = addSection(doc, 'Closing', data.offer_letter_end, y, pageWidth, company, logoData);
+  // Offer Letter End — rendered without section heading
+  if (data.offer_letter_end) {
+    const chunks = splitContentByTables(data.offer_letter_end);
+    doc.setFontSize(BODY_FONT);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(55, 55, 55);
+    for (const chunk of chunks) {
+      if (chunk.type === 'table') {
+        const tableData = parseHtmlTable(chunk.content);
+        if (tableData.body.length > 0 || tableData.head.length > 0) {
+          if (y > maxY - 30) { y = addNewPage(doc, company, logoData); }
+          autoTable(doc, {
+            startY: y, head: tableData.head.length > 0 ? tableData.head : undefined, body: tableData.body,
+            theme: 'grid', headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10, cellPadding: 3 },
+            bodyStyles: { fontSize: 10, cellPadding: 3, textColor: [55, 55, 55] }, alternateRowStyles: { fillColor: [245, 247, 252] },
+            margin: { left: MARGIN, right: MARGIN }, tableWidth: contentWidth,
+          });
+          y = (doc as any).lastAutoTable.finalY + PARAGRAPH_GAP + 2;
+        }
+      } else {
+        const plainText = htmlToPlainText(chunk.content);
+        const paragraphs = plainText.split('\n');
+        for (const paragraph of paragraphs) {
+          if (paragraph.trim() === '') { y += PARAGRAPH_GAP; continue; }
+          const lines = doc.splitTextToSize(paragraph, contentWidth);
+          for (const line of lines) {
+            if (y > maxY) { y = addNewPage(doc, company, logoData); }
+            doc.text(line, MARGIN, y);
+            y += LINE_HEIGHT;
+          }
+        }
+      }
+    }
+    y += PARAGRAPH_GAP + 1;
+  }
 
   // ── Notes & Terms ──
   if (data.notes) y = addSection(doc, 'Notes', data.notes, y, pageWidth, company, logoData);
@@ -633,9 +648,11 @@ export async function generateProposalPDF(
   addPageFooters(doc, watermarkData);
 
   // ── Output ──
-  if (action === 'print') {
+  if (action === 'preview') {
+    window.open(doc.output('bloburl') as unknown as string, '_blank');
+  } else if (action === 'print') {
     doc.autoPrint();
-    window.open(doc.output('bloburl'), '_blank');
+    window.open(doc.output('bloburl') as unknown as string, '_blank');
   } else {
     doc.save(`proposal-${data.proposal_number}.pdf`);
   }
