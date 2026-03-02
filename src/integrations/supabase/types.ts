@@ -1040,6 +1040,7 @@ export type Database = {
           deliverables: string | null
           id: string
           notes: string | null
+          offer_letter: string | null
           pricing_summary: string | null
           proposal_number: string
           scope_of_work: string | null
@@ -1063,6 +1064,7 @@ export type Database = {
           deliverables?: string | null
           id?: string
           notes?: string | null
+          offer_letter?: string | null
           pricing_summary?: string | null
           proposal_number: string
           scope_of_work?: string | null
@@ -1086,6 +1088,7 @@ export type Database = {
           deliverables?: string | null
           id?: string
           notes?: string | null
+          offer_letter?: string | null
           pricing_summary?: string | null
           proposal_number?: string
           scope_of_work?: string | null
