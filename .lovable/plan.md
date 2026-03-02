@@ -1,25 +1,27 @@
 
 
-## PDF Header Offset + Justify Support
+## PDF আউটপুটে ৩টি ফিক্স
 
-### File: `src/utils/proposalPdfGenerator.ts`
+### ফাইল: `src/utils/proposalPdfGenerator.ts`
 
-**1. Header content shifted down ~7mm (20px)**
-- In `addHeader` (line 379+): shift the accent strip from `y=0` to remain at top, but move logo from `y=6` to `y=13` and company info from `y=8` to `y=15`. The `lineY` return value will increase accordingly by ~7.
-- This affects every page since `addHeader` is called on page 1 and in `addNewPage`.
+**১. Expected Outcome বুলেট পয়েন্টের লেটার স্পেসিং ফিক্স**
 
-**2. Justify text alignment in rich text rendering**
-- Detect `text-align: justify` from HTML `<p style="text-align: justify">` before stripping tags in `htmlToStyledParagraphs`.
-- Add an alignment marker per paragraph: extend the return type to include alignment info (e.g., `{ segments: StyledSegment[], justify: boolean }`).
-- In `renderStyledContent`, for justified lines: calculate total text width, distribute remaining space evenly between words (except the last line of a paragraph which stays left-aligned).
-- Create a `renderJustifiedLine` helper that spaces words to fill `contentWidth`.
+সমস্যা: বুলেট পয়েন্ট লাইনগুলো ছোট হওয়া সত্ত্বেও `justify` অ্যালাইনমেন্ট প্রয়োগ হচ্ছে, ফলে শব্দগুলোর মাঝে অতিরিক্ত স্পেস তৈরি হচ্ছে।
 
-### Specific changes:
+সমাধান: `renderStyledLine` ফাংশনে চেক যোগ করব — যদি লাইনের টেক্সট `- ` দিয়ে শুরু হয় (বুলেট পয়েন্ট), তাহলে জাস্টিফাই স্কিপ করব। এছাড়াও, যদি লাইনের টেক্সটের মোট দৈর্ঘ্য কন্টেন্ট উইডথের ৮৫% এর কম হয়, তাহলেও জাস্টিফাই করব না (কারণ ছোট লাইনে জাস্টিফাই দেখতে খারাপ লাগে)।
 
-| Location | Change |
+**২. PROPOSAL টেক্সটের উপরে গ্যাপ বাড়ানো**
+
+`addHeader` ফাংশনের রিটার্ন ভ্যালু `lineY + 2` থেকে `lineY + 8` করব। এতে হেডার এবং PROPOSAL এর মাঝে বেশি জায়গা থাকবে।
+
+**৩. Web address এর নিচে গ্যাপ বাড়ানো**
+
+ডান পাশের কোম্পানি ইনফো (Web address শেষ লাইন) এর নিচে আরও স্পেস দিতে `lineY` ক্যালকুলেশনে minimum ভ্যালু `29` থেকে `33` বাড়াব, যাতে ডান পাশের তথ্য শেষ হওয়ার পর PROPOSAL টেক্সট শুরু হয়।
+
+### পরিবর্তনের সারাংশ:
+
+| লোকেশন | পরিবর্তন |
 |---|---|
-| `addHeader` lines 386-400 | Add +7 offset to logo Y (`6→13`) and info Y start (`8→15`) |
-| `htmlToStyledParagraphs` | Detect `text-align:\s*justify` on `<p>` tags, return alignment per paragraph |
-| `renderStyledContent` | Check alignment flag, use justified rendering when flagged |
-| New helper `renderJustifiedLine` | Distribute extra horizontal space between word segments |
+| `renderStyledLine` (~line 338) | বুলেট লাইন বা ছোট লাইনে justify স্কিপ |
+| `addHeader` (line 482-483) | `lineY` minimum `29→33`, রিটার্ন `lineY + 2 → lineY + 8` |
 
