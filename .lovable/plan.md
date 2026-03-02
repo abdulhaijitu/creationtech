@@ -1,49 +1,25 @@
 
 
-## Proposal PDF Fixes
+## PDF Header Offset + Justify Support
 
 ### File: `src/utils/proposalPdfGenerator.ts`
 
-**1. Logo aspect ratio fix**
-- Current: `doc.addImage(logoData, 'PNG', MARGIN, 6, 12, 12)` — forced square
-- Fix: Load image into an `Image()` element to get `naturalWidth`/`naturalHeight`, calculate proper ratio, keep height at 12 and scale width proportionally
-- Update `loadImageAsDataUrl` to also return dimensions, or calculate ratio separately in `addHeader`
+**1. Header content shifted down ~7mm (20px)**
+- In `addHeader` (line 379+): shift the accent strip from `y=0` to remain at top, but move logo from `y=6` to `y=13` and company info from `y=8` to `y=15`. The `lineY` return value will increase accordingly by ~7.
+- This affects every page since `addHeader` is called on page 1 and in `addNewPage`.
 
-**2. Remove separator line above PROPOSAL**
-- Lines 238-245: Remove both horizontal lines (`doc.line(...)`) drawn at `lineY` and `lineY + 1.5`
-- Just return `lineY + 2` (small gap after header info) without drawing any lines
+**2. Justify text alignment in rich text rendering**
+- Detect `text-align: justify` from HTML `<p style="text-align: justify">` before stripping tags in `htmlToStyledParagraphs`.
+- Add an alignment marker per paragraph: extend the return type to include alignment info (e.g., `{ segments: StyledSegment[], justify: boolean }`).
+- In `renderStyledContent`, for justified lines: calculate total text width, distribute remaining space evenly between words (except the last line of a paragraph which stays left-aligned).
+- Create a `renderJustifiedLine` helper that spaces words to fill `contentWidth`.
 
-**3. Bold text support in rich text rendering**
-- Current `htmlToPlainText()` strips `<strong>` and `<b>` tags entirely
-- New approach: Parse text chunks into segments with bold/normal style markers
-- Create `htmlToStyledSegments()` that returns `Array<{ text: string, bold: boolean }>` per paragraph
-- In `addSection` text rendering, iterate segments and switch `doc.setFont('helvetica', 'bold'/'normal')` per segment
-- For each line, measure segment widths and render inline with proper font switching
+### Specific changes:
 
-**4. Fix bullet point letter spacing (Expected Outcome)**
-- The `• ` bullet character may render with extra spacing in Helvetica
-- Replace `\n• ` in `htmlToPlainText` with `\n- ` (dash) or use a simpler bullet marker
-- Also ensure no `setCharSpace()` calls exist (already confirmed none)
-
-**5. Fix font size reset on page 4+**
-- After `autoTable` renders, it changes the document's font state
-- After every `autoTable` call and after every `addNewPage`, explicitly reset: `doc.setFontSize(BODY_FONT)` and `doc.setFont('helvetica', 'normal')`
-- Ensure `addSection` always sets font before rendering text (already does at line 364-366, but the offer_letter_end inline rendering at lines 579-606 also needs explicit font reset after tables)
-
-### Implementation detail for bold support:
-
-```text
-Input HTML: "This is <strong>important</strong> text"
-Parsed segments: [
-  { text: "This is ", bold: false },
-  { text: "important", bold: true },
-  { text: " text", bold: false }
-]
-Rendering: measure each segment width, draw inline switching fonts
-```
-
-The key challenge is handling line wrapping with mixed bold/normal text. Approach:
-- Flatten all segments into a single string for `splitTextToSize` to determine line breaks
-- Then for each line, re-map which characters are bold vs normal
-- Render each sub-segment at calculated X offsets
+| Location | Change |
+|---|---|
+| `addHeader` lines 386-400 | Add +7 offset to logo Y (`6→13`) and info Y start (`8→15`) |
+| `htmlToStyledParagraphs` | Detect `text-align:\s*justify` on `<p>` tags, return alignment per paragraph |
+| `renderStyledContent` | Check alignment flag, use justified rendering when flagged |
+| New helper `renderJustifiedLine` | Distribute extra horizontal space between word segments |
 
