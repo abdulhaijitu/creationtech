@@ -32,9 +32,11 @@
  import { useToast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, FileText, Search, Download } from 'lucide-react';
  import { format } from 'date-fns';
- import { generatePDF, DocumentData, LineItem } from '@/utils/pdfGenerator';
+ import { generatePDF, DocumentData, LineItem, CompanyInfo } from '@/utils/pdfGenerator';
  import ClientLink from '@/components/admin/ClientLink';
 import InvoiceForm from '@/components/admin/InvoiceForm';
+import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
+import companyLogo from '@/assets/logo.png';
  
  interface InvoiceItem {
    id?: string;
@@ -76,6 +78,16 @@ import { getStatusColor } from '@/lib/status-colors';
    const [items, setItems] = useState<InvoiceItem[]>([{ description: '', quantity: 1, unit_price: 0, amount: 0 }]);
    const { toast } = useToast();
    const queryClient = useQueryClient();
+   const { data: businessInfo } = useBusinessInfoMap();
+
+   const getCompanyInfo = (): CompanyInfo => ({
+     name: businessInfo?.company_name?.value_en || 'Creation Tech',
+     address: businessInfo?.address?.value_en || 'Dhaka, Bangladesh',
+     phone: businessInfo?.phone_primary?.value_en || '+880 1XXX-XXXXXX',
+     email: businessInfo?.email_primary?.value_en || 'info@creationtech.com',
+     website: businessInfo?.website?.value_en || 'www.creationtech.com',
+     logo_url: businessInfo?.company_logo?.value_en || companyLogo,
+   });
  
    const [formData, setFormData] = useState({
     client_id: '',
@@ -451,7 +463,7 @@ import { getStatusColor } from '@/lib/status-colors';
                               terms: invoice.terms,
                               status: invoice.status,
                             };
-                            generatePDF(pdfData);
+                            await generatePDF(pdfData, getCompanyInfo());
                             toast({ title: 'PDF downloaded successfully' });
                           }}
                         >

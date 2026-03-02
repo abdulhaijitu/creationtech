@@ -2,7 +2,9 @@
  import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
  import ClientLink from '@/components/admin/ClientLink';
- import { generatePDF, DocumentData } from '@/utils/pdfGenerator';
+ import { generatePDF, DocumentData, CompanyInfo } from '@/utils/pdfGenerator';
+import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
+import companyLogo from '@/assets/logo.png';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import { Card, CardContent } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -57,6 +59,16 @@ import { getStatusColor } from '@/lib/status-colors';
  
  const AdminQuotations = () => {
    const { toast } = useToast();
+   const { data: businessInfo } = useBusinessInfoMap();
+
+   const getCompanyInfo = (): CompanyInfo => ({
+     name: businessInfo?.company_name?.value_en || 'Creation Tech',
+     address: businessInfo?.address?.value_en || 'Dhaka, Bangladesh',
+     phone: businessInfo?.phone_primary?.value_en || '+880 1XXX-XXXXXX',
+     email: businessInfo?.email_primary?.value_en || 'info@creationtech.com',
+     website: businessInfo?.website?.value_en || 'www.creationtech.com',
+     logo_url: businessInfo?.company_logo?.value_en || companyLogo,
+   });
    const [quotations, setQuotations] = useState<Quotation[]>([]);
    const [isLoading, setIsLoading] = useState(true);
    const [isSaving, setIsSaving] = useState(false);
@@ -446,7 +458,7 @@ import { getStatusColor } from '@/lib/status-colors';
                               terms: quotation.terms,
                               status: quotation.status,
                             };
-                            generatePDF(pdfData);
+                            await generatePDF(pdfData, getCompanyInfo());
                             toast({ title: 'PDF downloaded successfully' });
                           }}
                         >
