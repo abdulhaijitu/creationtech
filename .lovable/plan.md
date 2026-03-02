@@ -1,23 +1,16 @@
 
 
-## পরিকল্পনা: Proposal ফর্ম আপডেট
+## পরিকল্পনা: Offer Letter ফিল্ড যোগ
 
-### পরিবর্তনসমূহ
+### পরিবর্তন
 
 **ফাইল: `src/components/admin/ProposalForm.tsx`**
 
-1. **Client Information সেকশন রিস্ট্রাকচার**:
-   - "Client Name" ফিল্ডের লেবেল হবে **"Name (Client or Company)"** — একটি ফিল্ডেই ক্লায়েন্ট বা কোম্পানির নাম নেওয়া হবে
-   - "Email" লেবেল হবে **"Email"** (যেমন আছে)
-   - "Phone" লেবেল হবে **"Mobile"**
-   - **"Company" ফিল্ড সরিয়ে দেওয়া হবে** — কারণ Name ফিল্ডেই Client or Company নাম যাচ্ছে
+1. `formData` state-এ `offer_letter: ''` যোগ
+2. Proposal Details সেকশনে Subject ও Valid Until/Total Amount-এর পরে, Scope of Work-এর **আগে** একটি নতুন RichTextEditor ফিল্ড যোগ — লেবেল **"Offer Letter"**
+3. `handleSave` ফাংশনে `offer_letter` ফিল্ড insert/update-এ যোগ
+4. Edit মোডে `proposal` থেকে `offer_letter` লোড
 
-2. **"Proposal Title" → "Subject"**:
-   - লেবেল "Proposal Title *" থেকে **"Subject *"** করা হবে
-   - Placeholder আপডেট: "e.g., Website Development Proposal"
-
-3. **বাকি সব ফিল্ড যেমন আছে তেমনই থাকবে** — Scope of Work, Timeline, Deliverables, Pricing Summary, Total Amount, Valid Until, Notes, Terms
-
-### কোনো ডাটাবেজ পরিবর্তন লাগবে না
-ডাটাবেজে `title` কলামেই Subject সেভ হবে, `client_name` কলামেই Name (Client or Company) সেভ হবে।
+**ডাটাবেজ মাইগ্রেশন:**
+- `proposals` টেবিলে `offer_letter TEXT` কলাম যোগ করতে হবে
 
