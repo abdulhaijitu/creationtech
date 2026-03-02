@@ -1,51 +1,83 @@
 
 
-## PDF আউটপুট অডিট ও ফিক্স পরিকল্পনা
+## Proposal PDF Professional Redesign Plan
 
-### PDF থেকে চিহ্নিত সমস্যাসমূহ
+### Reference Design Analysis
+The uploaded design shows a significantly different layout from current:
 
-1. **Margin ভুল**: বর্তমানে 14mm (~0.55") — দরকার 25.4mm (1 inch) চারদিকে
-2. **Expected Outcome / bullet points হারিয়ে যাচ্ছে**: `stripHtml()` সব structure (bullets, numbering, paragraphs) মুছে ফেলছে — ফলে "After completion, Labtex will have: A fast-loading..." একলাইনে মিশে যাচ্ছে। Bullet/list items আলাদা লাইনে আসা দরকার
-3. **Budget table ও Total আলাদা পেজে**: Page 1-এ Subtotal দেখাচ্ছে, Page 2-তে Total — table ও totals একসাথে থাকা উচিত অথবা সঠিক page break
-4. **Footer confidentiality text Budget table-র মাঝে**: Footer reserved area ঠিকমতো কাজ করছে না — `maxY` calculation ভুল
+1. **Header**: Logo on left, company contact info **right-aligned** (with icon labels like "Location Icon", "Phone Icon", "Email Icon", "Website Icon")
+2. **Header repeats on every page** (currently only page 1)
+3. **Watermark**: Faded logo image (`jolchap.png`) on bottom-right of every page
+4. **"To," block**: Client info listed as Company, Address, Email, Contact
+5. **"Subject:" line**: Bold subject/title line
+6. **Validity note**: Italic text under PROPOSAL title ("This proposal is valid for X days...")
+7. **Section headings**: Bold with clean paragraph text, bullet points preserved
+8. **Blue accent gradient** decorative element on right side (from the reference)
 
----
+### Files to Modify
 
-### ফিক্সসমূহ — `src/utils/proposalPdfGenerator.ts`
+**1. Copy watermark asset**
+- Copy `user-uploads://jolchap.png` → `src/assets/jolchap.png`
 
-#### 1. Margin 1 inch (25.4mm)
-- সব জায়গায় `14` → `25.4` (left/right margin)
-- `pageWidth - 14` → `pageWidth - 25.4` (right margin)
-- autoTable margin: `{ left: 25.4, right: 25.4 }`
-- Content width: `pageWidth - 50.8` (দুই পাশে 1 inch)
-- Top start Y: `25.4` থেকে শুরু
+**2. `src/utils/proposalPdfGenerator.ts` — Full redesign**
+- **Repeating header on every page**: Extract header rendering into a reusable function; call it on page 1 and via `addPage` wrapper
+- **Header layout change**: Logo left, company info right-aligned with text labels (Address, Phone, Email, Website)
+- **Watermark on every page**: Load `jolchap.png` as data URL, draw it semi-transparent on bottom-right of each page in the final footer pass
+- **"To," client block**: Format as "To, \n Company/Client Name \n Address \n Email \n Contact"
+- **"Subject:" line**: Bold prefix "Subject:" followed by proposal title
+- **addPage wrapper**: Custom function that adds a new page and draws the header + watermark automatically
+- **Content start Y**: After header (~45mm) on every page
 
-#### 2. `stripHtml()` উন্নত — list structure preserve
-- নতুন `htmlToPlainText()` ফাংশন যা:
-  - `<li>` → `"• "` (bullet) বা `"1. "` (ordered) prefix দেয়
-  - `<br>`, `<p>`, `</p>` → newline
-  - `<table>` → row-by-row text
-  - Final strip of remaining tags
+**3. `src/utils/pdfGenerator.ts` — Same treatment for Invoice/Quotation**
+- Apply identical header, watermark, and per-page header logic
+- Same layout changes (logo left, info right, repeating header, watermark)
 
-#### 3. `addSection()` — multiline aware
-- `htmlToPlainText()` ব্যবহার করবে `stripHtml()` এর বদলে
-- Split by `\n` করে প্রতিটি line আলাদাভাবে render
+**4. `src/pages/admin/AdminProposals.tsx`** — Pass watermark image
+- Import `jolchap.png` and pass it to `generateProposalPDF` as part of CompanyInfo or separate param
 
-#### 4. Page break logic
-- `maxY` = `pageHeight - 30` (footer এর জন্য 30mm reserve)
-- Budget table-র পরে totals section-এ page break check
-
-#### 5. Budget table margin fix
-- autoTable-এও 1 inch margin
+**5. `src/pages/admin/AdminInvoices.tsx` & `AdminQuotations.tsx`** — Same watermark pass
 
 ### Technical Details
 
 ```text
-File to modify:
-└── src/utils/proposalPdfGenerator.ts
-    - MARGIN constant = 25.4 (1 inch)
-    - Replace stripHtml() with htmlToPlainText() that preserves bullets/lists
-    - Update all coordinate references from 14 → MARGIN
-    - Fix maxY for proper footer spacing
+Header layout (per page):
+┌──────────────────────────────────────────────────┐
+│ [LOGO] CREATION TECH     House #71, Road #27... │
+│        -PRIME TECH PARTNER-    +880 1777656517  │
+│                              info@creation...   │
+│                              www.creation...    │
+├──────────────────────────────────────────────────┤
+│ PROPOSAL              Proposal #: PRO-00001     │
+│ Valid for 12 days...       Date: Mar 3, 2026    │
+│                       Valid Until: Mar 14, 2026  │
+│                                                  │
+│ To,                                              │
+│ Company / Client Name                            │
+│ Address                                          │
+│ Email                                            │
+│ Contact                                          │
+│                                                  │
+│ Subject: Proposal for High-Performance...        │
+│                                                  │
+│ [Content sections...]                            │
+│                                                  │
+│                              ┌─────────────┐     │
+│                              │  WATERMARK   │     │
+│                              │  (jolchap)   │     │
+│                              └─────────────┘     │
+│ CONFIDENTIAL...           Page 1 of N            │
+└──────────────────────────────────────────────────┘
+
+Key changes:
+- addHeader(doc, company, logoData) → reusable, returns startY
+- addWatermark(doc, watermarkData) → bottom-right, low opacity
+- addPageFooters() → also adds watermark to each page
+- CompanyInfo interface gets watermark_url field
+- Import jolchap.png statically as fallback watermark
 ```
+
+### Scope
+- Proposal PDF: Full redesign matching reference
+- Invoice & Quotation PDF: Same header/watermark/footer treatment
+- All three document types get consistent professional look
 
