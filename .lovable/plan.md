@@ -1,42 +1,23 @@
 
 
-## Plan: Redesign Admin Sidebar with Framer Motion Hover-Expand Pattern
+## পরিকল্পনা: Admin Leads পেজে ম্যানুয়াল Lead যোগ করার ফিচার
 
-### Overview
-Replace the current shadcn sidebar-based admin sidebar with a framer-motion animated sidebar that collapses by default and expands on hover, matching the provided design reference.
+### কী হবে
+AdminPageHeader-এ একটি "+ Add Lead" বাটন যোগ হবে। ক্লিক করলে একটি Dialog ওপেন হবে যেখানে Lead-এর টাইপ (Contact / Quote / Meeting) সিলেক্ট করে ম্যানুয়ালি ডাটা ইনপুট করা যাবে এবং সরাসরি ডাটাবেজে সেভ হবে।
 
-### Technical Details
+### কারিগরি বিবরণ
 
-**New dependency required:** `framer-motion`
+**ফাইল: `src/pages/admin/AdminLeads.tsx`**
 
-**Files to modify:**
-1. **`src/components/admin/AdminSidebar.tsx`** — Complete rewrite using framer-motion `motion.div` with hover-to-expand behavior:
-   - Default state: collapsed (~3rem wide, icons only)
-   - On mouse enter: smoothly animate to ~15rem, show labels
-   - Keep all existing `navGroups` data and route-active logic
-   - Replace `next/link` → `react-router-dom Link`, `usePathname` → `useLocation`
-   - Organization header with "CT" avatar + "Creation Tech" text
-   - Flat nav items (no collapsible groups — items shown directly with group labels as separators)
-   - Footer with user avatar dropdown (sign out, profile) using existing `useAuth`
-   - `ScrollArea` for scrollable nav content
+1. নতুন state যোগ: `isAddOpen`, `addType` (contact/quote/meeting), এবং ফর্ম ফিল্ড state
+2. AdminPageHeader-এ `actions` prop হিসেবে `<Button><Plus /> Add Lead</Button>` যোগ
+3. নতুন Dialog — টাইপ সিলেক্ট করলে সংশ্লিষ্ট ফর্ম ফিল্ড দেখাবে:
+   - **Contact**: full_name, email, phone, subject, message
+   - **Quote**: full_name, email, phone, company, service_interest, budget, project_details
+   - **Meeting**: full_name, email, phone, company, meeting_topic, preferred_date, preferred_time, additional_notes
+4. Submit করলে সংশ্লিষ্ট টেবিলে (`contact_submissions` / `quote_requests` / `meeting_requests`) insert হবে, status ডিফল্ট `'new'`
+5. সফল হলে Dialog বন্ধ, toast দেখাবে, এবং `fetchData()` কল করে লিস্ট রিফ্রেশ হবে
 
-2. **`src/components/admin/AdminLayout.tsx`** — Simplify layout:
-   - Remove `SidebarProvider`, `SidebarInset`, `SidebarTrigger` wrappers
-   - Use simple flex layout: sidebar (fixed/sticky) + main content area
-   - Keep top header bar with "View Site" button but remove sidebar trigger (hover replaces it)
-   - Remove `TooltipProvider` wrapper (no longer needed for sidebar)
-
-3. **No changes to `src/components/ui/sidebar.tsx`** — The existing shadcn sidebar component stays untouched (other pages may use it). The admin sidebar will be a standalone framer-motion component.
-
-### Animation Config
-```text
-Collapsed: width 3.05rem, icons centered, text hidden (opacity 0)
-Expanded:  width 15rem, icons + labels visible (opacity 1)
-Transition: tween, easeOut, 0.2s duration
-Items stagger: 0.03s delay between children
-```
-
-### Mobile Handling
-- On mobile, sidebar starts collapsed and still expands on touch/hover
-- Alternatively, use a sheet/drawer for mobile (preserving existing mobile UX)
+### কোনো ডাটাবেজ পরিবর্তন লাগবে না
+বিদ্যমান তিনটি টেবিলেই insert হবে — স্কিমা পরিবর্তনের দরকার নেই।
 
