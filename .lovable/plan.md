@@ -1,52 +1,51 @@
 
 
-## প্রপোজাল সিস্টেম পূর্ণ অডিট ও ফিক্স পরিকল্পনা
+## PDF আউটপুট অডিট ও ফিক্স পরিকল্পনা
 
-### সমস্যা চিহ্নিত
+### PDF থেকে চিহ্নিত সমস্যাসমূহ
 
-1. **Duplicate Link extension warning**: Console-এ `Duplicate extension names found: ['link']` — StarterKit-এ Link আছে, আবার আলাদা `Link.configure()` যোগ করা হয়েছে
-2. **PDF-এ Budget item description HTML strip হচ্ছে না**: `item.description` rich text (HTML) কিন্তু autoTable-এ raw HTML যাচ্ছে
-3. **PDF footer শুধু শেষ পেজে** — মাল্টি-পেজ প্রপোজালে প্রতি পেজে footer/page number নেই
-4. **Terms & Conditions দুই কলামে** আছে (Notes এর সাথে) — এক কলাম করতে হবে
-5. **Duplicate supabase import**: `AdminProposals.tsx`-এ `supabase` এবং `supabaseClient` দুটোই একই import
-6. **PDF-তে কোম্পানি তথ্য নেই** — বাংলাদেশ স্ট্যান্ডার্ডে কোম্পানি header/letterhead থাকা উচিত
-7. **PDF-তে Bangla currency** সঠিক আছে (৳) কিন্তু "Amount in Words" নেই
+1. **Margin ভুল**: বর্তমানে 14mm (~0.55") — দরকার 25.4mm (1 inch) চারদিকে
+2. **Expected Outcome / bullet points হারিয়ে যাচ্ছে**: `stripHtml()` সব structure (bullets, numbering, paragraphs) মুছে ফেলছে — ফলে "After completion, Labtex will have: A fast-loading..." একলাইনে মিশে যাচ্ছে। Bullet/list items আলাদা লাইনে আসা দরকার
+3. **Budget table ও Total আলাদা পেজে**: Page 1-এ Subtotal দেখাচ্ছে, Page 2-তে Total — table ও totals একসাথে থাকা উচিত অথবা সঠিক page break
+4. **Footer confidentiality text Budget table-র মাঝে**: Footer reserved area ঠিকমতো কাজ করছে না — `maxY` calculation ভুল
 
 ---
 
-### পরিবর্তনসমূহ
+### ফিক্সসমূহ — `src/utils/proposalPdfGenerator.ts`
 
-#### 1. `src/components/ui/rich-text-editor.tsx` — Duplicate Link fix
-- StarterKit থেকে `link: false` করে আলাদা Link extension রাখা (কারণ আলাদা configure দরকার)
+#### 1. Margin 1 inch (25.4mm)
+- সব জায়গায় `14` → `25.4` (left/right margin)
+- `pageWidth - 14` → `pageWidth - 25.4` (right margin)
+- autoTable margin: `{ left: 25.4, right: 25.4 }`
+- Content width: `pageWidth - 50.8` (দুই পাশে 1 inch)
+- Top start Y: `25.4` থেকে শুরু
 
-#### 2. `src/utils/proposalPdfGenerator.ts` — PDF অডিট ও ফিক্স
-- **Budget item description**: `stripHtml()` দিয়ে HTML strip করা
-- **মাল্টি-পেজ footer**: প্রতি পেজে page number যোগ (`Page X of Y`)
-- **কোম্পানি header**: PDF-র টপে কোম্পানি নাম, ঠিকানা, ফোন, ইমেইল (business_info থেকে parameter হিসেবে নেওয়া, অথবা static fallback)
-- **Amount in Words**: Total amount-এর পরে "Amount in Words" (English) যোগ
-- **Signature section**: PDF শেষে "Authorized Signature" ও "Client Acceptance" লাইন যোগ — বাংলাদেশ স্ট্যান্ডার্ড
-- **Reference number format**: Proposal নম্বরের ফরম্যাট ঠিক রাখা
+#### 2. `stripHtml()` উন্নত — list structure preserve
+- নতুন `htmlToPlainText()` ফাংশন যা:
+  - `<li>` → `"• "` (bullet) বা `"1. "` (ordered) prefix দেয়
+  - `<br>`, `<p>`, `</p>` → newline
+  - `<table>` → row-by-row text
+  - Final strip of remaining tags
 
-#### 3. `src/components/admin/ProposalForm.tsx` — Terms একক কলাম
-- Notes & Terms সেকশনকে `lg:grid-cols-2` থেকে বের করে Terms আলাদা full-width Card-এ রাখা
-- Notes Budget Summary-র সাথে থাকবে, Terms আলাদা full-width
+#### 3. `addSection()` — multiline aware
+- `htmlToPlainText()` ব্যবহার করবে `stripHtml()` এর বদলে
+- Split by `\n` করে প্রতিটি line আলাদাভাবে render
 
-#### 4. `src/pages/admin/AdminProposals.tsx` — Cleanup
-- Duplicate `supabaseClient` import সরানো, শুধু `supabase` ব্যবহার
+#### 4. Page break logic
+- `maxY` = `pageHeight - 30` (footer এর জন্য 30mm reserve)
+- Budget table-র পরে totals section-এ page break check
 
-#### 5. বাংলাদেশ স্ট্যান্ডার্ড অতিরিক্ত ফিচার (PDF)
-- **VAT/Tax**: "VAT/Tax" লেবেল (বাংলাদেশে VAT 15% standard)
-- **Payment Terms**: PDF-তে payment terms section
-- **Validity Period**: "This proposal is valid for X days" স্পষ্টভাবে
-- **Confidentiality Notice**: PDF footer-এ confidentiality disclaimer
+#### 5. Budget table margin fix
+- autoTable-এও 1 inch margin
 
 ### Technical Details
 
 ```text
-Files to modify:
-├── src/components/ui/rich-text-editor.tsx      (fix duplicate Link extension)
-├── src/utils/proposalPdfGenerator.ts           (PDF audit: HTML strip, pagination, company header, signature, amount in words)
-├── src/components/admin/ProposalForm.tsx        (Terms full-width layout)
-└── src/pages/admin/AdminProposals.tsx           (remove duplicate import)
+File to modify:
+└── src/utils/proposalPdfGenerator.ts
+    - MARGIN constant = 25.4 (1 inch)
+    - Replace stripHtml() with htmlToPlainText() that preserves bullets/lists
+    - Update all coordinate references from 14 → MARGIN
+    - Fix maxY for proper footer spacing
 ```
 
