@@ -98,17 +98,35 @@ interface StyledSegment {
   bold: boolean;
 }
 
+interface StyledParagraph {
+  segments: StyledSegment[];
+  justify: boolean;
+}
+
 /**
  * Parse HTML into styled segments per paragraph, preserving bold markers.
  * Returns an array of paragraphs, each containing an array of styled segments.
  */
-function htmlToStyledParagraphs(html: string): StyledSegment[][] {
+function htmlToStyledParagraphs(html: string): StyledParagraph[] {
   if (!html) return [];
+
+  // Detect justify alignment per <p> tag before stripping
+  const justifyMap = new Map<number, boolean>();
+  let pIndex = 0;
+  const pTagRegex = /<p[^>]*>/gi;
+  let pMatch: RegExpExecArray | null;
+  while ((pMatch = pTagRegex.exec(html)) !== null) {
+    const isJustify = /text-align:\s*justify/i.test(pMatch[0]);
+    justifyMap.set(pIndex, isJustify);
+    pIndex++;
+  }
 
   // Pre-process: convert block-level tags to paragraph breaks
   let processed = html;
   processed = processed.replace(/<br\s*\/?>/gi, '\n');
-  processed = processed.replace(/<\/p>/gi, '\n');
+  // Mark paragraph boundaries with a unique separator to track indices
+  const P_SEP = '\x04';
+  processed = processed.replace(/<\/p>/gi, P_SEP);
   processed = processed.replace(/<p[^>]*>/gi, '');
   processed = processed.replace(/<\/h[1-6]>/gi, '\n');
   processed = processed.replace(/<h[1-6][^>]*>/gi, '\n');
@@ -138,13 +156,16 @@ function htmlToStyledParagraphs(html: string): StyledSegment[][] {
   processed = processed.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
   processed = processed.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
 
-  // Split into paragraphs
+  // Split into paragraphs using both \n and P_SEP
+  processed = processed.replace(new RegExp(P_SEP, 'g'), '\n');
   const rawParagraphs = processed.split('\n');
-  const result: StyledSegment[][] = [];
+  const result: StyledParagraph[] = [];
 
+  let paraIdx = 0;
   for (const para of rawParagraphs) {
     if (para.trim() === '') {
-      result.push([]); // empty paragraph = gap
+      result.push({ segments: [], justify: false }); // empty paragraph = gap
+      paraIdx++;
       continue;
     }
 
@@ -169,8 +190,10 @@ function htmlToStyledParagraphs(html: string): StyledSegment[][] {
     if (current) segments.push({ text: current, bold: isBold });
 
     if (segments.length > 0) {
-      result.push(segments);
+      const isJustify = justifyMap.get(paraIdx) || false;
+      result.push({ segments, justify: isJustify });
     }
+    paraIdx++;
   }
 
   return result;
@@ -307,8 +330,15 @@ function renderStyledLine(
   doc: jsPDF,
   segments: StyledSegment[],
   x: number,
-  y: number
+  y: number,
+  justify: boolean = false,
+  contentWidth: number = 0,
+  isLastLine: boolean = false
 ) {
+  if (justify && !isLastLine && contentWidth > 0) {
+    renderJustifiedLine(doc, segments, x, y, contentWidth);
+    return;
+  }
   let currentX = x;
   for (const seg of segments) {
     doc.setFont('helvetica', seg.bold ? 'bold' : 'normal');
@@ -316,6 +346,55 @@ function renderStyledLine(
     currentX += doc.getTextWidth(seg.text);
   }
   // Reset to normal
+  doc.setFont('helvetica', 'normal');
+}
+
+/**
+ * Render a line with justified alignment by distributing extra space between words.
+ */
+function renderJustifiedLine(
+  doc: jsPDF,
+  segments: StyledSegment[],
+  x: number,
+  y: number,
+  contentWidth: number
+) {
+  // Split segments into word-level pieces
+  interface WordPiece { text: string; bold: boolean; isSpace: boolean; }
+  const pieces: WordPiece[] = [];
+  for (const seg of segments) {
+    const parts = seg.text.split(/( +)/);
+    for (const part of parts) {
+      if (part.length > 0) {
+        pieces.push({ text: part, bold: seg.bold, isSpace: /^\s+$/.test(part) });
+      }
+    }
+  }
+
+  // Count spaces and measure total text width (non-space)
+  let totalTextWidth = 0;
+  let spaceCount = 0;
+  for (const p of pieces) {
+    doc.setFont('helvetica', p.bold ? 'bold' : 'normal');
+    if (p.isSpace) {
+      spaceCount++;
+    } else {
+      totalTextWidth += doc.getTextWidth(p.text);
+    }
+  }
+
+  const extraSpace = spaceCount > 0 ? (contentWidth - totalTextWidth) / spaceCount : 0;
+  let currentX = x;
+
+  for (const p of pieces) {
+    doc.setFont('helvetica', p.bold ? 'bold' : 'normal');
+    if (p.isSpace) {
+      currentX += extraSpace;
+    } else {
+      doc.text(p.text, currentX, y);
+      currentX += doc.getTextWidth(p.text);
+    }
+  }
   doc.setFont('helvetica', 'normal');
 }
 
@@ -387,20 +466,20 @@ function addHeader(doc: jsPDF, company: CompanyInfo, logoData: ImageLoadResult |
     // Calculate proper aspect ratio: keep height at 12, scale width proportionally
     const logoHeight = 12;
     const logoWidth = (logoData.width / logoData.height) * logoHeight;
-    doc.addImage(logoData.dataUrl, 'PNG', MARGIN, 6, logoWidth, logoHeight);
+    doc.addImage(logoData.dataUrl, 'PNG', MARGIN, 13, logoWidth, logoHeight);
   }
 
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  let infoY = 8;
+  let infoY = 15;
   if (company.address) { doc.text(company.address, rightX, infoY, { align: 'right' }); infoY += 3.5; }
   if (company.phone) { doc.text(`Phone: ${company.phone}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
   if (company.email) { doc.text(`Email: ${company.email}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
   if (company.website) { doc.text(`Web: ${company.website}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
 
   // No separator lines — just return with a small gap
-  const lineY = Math.max(infoY + 2, 22);
+  const lineY = Math.max(infoY + 2, 29);
   return lineY + 2;
 }
 
@@ -483,22 +562,24 @@ function renderStyledContent(
   doc.setFontSize(BODY_FONT);
   doc.setTextColor(55, 55, 55);
 
-  for (const segments of paragraphs) {
-    if (segments.length === 0) {
+  for (const para of paragraphs) {
+    if (para.segments.length === 0) {
       y += PARAGRAPH_GAP;
       continue;
     }
 
     // Word-wrap the styled segments
-    const wrappedLines = wrapStyledSegments(doc, segments, contentWidth);
+    const wrappedLines = wrapStyledSegments(doc, para.segments, contentWidth);
 
-    for (const lineSegments of wrappedLines) {
+    for (let li = 0; li < wrappedLines.length; li++) {
+      const lineSegments = wrappedLines[li];
       if (y > maxY) {
         y = addNewPage(doc, company, logoData);
         doc.setFontSize(BODY_FONT);
         doc.setTextColor(55, 55, 55);
       }
-      renderStyledLine(doc, lineSegments, MARGIN, y);
+      const isLastLine = li === wrappedLines.length - 1;
+      renderStyledLine(doc, lineSegments, MARGIN, y, para.justify, contentWidth, isLastLine);
       y += LINE_HEIGHT;
     }
   }
