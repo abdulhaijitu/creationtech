@@ -193,39 +193,31 @@
                  onSelect={handleClientSelect}
                />
              </div>
-             <div className="space-y-2">
-               <Label>Client Name *</Label>
-               <Input
-                 value={formData.client_name}
-                 onChange={(e) => setFormData(prev => ({ ...prev, client_name: e.target.value }))}
-                 placeholder="Enter client name"
-               />
-             </div>
-             <div className="space-y-2">
-               <Label>Email</Label>
-               <Input
-                 type="email"
-                 value={formData.client_email}
-                 onChange={(e) => setFormData(prev => ({ ...prev, client_email: e.target.value }))}
-                 placeholder="client@example.com"
-               />
-             </div>
-             <div className="space-y-2">
-               <Label>Phone</Label>
-               <Input
-                 value={formData.client_phone}
-                 onChange={(e) => setFormData(prev => ({ ...prev, client_phone: e.target.value }))}
-                 placeholder="+880..."
-               />
-             </div>
-             <div className="space-y-2 sm:col-span-2">
-               <Label>Company</Label>
-               <Input
-                 value={formData.client_company}
-                 onChange={(e) => setFormData(prev => ({ ...prev, client_company: e.target.value }))}
-                 placeholder="Company name"
-               />
-             </div>
+              <div className="space-y-2">
+                <Label>Name (Client or Company) *</Label>
+                <Input
+                  value={formData.client_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, client_name: e.target.value }))}
+                  placeholder="Enter client or company name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={formData.client_email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, client_email: e.target.value }))}
+                  placeholder="client@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Mobile</Label>
+                <Input
+                  value={formData.client_phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, client_phone: e.target.value }))}
+                  placeholder="+880..."
+                />
+              </div>
            </div>
          </CardContent>
        </Card>
@@ -241,12 +233,12 @@
          <CardContent className="space-y-4">
            <div className="grid gap-4 sm:grid-cols-2">
              <div className="space-y-2 sm:col-span-2">
-               <Label>Proposal Title *</Label>
-               <Input
-                 value={formData.title}
-                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                 placeholder="e.g., Website Development Proposal"
-               />
+                <Label>Subject *</Label>
+                <Input
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="e.g., Website Development Proposal"
+                />
              </div>
              <div className="space-y-2">
                <Label>Valid Until</Label>
