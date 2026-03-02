@@ -56,8 +56,9 @@
      client_email: '',
      client_phone: '',
      client_company: '',
-     title: '',
-     scope_of_work: '',
+      title: '',
+      offer_letter: '',
+      scope_of_work: '',
      timeline: '',
      deliverables: '',
      pricing_summary: '',
@@ -76,8 +77,9 @@
          client_email: proposal.client_email || '',
          client_phone: proposal.client_phone || '',
          client_company: proposal.client_company || '',
-         title: proposal.title,
-         scope_of_work: proposal.scope_of_work || '',
+          title: proposal.title,
+          offer_letter: (proposal as any).offer_letter || '',
+          scope_of_work: proposal.scope_of_work || '',
          timeline: proposal.timeline || '',
          deliverables: proposal.deliverables || '',
          pricing_summary: proposal.pricing_summary || '',
@@ -122,8 +124,9 @@
              client_email: formData.client_email || null,
              client_phone: formData.client_phone || null,
              client_company: formData.client_company || null,
-             title: formData.title,
-             scope_of_work: formData.scope_of_work || null,
+              title: formData.title,
+              offer_letter: formData.offer_letter || null,
+              scope_of_work: formData.scope_of_work || null,
              timeline: formData.timeline || null,
              deliverables: formData.deliverables || null,
              pricing_summary: formData.pricing_summary || null,
@@ -149,19 +152,20 @@
              client_email: formData.client_email || null,
              client_phone: formData.client_phone || null,
              client_company: formData.client_company || null,
-             title: formData.title,
-             scope_of_work: formData.scope_of_work || null,
-             timeline: formData.timeline || null,
-             deliverables: formData.deliverables || null,
-             pricing_summary: formData.pricing_summary || null,
-             total_amount: formData.total_amount || null,
-             valid_until: formData.valid_until || null,
-             notes: formData.notes || null,
-             terms: formData.terms || null,
-           });
- 
-         if (error) throw error;
-         toast({ title: 'Success', description: 'Proposal created successfully' });
+              title: formData.title,
+              offer_letter: formData.offer_letter || null,
+              scope_of_work: formData.scope_of_work || null,
+              timeline: formData.timeline || null,
+              deliverables: formData.deliverables || null,
+              pricing_summary: formData.pricing_summary || null,
+              total_amount: formData.total_amount || null,
+              valid_until: formData.valid_until || null,
+              notes: formData.notes || null,
+              terms: formData.terms || null,
+            });
+
+          if (error) throw error;
+          toast({ title: 'Success', description: 'Proposal created successfully' });
        }
  
        onSave();
@@ -260,8 +264,18 @@
              </div>
            </div>
  
-           <div className="space-y-2">
-             <Label>Scope of Work</Label>
+            <div className="space-y-2">
+              <Label>Offer Letter</Label>
+              <RichTextEditor
+                content={formData.offer_letter}
+                onChange={(value) => setFormData(prev => ({ ...prev, offer_letter: value }))}
+                placeholder="Write offer letter content..."
+                className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Scope of Work</Label>
              <RichTextEditor
                content={formData.scope_of_work}
                onChange={(value) => setFormData(prev => ({ ...prev, scope_of_work: value }))}
