@@ -69,6 +69,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
     client_company: '',
     title: '',
     offer_letter: '',
+    offer_letter_end: '',
     scope_of_work: '',
     expected_outcome: '',
     timeline: '',
@@ -93,6 +94,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         offer_letter: (proposal as any).offer_letter || '',
         scope_of_work: proposal.scope_of_work || '',
         expected_outcome: (proposal as any).expected_outcome || '',
+        offer_letter_end: (proposal as any).offer_letter_end || '',
         timeline: proposal.timeline || '',
         deliverables: proposal.deliverables || '',
         valid_until: proposal.valid_until || '',
@@ -181,6 +183,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         offer_letter: formData.offer_letter || null,
         scope_of_work: formData.scope_of_work || null,
         expected_outcome: formData.expected_outcome || null,
+        offer_letter_end: formData.offer_letter_end || null,
         timeline: formData.timeline || null,
         deliverables: formData.deliverables || null,
         subtotal,
@@ -504,6 +507,24 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Offer Letter End */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Offer Letter End
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RichTextEditor
+            content={formData.offer_letter_end}
+            onChange={(value) => setFormData(prev => ({ ...prev, offer_letter_end: value }))}
+            placeholder="Write closing remarks for the offer letter..."
+            className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+          />
         </CardContent>
       </Card>
 

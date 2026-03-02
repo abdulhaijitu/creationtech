@@ -1084,6 +1084,7 @@ export type Database = {
           id: string
           notes: string | null
           offer_letter: string | null
+          offer_letter_end: string | null
           pricing_summary: string | null
           proposal_number: string
           scope_of_work: string | null
@@ -1113,6 +1114,7 @@ export type Database = {
           id?: string
           notes?: string | null
           offer_letter?: string | null
+          offer_letter_end?: string | null
           pricing_summary?: string | null
           proposal_number: string
           scope_of_work?: string | null
@@ -1142,6 +1144,7 @@ export type Database = {
           id?: string
           notes?: string | null
           offer_letter?: string | null
+          offer_letter_end?: string | null
           pricing_summary?: string | null
           proposal_number?: string
           scope_of_work?: string | null
