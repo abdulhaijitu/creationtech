@@ -275,7 +275,7 @@
             </div>
 
             <div className="space-y-2">
-              <Label>Scope of Work</Label>
+              <Label>Project Overview</Label>
              <RichTextEditor
                content={formData.scope_of_work}
                onChange={(value) => setFormData(prev => ({ ...prev, scope_of_work: value }))}
