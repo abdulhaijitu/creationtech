@@ -336,8 +336,19 @@ function renderStyledLine(
   isLastLine: boolean = false
 ) {
   if (justify && !isLastLine && contentWidth > 0) {
-    renderJustifiedLine(doc, segments, x, y, contentWidth);
-    return;
+    // Skip justify for bullet lines or short lines (< 85% width)
+    const lineText = segments.map(s => s.text).join('');
+    const totalTextWidth = segments.reduce((sum, s) => {
+      doc.setFont('helvetica', s.bold ? 'bold' : 'normal');
+      return sum + doc.getTextWidth(s.text);
+    }, 0);
+    const isBullet = lineText.trimStart().startsWith('- ') || lineText.trimStart().startsWith('• ');
+    const isShort = totalTextWidth < contentWidth * 0.85;
+
+    if (!isBullet && !isShort) {
+      renderJustifiedLine(doc, segments, x, y, contentWidth);
+      return;
+    }
   }
   let currentX = x;
   for (const seg of segments) {
@@ -479,8 +490,8 @@ function addHeader(doc: jsPDF, company: CompanyInfo, logoData: ImageLoadResult |
   if (company.website) { doc.text(`Web: ${company.website}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
 
   // No separator lines — just return with a small gap
-  const lineY = Math.max(infoY + 2, 29);
-  return lineY + 2;
+  const lineY = Math.max(infoY + 2, 33);
+  return lineY + 8;
 }
 
 // ── Watermark (every page) ──
