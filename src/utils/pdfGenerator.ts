@@ -10,11 +10,13 @@ interface LineItem {
 
 interface CompanyInfo {
   name?: string;
+  tagline?: string;
   address?: string;
   phone?: string;
   email?: string;
   website?: string;
   logo_url?: string;
+  watermark_url?: string;
 }
 
 interface DocumentData {
@@ -39,8 +41,9 @@ interface DocumentData {
 }
 
 // ── Constants ──
-const MARGIN = 25.4; // 1 inch
-const FOOTER_RESERVE = 30;
+const MARGIN = 20;
+const FOOTER_RESERVE = 22;
+const ACCENT_COLOR: [number, number, number] = [34, 55, 94];
 
 // ── Helpers ──
 
@@ -63,9 +66,7 @@ function loadImageAsDataUrl(url: string): Promise<string | null> {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
+  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function formatCurrency(amount: number): string {
@@ -92,38 +93,110 @@ function numberToWords(num: number): string {
   return result + ' Only';
 }
 
-function getStatusColor(status: string): [number, number, number] {
-  const colors: Record<string, [number, number, number]> = {
-    draft: [156, 163, 175],
-    sent: [59, 130, 246],
-    paid: [34, 197, 94],
-    overdue: [239, 68, 68],
-    cancelled: [107, 114, 128],
-    pending: [234, 179, 8],
-    approved: [34, 197, 94],
-    rejected: [239, 68, 68],
-    converted: [59, 130, 246],
-  };
-  return colors[status] || [156, 163, 175];
-}
-
 function stripHtml(html: string): string {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
   return tmp.textContent || tmp.innerText || '';
 }
 
-function addPageFooters(doc: jsPDF) {
+// ── Reusable header ──
+
+function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): number {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const rightX = pageWidth - MARGIN;
+
+  doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.rect(0, 0, pageWidth, 3, 'F');
+
+  let nameX = MARGIN;
+  if (logoData) {
+    doc.addImage(logoData, 'PNG', MARGIN, 6, 12, 12);
+    nameX = MARGIN + 14;
+  }
+
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.text(company.name || 'Creation Tech', nameX, 13);
+
+  if (company.tagline) {
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(120, 120, 120);
+    doc.text(company.tagline, nameX, 17);
+  }
+
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 80);
+  let infoY = 8;
+  if (company.address) { doc.text(company.address, rightX, infoY, { align: 'right' }); infoY += 3.5; }
+  if (company.phone) { doc.text(`Phone: ${company.phone}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
+  if (company.email) { doc.text(`Email: ${company.email}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
+  if (company.website) { doc.text(`Web: ${company.website}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
+
+  const lineY = Math.max(infoY + 2, 22);
+  doc.setDrawColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.setLineWidth(0.6);
+  doc.line(MARGIN, lineY, rightX, lineY);
+  doc.setDrawColor(200, 210, 230);
+  doc.setLineWidth(0.2);
+  doc.line(MARGIN, lineY + 1.5, rightX, lineY + 1.5);
+
+  return lineY + 5;
+}
+
+// ── Watermark ──
+
+function addWatermark(doc: jsPDF, watermarkData: string | null) {
+  if (!watermarkData) return;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const gState = new (doc as any).GState({ opacity: 0.06 });
+  doc.saveGraphicsState();
+  doc.setGState(gState);
+  doc.addImage(watermarkData, 'PNG', pageWidth - 75, pageHeight - 75, 55, 55);
+  doc.restoreGraphicsState();
+}
+
+function addAccentStrip(doc: jsPDF) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  for (let i = 0; i < 3; i++) {
+    const opacity = 0.08 - i * 0.025;
+    const gState = new (doc as any).GState({ opacity });
+    doc.saveGraphicsState();
+    doc.setGState(gState);
+    doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+    doc.rect(pageWidth - 4 + i, 3, 1.5, pageHeight - 3, 'F');
+    doc.restoreGraphicsState();
+  }
+}
+
+function addPageFooters(doc: jsPDF, watermarkData: string | null) {
   const totalPages = doc.getNumberOfPages();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
+
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    doc.setFontSize(7);
+    addWatermark(doc, watermarkData);
+    addAccentStrip(doc);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
+    doc.line(MARGIN, pageHeight - 16, pageWidth - MARGIN, pageHeight - 16);
+
+    doc.setFontSize(6.5);
     doc.setTextColor(150, 150, 150);
-    doc.text('CONFIDENTIAL — This document contains proprietary information intended solely for the recipient.', pageWidth / 2, pageHeight - 12, { align: 'center' });
-    doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 7, { align: 'center' });
+    doc.text('CONFIDENTIAL — This document contains proprietary information intended solely for the recipient.', MARGIN, pageHeight - 12);
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth - MARGIN, pageHeight - 12, { align: 'right' });
   }
+}
+
+function addNewPage(doc: jsPDF, company: CompanyInfo, logoData: string | null): number {
+  doc.addPage();
+  return addHeader(doc, company, logoData);
 }
 
 // ── Main generator ──
@@ -134,106 +207,82 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   const pageHeight = doc.internal.pageSize.getHeight();
   const maxY = pageHeight - FOOTER_RESERVE;
 
-  const company = companyInfo || {
+  const company: CompanyInfo = {
     name: 'Creation Tech',
+    tagline: '-PRIME TECH PARTNER-',
     address: 'Dhaka, Bangladesh',
     phone: '+880 1XXX-XXXXXX',
     email: 'info@creationtech.com',
     website: 'www.creationtech.com',
+    ...companyInfo,
   };
 
-  // ── Company header with logo ──
-  let logoTextStartX = MARGIN;
+  let logoData: string | null = null;
+  let watermarkData: string | null = null;
+
+  const loadPromises: Promise<void>[] = [];
   if (company.logo_url) {
-    try {
-      const logoData = await loadImageAsDataUrl(company.logo_url);
-      if (logoData) {
-        const logoH = 14;
-        const logoW = logoH;
-        doc.addImage(logoData, 'PNG', MARGIN, MARGIN - 4, logoW, logoH);
-        logoTextStartX = MARGIN + logoW + 4;
-      }
-    } catch { /* no logo fallback */ }
+    loadPromises.push(loadImageAsDataUrl(company.logo_url).then(d => { logoData = d; }));
   }
+  if (company.watermark_url) {
+    loadPromises.push(loadImageAsDataUrl(company.watermark_url).then(d => { watermarkData = d; }));
+  }
+  await Promise.all(loadPromises);
 
-  doc.setFontSize(16);
+  // ── Page 1 Header ──
+  let y = addHeader(doc, company, logoData);
+
+  // ── Document title + meta ──
+  const rightX = pageWidth - MARGIN;
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(34, 55, 94);
-  doc.text(company.name || '', logoTextStartX, MARGIN);
-
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
-  let headerY = MARGIN + 6;
-  if (company.address) { doc.text(company.address, logoTextStartX, headerY); headerY += 4; }
-  if (company.phone) { doc.text(`Phone: ${company.phone}`, logoTextStartX, headerY); headerY += 4; }
-  if (company.email) { doc.text(`Email: ${company.email}`, logoTextStartX, headerY); headerY += 4; }
-  if (company.website) { doc.text(company.website, logoTextStartX, headerY); headerY += 4; }
-
-  // Separator
-  doc.setDrawColor(34, 55, 94);
-  doc.setLineWidth(0.5);
-  doc.line(MARGIN, headerY + 1, pageWidth - MARGIN, headerY + 1);
-
-  // ── Document title ──
-  let y = headerY + 8;
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(34, 55, 94);
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.text(data.documentType.toUpperCase(), MARGIN, y);
 
-  // Document info (right side)
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(80, 80, 80);
-  doc.text(`${data.documentType} #: ${data.documentNumber}`, pageWidth - MARGIN, y - 6, { align: 'right' });
-  doc.text(`Date: ${formatDate(data.issueDate)}`, pageWidth - MARGIN, y, { align: 'right' });
+  doc.setTextColor(70, 70, 70);
+  doc.text(`${data.documentType} #: ${data.documentNumber}`, rightX, y - 4, { align: 'right' });
+  doc.text(`Date: ${formatDate(data.issueDate)}`, rightX, y + 1, { align: 'right' });
 
   if (data.documentType === 'Invoice' && data.dueDate) {
-    doc.text(`Due Date: ${formatDate(data.dueDate)}`, pageWidth - MARGIN, y + 6, { align: 'right' });
+    doc.text(`Due Date: ${formatDate(data.dueDate)}`, rightX, y + 6, { align: 'right' });
   }
   if (data.documentType === 'Quotation' && data.validUntil) {
-    doc.text(`Valid Until: ${formatDate(data.validUntil)}`, pageWidth - MARGIN, y + 6, { align: 'right' });
+    doc.text(`Valid Until: ${formatDate(data.validUntil)}`, rightX, y + 6, { align: 'right' });
   }
 
-  // Status badge
-  const hasExtra = (data.documentType === 'Invoice' && data.dueDate) || (data.documentType === 'Quotation' && data.validUntil);
-  const statusY = y + (hasExtra ? 12 : 6);
-  const statusColor = getStatusColor(data.status);
-  doc.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-  doc.roundedRect(pageWidth - MARGIN - 31, statusY - 4, 31, 7, 2, 2, 'F');
-  doc.setFontSize(8);
-  doc.setTextColor(255, 255, 255);
-  doc.text(data.status.toUpperCase(), pageWidth - MARGIN - 15.5, statusY, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-
-  // Separator
-  const sepY = y + 6 + (hasExtra ? 14 : 8);
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.2);
-  doc.line(MARGIN, sepY, pageWidth - MARGIN, sepY);
-
-  // ── Bill To ──
-  y = sepY + 8;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 0, 0);
-  doc.text('BILL TO:', MARGIN, y);
-  doc.setFont('helvetica', 'normal');
-  y += 6;
-  doc.text(data.clientName, MARGIN, y);
-  if (data.clientEmail) { y += 5; doc.text(data.clientEmail, MARGIN, y); }
-  if (data.clientPhone) { y += 5; doc.text(data.clientPhone, MARGIN, y); }
-  if (data.clientAddress) {
-    y += 5;
-    const addressLines = doc.splitTextToSize(data.clientAddress, 80);
-    doc.text(addressLines, MARGIN, y);
-    y += (addressLines.length - 1) * 5;
-  }
   y += 10;
 
+  // ── "To," client block ──
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.text('To,', MARGIN, y);
+  y += 5;
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(55, 55, 55);
+  doc.text(data.clientName, MARGIN, y); y += 4.5;
+  if (data.clientEmail) { doc.text(data.clientEmail, MARGIN, y); y += 4.5; }
+  if (data.clientPhone) { doc.text(`Mobile: ${data.clientPhone}`, MARGIN, y); y += 4.5; }
+  if (data.clientAddress) {
+    const addressLines = doc.splitTextToSize(data.clientAddress, 80);
+    doc.text(addressLines, MARGIN, y);
+    y += addressLines.length * 4.5;
+  }
+
+  y += 6;
+
+  // Separator
+  doc.setDrawColor(200, 210, 230);
+  doc.setLineWidth(0.3);
+  doc.line(MARGIN, y, pageWidth - MARGIN, y);
+  y += 6;
+
   // ── Items table ──
-  if (y > maxY - 40) { doc.addPage(); y = MARGIN; }
+  if (y > maxY - 40) { y = addNewPage(doc, company, logoData); }
 
   autoTable(doc, {
     startY: y,
@@ -246,7 +295,9 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
       formatCurrency(item.amount),
     ]),
     theme: 'striped',
-    headStyles: { fillColor: [34, 55, 94], textColor: [255, 255, 255], fontStyle: 'bold' },
+    headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+    bodyStyles: { fontSize: 8.5 },
+    alternateRowStyles: { fillColor: [245, 247, 252] },
     columnStyles: {
       0: { cellWidth: 12, halign: 'center' },
       1: { cellWidth: 'auto' },
@@ -259,14 +310,13 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
 
   y = (doc as any).lastAutoTable.finalY + 8;
 
-  // Check page break for totals
-  if (y + 40 > maxY) { doc.addPage(); y = MARGIN; }
+  if (y + 40 > maxY) { y = addNewPage(doc, company, logoData); }
 
   // ── Totals ──
   const totalsX = pageWidth - 70;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(55, 55, 55);
 
   doc.text('Subtotal:', totalsX, y);
   doc.text(formatCurrency(data.subtotal), pageWidth - MARGIN, y, { align: 'right' });
@@ -284,11 +334,13 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
     y += 6;
   }
 
-  doc.setDrawColor(200, 200, 200);
+  doc.setDrawColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.setLineWidth(0.4);
   doc.line(totalsX - 5, y, pageWidth - MARGIN, y);
   y += 6;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.text('Total:', totalsX, y);
   doc.text(formatCurrency(data.total), pageWidth - MARGIN, y, { align: 'right' });
   y += 8;
@@ -298,24 +350,23 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(80, 80, 80);
   doc.text(`Amount in Words: ${numberToWords(data.total)}`, MARGIN, y);
-  y += 12;
+  y += 10;
 
   // ── Notes & Terms ──
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(60, 60, 60);
 
   if (data.notes) {
-    if (y > maxY - 20) { doc.addPage(); y = MARGIN; }
+    if (y > maxY - 20) { y = addNewPage(doc, company, logoData); }
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(34, 55, 94);
+    doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
     doc.text('Notes:', MARGIN, y);
     y += 5;
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(55, 55, 55);
     const notesLines = doc.splitTextToSize(stripHtml(data.notes), pageWidth - MARGIN * 2);
     for (const line of notesLines) {
-      if (y > maxY) { doc.addPage(); y = MARGIN; }
+      if (y > maxY) { y = addNewPage(doc, company, logoData); }
       doc.text(line, MARGIN, y);
       y += 4.5;
     }
@@ -323,16 +374,16 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   }
 
   if (data.terms) {
-    if (y > maxY - 20) { doc.addPage(); y = MARGIN; }
+    if (y > maxY - 20) { y = addNewPage(doc, company, logoData); }
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(34, 55, 94);
+    doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
     doc.text('Terms & Conditions:', MARGIN, y);
     y += 5;
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
+    doc.setTextColor(55, 55, 55);
     const termsLines = doc.splitTextToSize(stripHtml(data.terms), pageWidth - MARGIN * 2);
     for (const line of termsLines) {
-      if (y > maxY) { doc.addPage(); y = MARGIN; }
+      if (y > maxY) { y = addNewPage(doc, company, logoData); }
       doc.text(line, MARGIN, y);
       y += 4.5;
     }
@@ -340,10 +391,10 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   }
 
   // ── Signature section ──
-  if (y > maxY - 35) { doc.addPage(); y = MARGIN; }
+  if (y > maxY - 35) { y = addNewPage(doc, company, logoData); }
   y += 10;
 
-  doc.setDrawColor(0, 0, 0);
+  doc.setDrawColor(100, 100, 100);
   doc.setLineWidth(0.3);
 
   doc.line(MARGIN, y + 15, MARGIN + 71, y + 15);
@@ -363,8 +414,15 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   doc.text(data.clientName, rightSigX, y + 25);
   doc.text('Date: ____________________', rightSigX, y + 30);
 
-  // ── Page footers ──
-  addPageFooters(doc);
+  // Add headers to subsequent pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 2; i <= totalPages; i++) {
+    doc.setPage(i);
+    addHeader(doc, company, logoData);
+  }
+
+  // ── Page footers + watermarks ──
+  addPageFooters(doc, watermarkData);
 
   // ── Output ──
   doc.save(`${data.documentType.toLowerCase()}-${data.documentNumber}.pdf`);

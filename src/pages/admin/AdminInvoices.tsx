@@ -37,6 +37,7 @@ import { Plus, Pencil, Trash2, FileText, Search, Download } from 'lucide-react';
 import InvoiceForm from '@/components/admin/InvoiceForm';
 import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
 import companyLogo from '@/assets/logo.png';
+import watermarkImage from '@/assets/jolchap.png';
  
  interface InvoiceItem {
    id?: string;
@@ -80,14 +81,16 @@ import { getStatusColor } from '@/lib/status-colors';
    const queryClient = useQueryClient();
    const { data: businessInfo } = useBusinessInfoMap();
 
-   const getCompanyInfo = (): CompanyInfo => ({
-     name: businessInfo?.company_name?.value_en || 'Creation Tech',
-     address: businessInfo?.address?.value_en || 'Dhaka, Bangladesh',
-     phone: businessInfo?.phone_primary?.value_en || '+880 1XXX-XXXXXX',
-     email: businessInfo?.email_primary?.value_en || 'info@creationtech.com',
-     website: businessInfo?.website?.value_en || 'www.creationtech.com',
-     logo_url: businessInfo?.company_logo?.value_en || companyLogo,
-   });
+    const getCompanyInfo = (): CompanyInfo => ({
+      name: businessInfo?.company_name?.value_en || 'Creation Tech',
+      tagline: businessInfo?.tagline?.value_en || '-PRIME TECH PARTNER-',
+      address: businessInfo?.address?.value_en || 'Dhaka, Bangladesh',
+      phone: businessInfo?.phone_primary?.value_en || '+880 1XXX-XXXXXX',
+      email: businessInfo?.email_primary?.value_en || 'info@creationtech.com',
+      website: businessInfo?.website?.value_en || 'www.creationtech.com',
+      logo_url: businessInfo?.company_logo?.value_en || companyLogo,
+      watermark_url: watermarkImage,
+    });
  
    const [formData, setFormData] = useState({
     client_id: '',

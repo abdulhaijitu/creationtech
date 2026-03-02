@@ -10,29 +10,13 @@ interface ProposalItem {
 
 interface CompanyInfo {
   name?: string;
+  tagline?: string;
   address?: string;
   phone?: string;
   email?: string;
   website?: string;
   logo_url?: string;
-}
-
-function loadImageAsDataUrl(url: string): Promise<string | null> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { resolve(null); return; }
-      ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = () => resolve(null);
-    img.src = url;
-  });
+  watermark_url?: string;
 }
 
 interface ProposalData {
@@ -62,10 +46,31 @@ interface ProposalData {
 }
 
 // ── Constants ──
-const MARGIN = 25.4; // 1 inch in mm
-const FOOTER_RESERVE = 30; // mm reserved for footer
+const MARGIN = 20;
+const HEADER_HEIGHT = 38;
+const CONTENT_START_Y = HEADER_HEIGHT + 8;
+const FOOTER_RESERVE = 22;
+const ACCENT_COLOR: [number, number, number] = [34, 55, 94];
 
 // ── Helpers ──
+
+function loadImageAsDataUrl(url: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(null); return; }
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
 
 function stripHtml(html: string): string {
   const tmp = document.createElement('div');
@@ -76,56 +81,30 @@ function stripHtml(html: string): string {
 function htmlToPlainText(html: string): string {
   if (!html) return '';
   let text = html;
-
-  // Handle ordered list items with numbering
-  let olCounter = 0;
-  text = text.replace(/<ol[^>]*>/gi, () => { olCounter = 0; return ''; });
+  text = text.replace(/<ol[^>]*>/gi, '');
   text = text.replace(/<\/ol>/gi, '');
-  
-  // Handle unordered lists
   text = text.replace(/<ul[^>]*>/gi, '');
   text = text.replace(/<\/ul>/gi, '');
-
-  // Handle <li> — detect if inside <ol> by checking preceding context
-  // Simple approach: replace all <li> with bullet, then fix ordered ones
   text = text.replace(/<li[^>]*>/gi, '\n• ');
   text = text.replace(/<\/li>/gi, '');
-
-  // Paragraphs and line breaks
   text = text.replace(/<br\s*\/?>/gi, '\n');
   text = text.replace(/<\/p>/gi, '\n');
   text = text.replace(/<p[^>]*>/gi, '');
-
-  // Headings
   text = text.replace(/<\/h[1-6]>/gi, '\n');
   text = text.replace(/<h[1-6][^>]*>/gi, '\n');
-
-  // Table handling — row by row
   text = text.replace(/<\/td>/gi, '  ');
   text = text.replace(/<\/th>/gi, '  ');
   text = text.replace(/<tr[^>]*>/gi, '\n');
   text = text.replace(/<\/tr>/gi, '');
-
-  // Strip all remaining HTML tags
   text = text.replace(/<[^>]+>/gi, '');
-
-  // Decode HTML entities
-  text = text.replace(/&amp;/g, '&');
-  text = text.replace(/&lt;/g, '<');
-  text = text.replace(/&gt;/g, '>');
-  text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&#39;/g, "'");
-  text = text.replace(/&nbsp;/g, ' ');
-
-  // Clean up multiple blank lines
+  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
   text = text.replace(/\n{3,}/g, '\n\n');
   return text.trim();
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'short', day: 'numeric',
-  });
+  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function formatCurrency(amount: number): string {
@@ -137,7 +116,6 @@ function numberToWords(num: number): string {
   const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
     'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
   const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-
   const convert = (n: number): string => {
     if (n < 20) return ones[n];
     if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
@@ -146,7 +124,6 @@ function numberToWords(num: number): string {
     if (n < 10000000) return convert(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + convert(n % 100000) : '');
     return convert(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 ? ' ' + convert(n % 10000000) : '');
   };
-
   const intPart = Math.floor(Math.abs(num));
   const decPart = Math.round((Math.abs(num) - intPart) * 100);
   let result = convert(intPart) + ' Taka';
@@ -154,71 +131,155 @@ function numberToWords(num: number): string {
   return result + ' Only';
 }
 
-function getStatusColor(status: string): [number, number, number] {
-  const colors: Record<string, [number, number, number]> = {
-    draft: [156, 163, 175],
-    sent: [59, 130, 246],
-    accepted: [34, 197, 94],
-    approved: [34, 197, 94],
-    rejected: [239, 68, 68],
-    revised: [234, 179, 8],
-    negotiation: [234, 179, 8],
-    cancelled: [107, 114, 128],
-  };
-  return colors[status] || [156, 163, 175];
-}
+// ── Reusable header (every page) ──
 
-// ── Section renderer (with htmlToPlainText) ──
+function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): number {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const rightX = pageWidth - MARGIN;
 
-function addSection(doc: jsPDF, title: string, content: string, y: number, pageWidth: number): number {
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const maxY = pageHeight - FOOTER_RESERVE;
-  const contentWidth = pageWidth - MARGIN * 2;
+  // Blue accent bar at top
+  doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.rect(0, 0, pageWidth, 3, 'F');
 
-  if (y > maxY - 20) { doc.addPage(); y = MARGIN; }
-
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(34, 55, 94);
-  doc.text(title, MARGIN, y);
-  y += 6;
-
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(60, 60, 60);
-
-  const plainText = htmlToPlainText(content);
-  const paragraphs = plainText.split('\n');
-
-  for (const paragraph of paragraphs) {
-    if (paragraph.trim() === '') {
-      y += 2; // small gap for empty lines
-      continue;
-    }
-    const lines = doc.splitTextToSize(paragraph, contentWidth);
-    for (const line of lines) {
-      if (y > maxY) { doc.addPage(); y = MARGIN; }
-      doc.text(line, MARGIN, y);
-      y += 4.5;
-    }
+  // Logo + Company name (left)
+  let nameX = MARGIN;
+  if (logoData) {
+    doc.addImage(logoData, 'PNG', MARGIN, 6, 12, 12);
+    nameX = MARGIN + 14;
   }
-  return y + 4;
+
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.text(company.name || 'Creation Tech', nameX, 13);
+
+  if (company.tagline) {
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(120, 120, 120);
+    doc.text(company.tagline, nameX, 17);
+  }
+
+  // Company info (right-aligned)
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 80);
+  let infoY = 8;
+  if (company.address) { doc.text(company.address, rightX, infoY, { align: 'right' }); infoY += 3.5; }
+  if (company.phone) { doc.text(`Phone: ${company.phone}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
+  if (company.email) { doc.text(`Email: ${company.email}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
+  if (company.website) { doc.text(`Web: ${company.website}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
+
+  // Separator line
+  const lineY = Math.max(infoY + 2, 22);
+  doc.setDrawColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.setLineWidth(0.6);
+  doc.line(MARGIN, lineY, rightX, lineY);
+
+  // Thin decorative line
+  doc.setDrawColor(200, 210, 230);
+  doc.setLineWidth(0.2);
+  doc.line(MARGIN, lineY + 1.5, rightX, lineY + 1.5);
+
+  return lineY + 5;
 }
 
-// ── Page footer (called after all content) ──
+// ── Watermark (every page) ──
 
-function addPageFooters(doc: jsPDF) {
+function addWatermark(doc: jsPDF, watermarkData: string | null) {
+  if (!watermarkData) return;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const gState = new (doc as any).GState({ opacity: 0.06 });
+  doc.saveGraphicsState();
+  doc.setGState(gState);
+  doc.addImage(watermarkData, 'PNG', pageWidth - 75, pageHeight - 75, 55, 55);
+  doc.restoreGraphicsState();
+}
+
+// ── Right-side accent strip ──
+
+function addAccentStrip(doc: jsPDF) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  // Subtle gradient-like strip on right edge
+  for (let i = 0; i < 3; i++) {
+    const opacity = 0.08 - i * 0.025;
+    const gState = new (doc as any).GState({ opacity });
+    doc.saveGraphicsState();
+    doc.setGState(gState);
+    doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+    doc.rect(pageWidth - 4 + i, 3, 1.5, pageHeight - 3, 'F');
+    doc.restoreGraphicsState();
+  }
+}
+
+// ── Page footers + watermark (called after all content) ──
+
+function addPageFooters(doc: jsPDF, watermarkData: string | null) {
   const totalPages = doc.getNumberOfPages();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    doc.setFontSize(7);
+    addWatermark(doc, watermarkData);
+    addAccentStrip(doc);
+
+    // Footer line
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
+    doc.line(MARGIN, pageHeight - 16, pageWidth - MARGIN, pageHeight - 16);
+
+    doc.setFontSize(6.5);
     doc.setTextColor(150, 150, 150);
-    doc.text('CONFIDENTIAL — This document contains proprietary information intended solely for the recipient.', pageWidth / 2, pageHeight - 12, { align: 'center' });
-    doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 7, { align: 'center' });
+    doc.text('CONFIDENTIAL — This document contains proprietary information intended solely for the recipient.', MARGIN, pageHeight - 12);
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth - MARGIN, pageHeight - 12, { align: 'right' });
   }
+}
+
+// ── Custom addPage wrapper ──
+
+function addNewPage(doc: jsPDF, company: CompanyInfo, logoData: string | null): number {
+  doc.addPage();
+  return addHeader(doc, company, logoData);
+}
+
+// ── Section renderer ──
+
+function addSection(
+  doc: jsPDF, title: string, content: string, y: number,
+  pageWidth: number, company: CompanyInfo, logoData: string | null
+): number {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxY = pageHeight - FOOTER_RESERVE;
+  const contentWidth = pageWidth - MARGIN * 2;
+
+  if (y > maxY - 20) { y = addNewPage(doc, company, logoData); }
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.text(title, MARGIN, y);
+  y += 6;
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(55, 55, 55);
+
+  const plainText = htmlToPlainText(content);
+  const paragraphs = plainText.split('\n');
+
+  for (const paragraph of paragraphs) {
+    if (paragraph.trim() === '') { y += 2; continue; }
+    const lines = doc.splitTextToSize(paragraph, contentWidth);
+    for (const line of lines) {
+      if (y > maxY) { y = addNewPage(doc, company, logoData); }
+      doc.text(line, MARGIN, y);
+      y += 4.5;
+    }
+  }
+  return y + 4;
 }
 
 // ── Main generator ──
@@ -234,131 +295,119 @@ export async function generateProposalPDF(
   const maxY = pageHeight - FOOTER_RESERVE;
   const contentWidth = pageWidth - MARGIN * 2;
 
-  // ── Company header / letterhead ──
-  const company = companyInfo || {
+  const company: CompanyInfo = {
     name: 'Creation Tech',
+    tagline: '-PRIME TECH PARTNER-',
     address: 'Dhaka, Bangladesh',
     phone: '+880 1XXX-XXXXXX',
     email: 'info@creationtech.com',
     website: 'www.creationtech.com',
+    ...companyInfo,
   };
 
-  // Logo
-  let logoTextStartX = MARGIN;
+  // Load images
+  let logoData: string | null = null;
+  let watermarkData: string | null = null;
+
+  const loadPromises: Promise<void>[] = [];
   if (company.logo_url) {
-    try {
-      const logoData = await loadImageAsDataUrl(company.logo_url);
-      if (logoData) {
-        const logoH = 14; // mm height
-        const logoW = logoH; // square aspect for logo
-        doc.addImage(logoData, 'PNG', MARGIN, MARGIN - 4, logoW, logoH);
-        logoTextStartX = MARGIN + logoW + 4;
-      }
-    } catch {
-      // fallback: no logo
-    }
+    loadPromises.push(loadImageAsDataUrl(company.logo_url).then(d => { logoData = d; }));
   }
+  if (company.watermark_url) {
+    loadPromises.push(loadImageAsDataUrl(company.watermark_url).then(d => { watermarkData = d; }));
+  }
+  await Promise.all(loadPromises);
 
-  doc.setFontSize(16);
+  // ── Page 1 Header ──
+  let y = addHeader(doc, company, logoData);
+
+  // ── PROPOSAL title + meta info ──
+  doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(34, 55, 94);
-  doc.text(company.name || '', logoTextStartX, MARGIN);
-
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
-  let headerY = MARGIN + 6;
-  if (company.address) { doc.text(company.address, logoTextStartX, headerY); headerY += 4; }
-  if (company.phone) { doc.text(`Phone: ${company.phone}`, logoTextStartX, headerY); headerY += 4; }
-  if (company.email) { doc.text(`Email: ${company.email}`, logoTextStartX, headerY); headerY += 4; }
-  if (company.website) { doc.text(company.website, logoTextStartX, headerY); headerY += 4; }
-
-  // Separator line
-  doc.setDrawColor(34, 55, 94);
-  doc.setLineWidth(0.5);
-  doc.line(MARGIN, headerY + 1, pageWidth - MARGIN, headerY + 1);
-
-  // ── PROPOSAL title ──
-  let y = headerY + 8;
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(34, 55, 94);
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.text('PROPOSAL', MARGIN, y);
 
-  // Proposal info (right side)
+  const rightX = pageWidth - MARGIN;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(80, 80, 80);
-  doc.text(`Proposal #: ${data.proposal_number}`, pageWidth - MARGIN, y - 6, { align: 'right' });
-  doc.text(`Date: ${formatDate(data.created_at)}`, pageWidth - MARGIN, y, { align: 'right' });
+  doc.setTextColor(70, 70, 70);
+  doc.text(`Proposal #: ${data.proposal_number}`, rightX, y - 4, { align: 'right' });
+  doc.text(`Date: ${formatDate(data.created_at)}`, rightX, y + 1, { align: 'right' });
   if (data.valid_until) {
-    doc.text(`Valid Until: ${formatDate(data.valid_until)}`, pageWidth - MARGIN, y + 6, { align: 'right' });
+    doc.text(`Valid Until: ${formatDate(data.valid_until)}`, rightX, y + 6, { align: 'right' });
   }
 
-  // Status badge
-  const statusY = y + (data.valid_until ? 12 : 6);
-  const statusColor = getStatusColor(data.status);
-  doc.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-  doc.roundedRect(pageWidth - MARGIN - 31, statusY - 4, 31, 7, 2, 2, 'F');
-  doc.setFontSize(8);
-  doc.setTextColor(255, 255, 255);
-  doc.text(data.status.toUpperCase(), pageWidth - MARGIN - 15.5, statusY, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-
-  // Title
-  y += 8;
-  doc.setFontSize(13);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(34, 55, 94);
-  const titleLines = doc.splitTextToSize(data.title, contentWidth);
-  doc.text(titleLines, MARGIN, y);
-
-  // Validity period note
+  // Validity note
   if (data.valid_until) {
     const validFrom = new Date(data.created_at);
     const validTo = new Date(data.valid_until);
     const diffDays = Math.ceil((validTo.getTime() - validFrom.getTime()) / (1000 * 60 * 60 * 24));
-    y += titleLines.length * 6 + 2;
+    y += 6;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(120, 120, 120);
     doc.text(`This proposal is valid for ${diffDays} days from the date of issue.`, MARGIN, y);
   }
 
-  // Separator
-  const sepY = y + 6;
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.2);
-  doc.line(MARGIN, sepY, pageWidth - MARGIN, sepY);
+  y += 8;
 
-  // ── Client info ──
-  y = sepY + 8;
+  // ── "To," client block ──
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 0, 0);
-  doc.text('CLIENT:', MARGIN, y);
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.text('To,', MARGIN, y);
+  y += 5;
+
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(55, 55, 55);
+  
+  if (data.client_company) { doc.text(data.client_company, MARGIN, y); y += 4.5; }
+  doc.text(data.client_name, MARGIN, y); y += 4.5;
+  if (data.client_email) { doc.text(data.client_email, MARGIN, y); y += 4.5; }
+  if (data.client_phone) { doc.text(`Mobile: ${data.client_phone}`, MARGIN, y); y += 4.5; }
+
+  y += 4;
+
+  // ── Subject line ──
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.text('Subject: ', MARGIN, y);
+  const subjectX = MARGIN + doc.getTextWidth('Subject: ');
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(55, 55, 55);
+  const subjectLines = doc.splitTextToSize(data.title, contentWidth - doc.getTextWidth('Subject: '));
+  doc.text(subjectLines[0], subjectX, y);
+  if (subjectLines.length > 1) {
+    for (let i = 1; i < subjectLines.length; i++) {
+      y += 5;
+      doc.text(subjectLines[i], MARGIN, y);
+    }
+  }
+
+  y += 8;
+
+  // Separator
+  doc.setDrawColor(200, 210, 230);
+  doc.setLineWidth(0.3);
+  doc.line(MARGIN, y, pageWidth - MARGIN, y);
   y += 6;
-  doc.text(data.client_name, MARGIN, y);
-  if (data.client_company) { y += 5; doc.text(data.client_company, MARGIN, y); }
-  if (data.client_email) { y += 5; doc.text(data.client_email, MARGIN, y); }
-  if (data.client_phone) { y += 5; doc.text(data.client_phone, MARGIN, y); }
-  y += 10;
 
   // ── Rich text sections ──
-  if (data.offer_letter) y = addSection(doc, 'Offer Letter', data.offer_letter, y, pageWidth);
-  if (data.scope_of_work) y = addSection(doc, 'Project Overview', data.scope_of_work, y, pageWidth);
-  if (data.timeline) y = addSection(doc, 'Timeline', data.timeline, y, pageWidth);
-  if (data.deliverables) y = addSection(doc, 'Key Deliverables', data.deliverables, y, pageWidth);
-  if (data.expected_outcome) y = addSection(doc, 'Expected Outcome', data.expected_outcome, y, pageWidth);
+  if (data.offer_letter) y = addSection(doc, 'Offer Letter', data.offer_letter, y, pageWidth, company, logoData);
+  if (data.scope_of_work) y = addSection(doc, 'Project Overview', data.scope_of_work, y, pageWidth, company, logoData);
+  if (data.timeline) y = addSection(doc, 'Timeline', data.timeline, y, pageWidth, company, logoData);
+  if (data.deliverables) y = addSection(doc, 'Key Deliverables', data.deliverables, y, pageWidth, company, logoData);
+  if (data.expected_outcome) y = addSection(doc, 'Expected Outcome', data.expected_outcome, y, pageWidth, company, logoData);
 
   // ── Budget items table ──
   if (data.items.length > 0) {
-    if (y > maxY - 40) { doc.addPage(); y = MARGIN; }
+    if (y > maxY - 40) { y = addNewPage(doc, company, logoData); }
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(34, 55, 94);
+    doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
     doc.text('Budget Details', MARGIN, y);
     y += 4;
 
@@ -373,7 +422,9 @@ export async function generateProposalPDF(
         formatCurrency(item.amount),
       ]),
       theme: 'striped',
-      headStyles: { fillColor: [34, 55, 94], textColor: [255, 255, 255], fontStyle: 'bold' },
+      headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8.5 },
+      alternateRowStyles: { fillColor: [245, 247, 252] },
       columnStyles: {
         0: { cellWidth: 12, halign: 'center' },
         1: { cellWidth: 'auto' },
@@ -382,19 +433,24 @@ export async function generateProposalPDF(
         4: { cellWidth: 32, halign: 'right' },
       },
       margin: { left: MARGIN, right: MARGIN },
+      didDrawPage: () => {
+        // Re-draw header on new pages created by autoTable
+        const currentPage = doc.getNumberOfPages();
+        if (currentPage > 1) {
+          // Header is added via addPageFooters pass
+        }
+      },
     });
 
     y = (doc as any).lastAutoTable.finalY + 8;
 
-    // Check if totals section needs a new page
-    const totalsHeight = 40; // approximate height needed for totals
-    if (y + totalsHeight > maxY) { doc.addPage(); y = MARGIN; }
+    if (y + 40 > maxY) { y = addNewPage(doc, company, logoData); }
 
     // Totals
     const totalsX = pageWidth - 70;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(55, 55, 55);
 
     if (data.subtotal != null) {
       doc.text('Subtotal:', totalsX, y);
@@ -412,11 +468,13 @@ export async function generateProposalPDF(
       y += 6;
     }
 
-    doc.setDrawColor(200, 200, 200);
+    doc.setDrawColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+    doc.setLineWidth(0.4);
     doc.line(totalsX - 5, y, pageWidth - MARGIN, y);
     y += 6;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
+    doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
     doc.text('Total:', totalsX, y);
     doc.text(formatCurrency(data.total_amount || 0), pageWidth - MARGIN, y, { align: 'right' });
     y += 8;
@@ -426,21 +484,21 @@ export async function generateProposalPDF(
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(80, 80, 80);
     doc.text(`Amount in Words: ${numberToWords(data.total_amount || 0)}`, MARGIN, y);
-    y += 12;
+    y += 10;
   }
 
   // ── Offer Letter End ──
-  if (data.offer_letter_end) y = addSection(doc, 'Closing', data.offer_letter_end, y, pageWidth);
+  if (data.offer_letter_end) y = addSection(doc, 'Closing', data.offer_letter_end, y, pageWidth, company, logoData);
 
   // ── Notes & Terms ──
-  if (data.notes) y = addSection(doc, 'Notes', data.notes, y, pageWidth);
-  if (data.terms) y = addSection(doc, 'Terms & Conditions', data.terms, y, pageWidth);
+  if (data.notes) y = addSection(doc, 'Notes', data.notes, y, pageWidth, company, logoData);
+  if (data.terms) y = addSection(doc, 'Terms & Conditions', data.terms, y, pageWidth, company, logoData);
 
   // ── Signature section ──
-  if (y > maxY - 35) { doc.addPage(); y = MARGIN; }
+  if (y > maxY - 35) { y = addNewPage(doc, company, logoData); }
   y += 10;
 
-  doc.setDrawColor(0, 0, 0);
+  doc.setDrawColor(100, 100, 100);
   doc.setLineWidth(0.3);
 
   // Authorized Signature (left)
@@ -462,8 +520,16 @@ export async function generateProposalPDF(
   doc.text(data.client_name, rightSigX, y + 25);
   doc.text('Date: ____________________', rightSigX, y + 30);
 
-  // ── Page footers ──
-  addPageFooters(doc);
+  // ── Add headers to pages created by autoTable (pages > 1 that don't have headers) ──
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 2; i <= totalPages; i++) {
+    doc.setPage(i);
+    // Check if header area is empty by drawing header
+    addHeader(doc, company, logoData);
+  }
+
+  // ── Page footers + watermarks ──
+  addPageFooters(doc, watermarkData);
 
   // ── Output ──
   if (action === 'print') {
