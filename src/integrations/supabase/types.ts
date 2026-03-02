@@ -1038,6 +1038,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deliverables: string | null
+          expected_outcome: string | null
           id: string
           notes: string | null
           offer_letter: string | null
@@ -1062,6 +1063,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deliverables?: string | null
+          expected_outcome?: string | null
           id?: string
           notes?: string | null
           offer_letter?: string | null
@@ -1086,6 +1088,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deliverables?: string | null
+          expected_outcome?: string | null
           id?: string
           notes?: string | null
           offer_letter?: string | null
