@@ -122,39 +122,52 @@
      }
    };
  
-   const createNewVersion = async (proposal: Proposal) => {
-     try {
-       const { data: numData } = await supabase.rpc('generate_proposal_number');
-       const proposalNumber = numData || `PRO-${Date.now()}`;
- 
-       const { error } = await supabase.from('proposals').insert({
-         proposal_number: proposalNumber,
-         client_id: proposal.client_id,
-         client_name: proposal.client_name,
-         client_email: proposal.client_email,
-         client_phone: proposal.client_phone,
-         client_company: proposal.client_company,
-         title: proposal.title,
-         scope_of_work: proposal.scope_of_work,
-         timeline: proposal.timeline,
-         deliverables: proposal.deliverables,
-         pricing_summary: proposal.pricing_summary,
-         total_amount: proposal.total_amount,
-         valid_until: proposal.valid_until,
-         notes: proposal.notes,
-         terms: proposal.terms,
-         version: proposal.version + 1,
-         status: 'draft',
-       });
- 
-       if (error) throw error;
-       await supabase.from('proposals').update({ status: 'revised' }).eq('id', proposal.id);
-       toast({ title: 'Success', description: 'New version created' });
-       fetchProposals();
-     } catch (error: any) {
-       toast({ title: 'Error', description: error.message, variant: 'destructive' });
-     }
-   };
+  const createNewVersion = async (proposal: Proposal) => {
+    try {
+      const { data: numData } = await supabase.rpc('generate_proposal_number');
+      const proposalNumber = numData || `PRO-${Date.now()}`;
+
+      const { data: newProposal, error } = await supabase.from('proposals').insert({
+        proposal_number: proposalNumber,
+        client_id: proposal.client_id,
+        client_name: proposal.client_name,
+        client_email: proposal.client_email,
+        client_phone: proposal.client_phone,
+        client_company: proposal.client_company,
+        title: proposal.title,
+        scope_of_work: proposal.scope_of_work,
+        timeline: proposal.timeline,
+        deliverables: proposal.deliverables,
+        pricing_summary: proposal.pricing_summary,
+        total_amount: proposal.total_amount,
+        valid_until: proposal.valid_until,
+        notes: proposal.notes,
+        terms: proposal.terms,
+        version: proposal.version + 1,
+        status: 'draft',
+      }).select('id').single();
+
+      if (error) throw error;
+
+      // Copy proposal items to new version
+      const { data: existingItems } = await supabase
+        .from('proposal_items')
+        .select('description, quantity, unit_price, amount, display_order')
+        .eq('proposal_id', proposal.id);
+
+      if (existingItems && existingItems.length > 0 && newProposal) {
+        await supabase.from('proposal_items').insert(
+          existingItems.map(item => ({ ...item, proposal_id: newProposal.id }))
+        );
+      }
+
+      await supabase.from('proposals').update({ status: 'revised' }).eq('id', proposal.id);
+      toast({ title: 'Success', description: 'New version created' });
+      fetchProposals();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
  
    const filteredProposals = proposals.filter((p) => {
      const matchesSearch =

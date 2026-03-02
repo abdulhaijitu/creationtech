@@ -1028,6 +1028,47 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_items: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          display_order: number | null
+          id: string
+          proposal_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          display_order?: number | null
+          id?: string
+          proposal_id: string
+          quantity?: number
+          unit_price: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          display_order?: number | null
+          id?: string
+          proposal_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_items_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proposals: {
         Row: {
           client_company: string | null
@@ -1038,6 +1079,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deliverables: string | null
+          discount_amount: number | null
           expected_outcome: string | null
           id: string
           notes: string | null
@@ -1046,6 +1088,9 @@ export type Database = {
           proposal_number: string
           scope_of_work: string | null
           status: string
+          subtotal: number | null
+          tax_amount: number | null
+          tax_rate: number | null
           terms: string | null
           timeline: string | null
           title: string
@@ -1063,6 +1108,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deliverables?: string | null
+          discount_amount?: number | null
           expected_outcome?: string | null
           id?: string
           notes?: string | null
@@ -1071,6 +1117,9 @@ export type Database = {
           proposal_number: string
           scope_of_work?: string | null
           status?: string
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_rate?: number | null
           terms?: string | null
           timeline?: string | null
           title: string
@@ -1088,6 +1137,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deliverables?: string | null
+          discount_amount?: number | null
           expected_outcome?: string | null
           id?: string
           notes?: string | null
@@ -1096,6 +1146,9 @@ export type Database = {
           proposal_number?: string
           scope_of_work?: string | null
           status?: string
+          subtotal?: number | null
+          tax_amount?: number | null
+          tax_rate?: number | null
           terms?: string | null
           timeline?: string | null
           title?: string
