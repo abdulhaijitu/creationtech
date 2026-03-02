@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +24,8 @@ import { ProposalForm } from '@/components/admin/ProposalForm';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getStatusColor } from '@/lib/status-colors';
+import { generateProposalPDF } from '@/utils/proposalPdfGenerator';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
 
 interface Proposal {
   id: string;
@@ -180,6 +182,31 @@ const AdminProposals = () => {
     window.open(`mailto:${proposal.client_email}?subject=${subject}&body=${body}`, '_self');
   };
 
+  const handlePdfAction = async (proposal: Proposal, action: 'download' | 'print' | 'email') => {
+    try {
+      // Fetch proposal items
+      const { data: items } = await supabaseClient
+        .from('proposal_items')
+        .select('description, quantity, unit_price, amount')
+        .eq('proposal_id', proposal.id)
+        .order('display_order');
+
+      const pdfData = {
+        ...proposal,
+        items: items || [],
+      };
+
+      if (action === 'email') {
+        emailToClient(proposal);
+      } else {
+        generateProposalPDF(pdfData, action);
+        toast({ title: 'Success', description: action === 'print' ? 'Opening print dialog...' : 'PDF downloaded' });
+      }
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
+
   const filteredProposals = proposals.filter((p) => {
     const matchesSearch =
       p.proposal_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -252,6 +279,7 @@ const AdminProposals = () => {
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
               <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="negotiation">Negotiation</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
               <SelectItem value="revised">Revised</SelectItem>
             </SelectContent>
@@ -298,17 +326,29 @@ const AdminProposals = () => {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'draft')}>Mark as Draft</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'sent')}>Mark as Sent</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'accepted')}>Mark as Accepted</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'accepted')}>
+                            <CheckCircle className="h-4 w-4 mr-2" /> Mark as Accepted
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'approved')}>
                             <CheckCircle className="h-4 w-4 mr-2" /> Mark as Approved
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'negotiation')}>
+                            <MessageSquare className="h-4 w-4 mr-2" /> Mark as Negotiation
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => updateStatus(proposal.id, 'rejected')}>Mark as Rejected</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'download')}>
+                            <Download className="h-4 w-4 mr-2" /> Download PDF
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'print')}>
+                            <Printer className="h-4 w-4 mr-2" /> Print
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'email')}>
+                            <Mail className="h-4 w-4 mr-2" /> Email to Client
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => createNewVersion(proposal)}>
                             <FileText className="h-4 w-4 mr-2" /> Create New Version
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => emailToClient(proposal)}>
-                            <Mail className="h-4 w-4 mr-2" /> Email to Client
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
