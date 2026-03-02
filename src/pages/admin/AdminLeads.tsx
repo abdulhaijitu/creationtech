@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Eye, Mail, Phone, Calendar, MoreHorizontal, Search, MessageSquare, FileQuestion, CalendarDays, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, Mail, Phone, Calendar, MoreHorizontal, Search, MessageSquare, FileQuestion, CalendarDays, Plus, UserPlus } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import { Card, CardContent } from '@/components/ui/card';
@@ -77,8 +78,9 @@ import {
 import { getStatusColor } from '@/lib/status-colors';
  
  const AdminLeads = () => {
-   const { toast } = useToast();
-   const [contacts, setContacts] = useState<ContactSubmission[]>([]);
+    const { toast } = useToast();
+    const navigate = useNavigate();
+    const [contacts, setContacts] = useState<ContactSubmission[]>([]);
    const [quotes, setQuotes] = useState<QuoteRequest[]>([]);
    const [meetings, setMeetings] = useState<MeetingRequest[]>([]);
    const [isLoading, setIsLoading] = useState(true);
@@ -95,6 +97,7 @@ import { getStatusColor } from '@/lib/status-colors';
   const [addType, setAddType] = useState<'contact' | 'quote' | 'meeting'>('contact');
   const [addForm, setAddForm] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
 
   const resetAddForm = () => {
     setAddForm({});
@@ -237,10 +240,67 @@ import { getStatusColor } from '@/lib/status-colors';
      }
    };
  
-   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US', {
-     year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-   });
- 
+    const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+
+    const convertToClient = async () => {
+      if (!selectedItem) return;
+      setIsConverting(true);
+      try {
+        const { data: existing } = await supabase
+          .from('clients')
+          .select('id, name')
+          .eq('email', selectedItem.email)
+          .maybeSingle();
+
+        if (existing) {
+          toast({
+            title: 'ক্লায়েন্ট আগে থেকেই আছে',
+            description: `"${existing.name}" এই ইমেইলে ইতিমধ্যে ক্লায়েন্ট হিসেবে আছে।`,
+            variant: 'destructive',
+          });
+          setIsConverting(false);
+          return;
+        }
+
+        const company = selectedItem.company || null;
+        const leadSource = selectedType === 'contact' ? 'Contact Form' : selectedType === 'quote' ? 'Quote Request' : 'Meeting Request';
+
+        const { data: newClient, error } = await supabase.from('clients').insert({
+          name: selectedItem.full_name,
+          email: selectedItem.email,
+          phone: selectedItem.phone || null,
+          company,
+          notes: `Lead source: ${leadSource} (${new Date(selectedItem.created_at).toLocaleDateString()})`,
+        }).select('id').single();
+
+        if (error) throw error;
+
+        // Update lead status to converted
+        const table = selectedType === 'contact' ? 'contact_submissions' : selectedType === 'quote' ? 'quote_requests' : 'meeting_requests';
+        await supabase.from(table).update({ status: 'converted' }).eq('id', selectedItem.id);
+        setSelectedItem({ ...selectedItem, status: 'converted' });
+
+        toast({
+          title: 'ক্লায়েন্ট তৈরি হয়েছে!',
+          description: `"${selectedItem.full_name}" সফলভাবে ক্লায়েন্টে রূপান্তরিত হয়েছে।`,
+        });
+
+        fetchData();
+
+        if (newClient?.id) {
+          setTimeout(() => {
+            setIsDetailOpen(false);
+            navigate(`/admin/clients/${newClient.id}`);
+          }, 1000);
+        }
+      } catch (error: any) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      } finally {
+        setIsConverting(false);
+      }
+    };
    const filterBySearch = (item: any) => {
      const search = searchQuery.toLowerCase();
      return item.full_name?.toLowerCase().includes(search) || item.email?.toLowerCase().includes(search);
@@ -291,12 +351,13 @@ import { getStatusColor } from '@/lib/status-colors';
                <DropdownMenuTrigger asChild>
                  <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                </DropdownMenuTrigger>
-               <DropdownMenuContent align="end">
-                 <DropdownMenuItem onClick={() => updateStatus(item.id, 'new', type)}>Mark New</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => updateStatus(item.id, 'contacted', type)}>Mark Contacted</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => updateStatus(item.id, 'in_progress', type)}>Mark In Progress</DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => updateStatus(item.id, 'closed', type)}>Mark Closed</DropdownMenuItem>
-               </DropdownMenuContent>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'new', type)}>Mark New</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'contacted', type)}>Mark Contacted</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'in_progress', type)}>Mark In Progress</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'converted', type)}>Mark Converted</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'closed', type)}>Mark Closed</DropdownMenuItem>
+                </DropdownMenuContent>
              </DropdownMenu>
            </div>
          </div>
@@ -384,13 +445,14 @@ import { getStatusColor } from '@/lib/status-colors';
              <SelectTrigger className="w-[150px]">
                <SelectValue placeholder="Filter status" />
              </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="all">All Status</SelectItem>
-               <SelectItem value="new">New</SelectItem>
-               <SelectItem value="contacted">Contacted</SelectItem>
-               <SelectItem value="in_progress">In Progress</SelectItem>
-               <SelectItem value="closed">Closed</SelectItem>
-             </SelectContent>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="contacted">Contacted</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="converted">Converted</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
            </Select>
          </div>
  
@@ -471,12 +533,13 @@ import { getStatusColor } from '@/lib/status-colors';
                      <SelectTrigger className="w-full mt-1">
                        <SelectValue />
                      </SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="new">New</SelectItem>
-                       <SelectItem value="contacted">Contacted</SelectItem>
-                       <SelectItem value="in_progress">In Progress</SelectItem>
-                       <SelectItem value="closed">Closed</SelectItem>
-                     </SelectContent>
+                      <SelectContent>
+                        <SelectItem value="new">New</SelectItem>
+                        <SelectItem value="contacted">Contacted</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="converted">Converted</SelectItem>
+                        <SelectItem value="closed">Closed</SelectItem>
+                      </SelectContent>
                    </Select>
                  </div>
                </div>
@@ -544,17 +607,42 @@ import { getStatusColor } from '@/lib/status-colors';
                  </>
                )}
  
-               <div className="space-y-2">
-                 <Label htmlFor="notes">Internal Notes</Label>
-                 <Textarea
-                   id="notes"
-                   placeholder="Add notes..."
-                   value={notes}
-                   onChange={(e) => setNotes(e.target.value)}
-                   rows={3}
-                 />
-                 <Button onClick={saveNotes} size="sm">Save Notes</Button>
-               </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Internal Notes</Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Add notes..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                  />
+                  <Button onClick={saveNotes} size="sm">Save Notes</Button>
+                </div>
+
+                {/* Convert to Client */}
+                {selectedItem.status !== 'converted' && (
+                  <div className="border-t pt-4">
+                    <Button
+                      onClick={convertToClient}
+                      disabled={isConverting}
+                      variant="outline"
+                      className="w-full gap-2"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      {isConverting ? 'রূপান্তর হচ্ছে...' : 'ক্লায়েন্টে রূপান্তর করুন'}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1 text-center">
+                      Lead-এর তথ্য নিয়ে নতুন ক্লায়েন্ট তৈরি হবে
+                    </p>
+                  </div>
+                )}
+                {selectedItem.status === 'converted' && (
+                  <div className="border-t pt-4">
+                    <Badge className="bg-success-muted text-success w-full justify-center py-1.5">
+                      ✓ ক্লায়েন্টে রূপান্তরিত হয়েছে
+                    </Badge>
+                  </div>
+                )}
              </div>
            )}
          </DialogContent>
