@@ -249,7 +249,7 @@ const AdminSidebar = () => {
                     </motion.span>
                   )}
                   {group.items.map((item) => (
-                    <motion.li key={item.href} variants={variants} className="list-none">
+                    <li key={item.href} className="list-none">
                       <Link
                         to={item.href}
                         className={cn(
@@ -266,7 +266,7 @@ const AdminSidebar = () => {
                           </motion.span>
                         )}
                       </Link>
-                    </motion.li>
+                    </li>
                   ))}
                 </div>
               ))}
