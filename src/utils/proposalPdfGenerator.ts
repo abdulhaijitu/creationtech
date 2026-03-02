@@ -42,12 +42,65 @@ interface ProposalData {
   terms?: string | null;
 }
 
+// ── Constants ──
+const MARGIN = 25.4; // 1 inch in mm
+const FOOTER_RESERVE = 30; // mm reserved for footer
+
 // ── Helpers ──
 
 function stripHtml(html: string): string {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
   return tmp.textContent || tmp.innerText || '';
+}
+
+function htmlToPlainText(html: string): string {
+  if (!html) return '';
+  let text = html;
+
+  // Handle ordered list items with numbering
+  let olCounter = 0;
+  text = text.replace(/<ol[^>]*>/gi, () => { olCounter = 0; return ''; });
+  text = text.replace(/<\/ol>/gi, '');
+  
+  // Handle unordered lists
+  text = text.replace(/<ul[^>]*>/gi, '');
+  text = text.replace(/<\/ul>/gi, '');
+
+  // Handle <li> — detect if inside <ol> by checking preceding context
+  // Simple approach: replace all <li> with bullet, then fix ordered ones
+  text = text.replace(/<li[^>]*>/gi, '\n• ');
+  text = text.replace(/<\/li>/gi, '');
+
+  // Paragraphs and line breaks
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+  text = text.replace(/<\/p>/gi, '\n');
+  text = text.replace(/<p[^>]*>/gi, '');
+
+  // Headings
+  text = text.replace(/<\/h[1-6]>/gi, '\n');
+  text = text.replace(/<h[1-6][^>]*>/gi, '\n');
+
+  // Table handling — row by row
+  text = text.replace(/<\/td>/gi, '  ');
+  text = text.replace(/<\/th>/gi, '  ');
+  text = text.replace(/<tr[^>]*>/gi, '\n');
+  text = text.replace(/<\/tr>/gi, '');
+
+  // Strip all remaining HTML tags
+  text = text.replace(/<[^>]+>/gi, '');
+
+  // Decode HTML entities
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  text = text.replace(/&nbsp;/g, ' ');
+
+  // Clean up multiple blank lines
+  text = text.replace(/\n{3,}/g, '\n\n');
+  return text.trim();
 }
 
 function formatDate(dateStr: string): string {
@@ -96,29 +149,39 @@ function getStatusColor(status: string): [number, number, number] {
   return colors[status] || [156, 163, 175];
 }
 
-// ── Section renderer ──
+// ── Section renderer (with htmlToPlainText) ──
 
 function addSection(doc: jsPDF, title: string, content: string, y: number, pageWidth: number): number {
-  const maxY = doc.internal.pageSize.getHeight() - 25;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxY = pageHeight - FOOTER_RESERVE;
+  const contentWidth = pageWidth - MARGIN * 2;
 
-  if (y > maxY - 20) { doc.addPage(); y = 20; }
+  if (y > maxY - 20) { doc.addPage(); y = MARGIN; }
 
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(34, 55, 94);
-  doc.text(title, 14, y);
+  doc.text(title, MARGIN, y);
   y += 6;
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  const stripped = stripHtml(content);
-  const lines = doc.splitTextToSize(stripped, pageWidth - 28);
 
-  for (const line of lines) {
-    if (y > maxY) { doc.addPage(); y = 20; }
-    doc.text(line, 14, y);
-    y += 4.5;
+  const plainText = htmlToPlainText(content);
+  const paragraphs = plainText.split('\n');
+
+  for (const paragraph of paragraphs) {
+    if (paragraph.trim() === '') {
+      y += 2; // small gap for empty lines
+      continue;
+    }
+    const lines = doc.splitTextToSize(paragraph, contentWidth);
+    for (const line of lines) {
+      if (y > maxY) { doc.addPage(); y = MARGIN; }
+      doc.text(line, MARGIN, y);
+      y += 4.5;
+    }
   }
   return y + 4;
 }
@@ -134,9 +197,7 @@ function addPageFooters(doc: jsPDF) {
     doc.setPage(i);
     doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);
-    // Confidentiality notice
     doc.text('CONFIDENTIAL — This document contains proprietary information intended solely for the recipient.', pageWidth / 2, pageHeight - 12, { align: 'center' });
-    // Page number
     doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 7, { align: 'center' });
   }
 }
@@ -150,6 +211,9 @@ export function generateProposalPDF(
 ): void {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxY = pageHeight - FOOTER_RESERVE;
+  const contentWidth = pageWidth - MARGIN * 2;
 
   // ── Company header / letterhead ──
   const company = companyInfo || {
@@ -163,47 +227,47 @@ export function generateProposalPDF(
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(34, 55, 94);
-  doc.text(company.name || '', 14, 16);
+  doc.text(company.name || '', MARGIN, MARGIN);
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
-  let headerY = 22;
-  if (company.address) { doc.text(company.address, 14, headerY); headerY += 4; }
-  if (company.phone) { doc.text(`Phone: ${company.phone}`, 14, headerY); headerY += 4; }
-  if (company.email) { doc.text(`Email: ${company.email}`, 14, headerY); headerY += 4; }
-  if (company.website) { doc.text(company.website, 14, headerY); headerY += 4; }
+  let headerY = MARGIN + 6;
+  if (company.address) { doc.text(company.address, MARGIN, headerY); headerY += 4; }
+  if (company.phone) { doc.text(`Phone: ${company.phone}`, MARGIN, headerY); headerY += 4; }
+  if (company.email) { doc.text(`Email: ${company.email}`, MARGIN, headerY); headerY += 4; }
+  if (company.website) { doc.text(company.website, MARGIN, headerY); headerY += 4; }
 
-  // Separator line under company info
+  // Separator line
   doc.setDrawColor(34, 55, 94);
   doc.setLineWidth(0.5);
-  doc.line(14, headerY + 1, pageWidth - 14, headerY + 1);
+  doc.line(MARGIN, headerY + 1, pageWidth - MARGIN, headerY + 1);
 
   // ── PROPOSAL title ──
   let y = headerY + 8;
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(34, 55, 94);
-  doc.text('PROPOSAL', 14, y);
+  doc.text('PROPOSAL', MARGIN, y);
 
   // Proposal info (right side)
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(80, 80, 80);
-  doc.text(`Proposal #: ${data.proposal_number}`, pageWidth - 14, y - 6, { align: 'right' });
-  doc.text(`Date: ${formatDate(data.created_at)}`, pageWidth - 14, y, { align: 'right' });
+  doc.text(`Proposal #: ${data.proposal_number}`, pageWidth - MARGIN, y - 6, { align: 'right' });
+  doc.text(`Date: ${formatDate(data.created_at)}`, pageWidth - MARGIN, y, { align: 'right' });
   if (data.valid_until) {
-    doc.text(`Valid Until: ${formatDate(data.valid_until)}`, pageWidth - 14, y + 6, { align: 'right' });
+    doc.text(`Valid Until: ${formatDate(data.valid_until)}`, pageWidth - MARGIN, y + 6, { align: 'right' });
   }
 
   // Status badge
   const statusY = y + (data.valid_until ? 12 : 6);
   const statusColor = getStatusColor(data.status);
   doc.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-  doc.roundedRect(pageWidth - 45, statusY - 4, 31, 7, 2, 2, 'F');
+  doc.roundedRect(pageWidth - MARGIN - 31, statusY - 4, 31, 7, 2, 2, 'F');
   doc.setFontSize(8);
   doc.setTextColor(255, 255, 255);
-  doc.text(data.status.toUpperCase(), pageWidth - 29.5, statusY, { align: 'center' });
+  doc.text(data.status.toUpperCase(), pageWidth - MARGIN - 15.5, statusY, { align: 'center' });
   doc.setTextColor(0, 0, 0);
 
   // Title
@@ -211,8 +275,8 @@ export function generateProposalPDF(
   doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(34, 55, 94);
-  const titleLines = doc.splitTextToSize(data.title, pageWidth - 28);
-  doc.text(titleLines, 14, y);
+  const titleLines = doc.splitTextToSize(data.title, contentWidth);
+  doc.text(titleLines, MARGIN, y);
 
   // Validity period note
   if (data.valid_until) {
@@ -223,27 +287,27 @@ export function generateProposalPDF(
     doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(120, 120, 120);
-    doc.text(`This proposal is valid for ${diffDays} days from the date of issue.`, 14, y);
+    doc.text(`This proposal is valid for ${diffDays} days from the date of issue.`, MARGIN, y);
   }
 
   // Separator
   const sepY = y + 6;
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.2);
-  doc.line(14, sepY, pageWidth - 14, sepY);
+  doc.line(MARGIN, sepY, pageWidth - MARGIN, sepY);
 
   // ── Client info ──
   y = sepY + 8;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text('CLIENT:', 14, y);
+  doc.text('CLIENT:', MARGIN, y);
   doc.setFont('helvetica', 'normal');
   y += 6;
-  doc.text(data.client_name, 14, y);
-  if (data.client_company) { y += 5; doc.text(data.client_company, 14, y); }
-  if (data.client_email) { y += 5; doc.text(data.client_email, 14, y); }
-  if (data.client_phone) { y += 5; doc.text(data.client_phone, 14, y); }
+  doc.text(data.client_name, MARGIN, y);
+  if (data.client_company) { y += 5; doc.text(data.client_company, MARGIN, y); }
+  if (data.client_email) { y += 5; doc.text(data.client_email, MARGIN, y); }
+  if (data.client_phone) { y += 5; doc.text(data.client_phone, MARGIN, y); }
   y += 10;
 
   // ── Rich text sections ──
@@ -255,12 +319,12 @@ export function generateProposalPDF(
 
   // ── Budget items table ──
   if (data.items.length > 0) {
-    if (y > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); y = 20; }
+    if (y > maxY - 40) { doc.addPage(); y = MARGIN; }
 
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(34, 55, 94);
-    doc.text('Budget Details', 14, y);
+    doc.text('Budget Details', MARGIN, y);
     y += 4;
 
     autoTable(doc, {
@@ -276,16 +340,20 @@ export function generateProposalPDF(
       theme: 'striped',
       headStyles: { fillColor: [34, 55, 94], textColor: [255, 255, 255], fontStyle: 'bold' },
       columnStyles: {
-        0: { cellWidth: 15, halign: 'center' },
+        0: { cellWidth: 12, halign: 'center' },
         1: { cellWidth: 'auto' },
-        2: { cellWidth: 20, halign: 'center' },
-        3: { cellWidth: 35, halign: 'right' },
-        4: { cellWidth: 35, halign: 'right' },
+        2: { cellWidth: 18, halign: 'center' },
+        3: { cellWidth: 32, halign: 'right' },
+        4: { cellWidth: 32, halign: 'right' },
       },
-      margin: { left: 14, right: 14 },
+      margin: { left: MARGIN, right: MARGIN },
     });
 
     y = (doc as any).lastAutoTable.finalY + 8;
+
+    // Check if totals section needs a new page
+    const totalsHeight = 40; // approximate height needed for totals
+    if (y + totalsHeight > maxY) { doc.addPage(); y = MARGIN; }
 
     // Totals
     const totalsX = pageWidth - 70;
@@ -295,34 +363,34 @@ export function generateProposalPDF(
 
     if (data.subtotal != null) {
       doc.text('Subtotal:', totalsX, y);
-      doc.text(formatCurrency(data.subtotal), pageWidth - 14, y, { align: 'right' });
+      doc.text(formatCurrency(data.subtotal), pageWidth - MARGIN, y, { align: 'right' });
       y += 6;
     }
     if (data.tax_rate && data.tax_amount) {
       doc.text(`VAT/Tax (${data.tax_rate}%):`, totalsX, y);
-      doc.text(formatCurrency(data.tax_amount), pageWidth - 14, y, { align: 'right' });
+      doc.text(formatCurrency(data.tax_amount), pageWidth - MARGIN, y, { align: 'right' });
       y += 6;
     }
     if (data.discount_amount && data.discount_amount > 0) {
       doc.text('Discount:', totalsX, y);
-      doc.text(`-${formatCurrency(data.discount_amount)}`, pageWidth - 14, y, { align: 'right' });
+      doc.text(`-${formatCurrency(data.discount_amount)}`, pageWidth - MARGIN, y, { align: 'right' });
       y += 6;
     }
 
     doc.setDrawColor(200, 200, 200);
-    doc.line(totalsX - 5, y, pageWidth - 14, y);
+    doc.line(totalsX - 5, y, pageWidth - MARGIN, y);
     y += 6;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.text('Total:', totalsX, y);
-    doc.text(formatCurrency(data.total_amount || 0), pageWidth - 14, y, { align: 'right' });
+    doc.text(formatCurrency(data.total_amount || 0), pageWidth - MARGIN, y, { align: 'right' });
     y += 8;
 
     // Amount in Words
     doc.setFontSize(8);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(80, 80, 80);
-    doc.text(`Amount in Words: ${numberToWords(data.total_amount || 0)}`, 14, y);
+    doc.text(`Amount in Words: ${numberToWords(data.total_amount || 0)}`, MARGIN, y);
     y += 12;
   }
 
@@ -334,32 +402,32 @@ export function generateProposalPDF(
   if (data.terms) y = addSection(doc, 'Terms & Conditions', data.terms, y, pageWidth);
 
   // ── Signature section ──
-  const maxY = doc.internal.pageSize.getHeight() - 25;
-  if (y > maxY - 35) { doc.addPage(); y = 20; }
+  if (y > maxY - 35) { doc.addPage(); y = MARGIN; }
   y += 10;
 
   doc.setDrawColor(0, 0, 0);
   doc.setLineWidth(0.3);
 
   // Authorized Signature (left)
-  doc.line(14, y + 15, 85, y + 15);
+  doc.line(MARGIN, y + 15, MARGIN + 71, y + 15);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60, 60, 60);
-  doc.text('Authorized Signature', 14, y + 20);
+  doc.text('Authorized Signature', MARGIN, y + 20);
   doc.setFontSize(8);
-  doc.text(company.name || '', 14, y + 25);
-  doc.text(`Date: ____________________`, 14, y + 30);
+  doc.text(company.name || '', MARGIN, y + 25);
+  doc.text('Date: ____________________', MARGIN, y + 30);
 
   // Client Acceptance (right)
-  doc.line(pageWidth - 85, y + 15, pageWidth - 14, y + 15);
+  const rightSigX = pageWidth - MARGIN - 71;
+  doc.line(rightSigX, y + 15, pageWidth - MARGIN, y + 15);
   doc.setFontSize(9);
-  doc.text('Client Acceptance', pageWidth - 85, y + 20);
+  doc.text('Client Acceptance', rightSigX, y + 20);
   doc.setFontSize(8);
-  doc.text(data.client_name, pageWidth - 85, y + 25);
-  doc.text(`Date: ____________________`, pageWidth - 85, y + 30);
+  doc.text(data.client_name, rightSigX, y + 25);
+  doc.text('Date: ____________________', rightSigX, y + 30);
 
-  // ── Page footers with page numbers & confidentiality ──
+  // ── Page footers ──
   addPageFooters(doc);
 
   // ── Output ──
