@@ -5,6 +5,7 @@
  import { generatePDF, DocumentData, CompanyInfo } from '@/utils/pdfGenerator';
 import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
 import companyLogo from '@/assets/logo.png';
+import watermarkImage from '@/assets/jolchap.png';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import { Card, CardContent } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -61,14 +62,16 @@ import { getStatusColor } from '@/lib/status-colors';
    const { toast } = useToast();
    const { data: businessInfo } = useBusinessInfoMap();
 
-   const getCompanyInfo = (): CompanyInfo => ({
-     name: businessInfo?.company_name?.value_en || 'Creation Tech',
-     address: businessInfo?.address?.value_en || 'Dhaka, Bangladesh',
-     phone: businessInfo?.phone_primary?.value_en || '+880 1XXX-XXXXXX',
-     email: businessInfo?.email_primary?.value_en || 'info@creationtech.com',
-     website: businessInfo?.website?.value_en || 'www.creationtech.com',
-     logo_url: businessInfo?.company_logo?.value_en || companyLogo,
-   });
+    const getCompanyInfo = (): CompanyInfo => ({
+      name: businessInfo?.company_name?.value_en || 'Creation Tech',
+      tagline: businessInfo?.tagline?.value_en || '-PRIME TECH PARTNER-',
+      address: businessInfo?.address?.value_en || 'Dhaka, Bangladesh',
+      phone: businessInfo?.phone_primary?.value_en || '+880 1XXX-XXXXXX',
+      email: businessInfo?.email_primary?.value_en || 'info@creationtech.com',
+      website: businessInfo?.website?.value_en || 'www.creationtech.com',
+      logo_url: businessInfo?.company_logo?.value_en || companyLogo,
+      watermark_url: watermarkImage,
+    });
    const [quotations, setQuotations] = useState<Quotation[]>([]);
    const [isLoading, setIsLoading] = useState(true);
    const [isSaving, setIsSaving] = useState(false);
