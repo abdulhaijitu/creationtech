@@ -25,7 +25,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getStatusColor } from '@/lib/status-colors';
 import { generateProposalPDF } from '@/utils/proposalPdfGenerator';
-import { supabase as supabaseClient } from '@/integrations/supabase/client';
 
 interface Proposal {
   id: string;
@@ -185,7 +184,7 @@ const AdminProposals = () => {
   const handlePdfAction = async (proposal: Proposal, action: 'download' | 'print' | 'email') => {
     try {
       // Fetch proposal items
-      const { data: items } = await supabaseClient
+      const { data: items } = await supabase
         .from('proposal_items')
         .select('description, quantity, unit_price, amount')
         .eq('proposal_id', proposal.id)
