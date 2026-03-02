@@ -57,7 +57,13 @@ const HEADING_FONT = 14;
 
 // ── Helpers ──
 
-function loadImageAsDataUrl(url: string): Promise<string | null> {
+interface ImageLoadResult {
+  dataUrl: string;
+  width: number;
+  height: number;
+}
+
+function loadImageAsDataUrl(url: string): Promise<ImageLoadResult | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -68,7 +74,11 @@ function loadImageAsDataUrl(url: string): Promise<string | null> {
       const ctx = canvas.getContext('2d');
       if (!ctx) { resolve(null); return; }
       ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
+      resolve({
+        dataUrl: canvas.toDataURL('image/png'),
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      });
     };
     img.onerror = () => resolve(null);
     img.src = url;
@@ -81,6 +91,91 @@ function stripHtml(html: string): string {
   return tmp.textContent || tmp.innerText || '';
 }
 
+// ── Styled segment types for bold support ──
+
+interface StyledSegment {
+  text: string;
+  bold: boolean;
+}
+
+/**
+ * Parse HTML into styled segments per paragraph, preserving bold markers.
+ * Returns an array of paragraphs, each containing an array of styled segments.
+ */
+function htmlToStyledParagraphs(html: string): StyledSegment[][] {
+  if (!html) return [];
+
+  // Pre-process: convert block-level tags to paragraph breaks
+  let processed = html;
+  processed = processed.replace(/<br\s*\/?>/gi, '\n');
+  processed = processed.replace(/<\/p>/gi, '\n');
+  processed = processed.replace(/<p[^>]*>/gi, '');
+  processed = processed.replace(/<\/h[1-6]>/gi, '\n');
+  processed = processed.replace(/<h[1-6][^>]*>/gi, '\n');
+  processed = processed.replace(/<ol[^>]*>/gi, '');
+  processed = processed.replace(/<\/ol>/gi, '');
+  processed = processed.replace(/<ul[^>]*>/gi, '');
+  processed = processed.replace(/<\/ul>/gi, '');
+  processed = processed.replace(/<li[^>]*>/gi, '\n- ');
+  processed = processed.replace(/<\/li>/gi, '');
+  processed = processed.replace(/<\/td>/gi, '  ');
+  processed = processed.replace(/<\/th>/gi, '  ');
+  processed = processed.replace(/<tr[^>]*>/gi, '\n');
+  processed = processed.replace(/<\/tr>/gi, '');
+
+  // Extract bold segments: replace <strong>/<b> with markers
+  const BOLD_START = '\x02'; // STX
+  const BOLD_END = '\x03';   // ETX
+  processed = processed.replace(/<strong[^>]*>/gi, BOLD_START);
+  processed = processed.replace(/<\/strong>/gi, BOLD_END);
+  processed = processed.replace(/<b[^>]*>/gi, BOLD_START);
+  processed = processed.replace(/<\/b>/gi, BOLD_END);
+
+  // Strip remaining tags
+  processed = processed.replace(/<[^>]+>/gi, '');
+
+  // Decode entities
+  processed = processed.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  processed = processed.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ');
+
+  // Split into paragraphs
+  const rawParagraphs = processed.split('\n');
+  const result: StyledSegment[][] = [];
+
+  for (const para of rawParagraphs) {
+    if (para.trim() === '') {
+      result.push([]); // empty paragraph = gap
+      continue;
+    }
+
+    const segments: StyledSegment[] = [];
+    let isBold = false;
+    let current = '';
+
+    for (let i = 0; i < para.length; i++) {
+      const ch = para[i];
+      if (ch === BOLD_START) {
+        if (current) segments.push({ text: current, bold: isBold });
+        current = '';
+        isBold = true;
+      } else if (ch === BOLD_END) {
+        if (current) segments.push({ text: current, bold: isBold });
+        current = '';
+        isBold = false;
+      } else {
+        current += ch;
+      }
+    }
+    if (current) segments.push({ text: current, bold: isBold });
+
+    if (segments.length > 0) {
+      result.push(segments);
+    }
+  }
+
+  return result;
+}
+
 function htmlToPlainText(html: string): string {
   if (!html) return '';
   let text = html;
@@ -88,7 +183,7 @@ function htmlToPlainText(html: string): string {
   text = text.replace(/<\/ol>/gi, '');
   text = text.replace(/<ul[^>]*>/gi, '');
   text = text.replace(/<\/ul>/gi, '');
-  text = text.replace(/<li[^>]*>/gi, '\n• ');
+  text = text.replace(/<li[^>]*>/gi, '\n- ');
   text = text.replace(/<\/li>/gi, '');
   text = text.replace(/<br\s*\/?>/gi, '\n');
   text = text.replace(/<\/p>/gi, '\n');
@@ -116,7 +211,6 @@ function parseHtmlTable(tableHtml: string): { head: string[][]; body: string[][]
   const head: string[][] = [];
   const body: string[][] = [];
 
-  // Process thead rows
   const theadRows = table.querySelectorAll('thead tr');
   theadRows.forEach(tr => {
     const cells: string[] = [];
@@ -126,7 +220,6 @@ function parseHtmlTable(tableHtml: string): { head: string[][]; body: string[][]
     if (cells.length) head.push(cells);
   });
 
-  // Process tbody rows
   const tbodyRows = table.querySelectorAll('tbody tr');
   if (tbodyRows.length) {
     tbodyRows.forEach(tr => {
@@ -137,7 +230,6 @@ function parseHtmlTable(tableHtml: string): { head: string[][]; body: string[][]
       if (cells.length) body.push(cells);
     });
   } else {
-    // No explicit thead/tbody — first row with <th> is head, rest is body
     const allRows = table.querySelectorAll('tr');
     let headDone = head.length > 0;
     allRows.forEach(tr => {
@@ -209,22 +301,94 @@ function numberToWords(num: number): string {
   return result + ' Only';
 }
 
+// ── Render styled segments on a single line with bold switching ──
+
+function renderStyledLine(
+  doc: jsPDF,
+  segments: StyledSegment[],
+  x: number,
+  y: number
+) {
+  let currentX = x;
+  for (const seg of segments) {
+    doc.setFont('helvetica', seg.bold ? 'bold' : 'normal');
+    doc.text(seg.text, currentX, y);
+    currentX += doc.getTextWidth(seg.text);
+  }
+  // Reset to normal
+  doc.setFont('helvetica', 'normal');
+}
+
+/**
+ * Word-wrap styled segments to fit within maxWidth, returning an array of lines
+ * where each line is an array of StyledSegments.
+ */
+function wrapStyledSegments(
+  doc: jsPDF,
+  segments: StyledSegment[],
+  maxWidth: number
+): StyledSegment[][] {
+  // Flatten segments into individual words with their bold state
+  interface Word { text: string; bold: boolean; }
+  const words: Word[] = [];
+  for (const seg of segments) {
+    const parts = seg.text.split(/(\s+)/);
+    for (const part of parts) {
+      if (part.length > 0) {
+        words.push({ text: part, bold: seg.bold });
+      }
+    }
+  }
+
+  const lines: StyledSegment[][] = [];
+  let currentLine: StyledSegment[] = [];
+  let currentLineWidth = 0;
+
+  for (const word of words) {
+    doc.setFont('helvetica', word.bold ? 'bold' : 'normal');
+    const wordWidth = doc.getTextWidth(word.text);
+
+    if (currentLineWidth + wordWidth > maxWidth && currentLine.length > 0) {
+      // Finish current line
+      lines.push(currentLine);
+      currentLine = [];
+      currentLineWidth = 0;
+      // Skip leading whitespace on new line
+      if (word.text.trim() === '') continue;
+    }
+
+    // Merge with previous segment if same bold state
+    if (currentLine.length > 0 && currentLine[currentLine.length - 1].bold === word.bold) {
+      currentLine[currentLine.length - 1].text += word.text;
+    } else {
+      currentLine.push({ text: word.text, bold: word.bold });
+    }
+    currentLineWidth += wordWidth;
+  }
+
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
+
+  doc.setFont('helvetica', 'normal');
+  return lines;
+}
+
 // ── Reusable header (every page) ──
 
-function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): number {
+function addHeader(doc: jsPDF, company: CompanyInfo, logoData: ImageLoadResult | null): number {
   const pageWidth = doc.internal.pageSize.getWidth();
   const rightX = pageWidth - MARGIN;
 
   doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.rect(0, 0, pageWidth, 3, 'F');
 
-  let nameX = MARGIN;
   if (logoData) {
-    doc.addImage(logoData, 'PNG', MARGIN, 6, 12, 12);
-    nameX = MARGIN + 14;
+    // Calculate proper aspect ratio: keep height at 12, scale width proportionally
+    const logoHeight = 12;
+    const logoWidth = (logoData.width / logoData.height) * logoHeight;
+    doc.addImage(logoData.dataUrl, 'PNG', MARGIN, 6, logoWidth, logoHeight);
   }
-
-  // Logo only — no text company name or tagline
 
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
@@ -235,28 +399,21 @@ function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): n
   if (company.email) { doc.text(`Email: ${company.email}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
   if (company.website) { doc.text(`Web: ${company.website}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
 
+  // No separator lines — just return with a small gap
   const lineY = Math.max(infoY + 2, 22);
-  doc.setDrawColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
-  doc.setLineWidth(0.6);
-  doc.line(MARGIN, lineY, rightX, lineY);
-
-  doc.setDrawColor(200, 210, 230);
-  doc.setLineWidth(0.2);
-  doc.line(MARGIN, lineY + 1.5, rightX, lineY + 1.5);
-
-  return lineY + 5;
+  return lineY + 2;
 }
 
 // ── Watermark (every page) ──
 
-function addWatermark(doc: jsPDF, watermarkData: string | null) {
+function addWatermark(doc: jsPDF, watermarkData: ImageLoadResult | null) {
   if (!watermarkData) return;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const gState = new (doc as any).GState({ opacity: 0.06 });
   doc.saveGraphicsState();
   doc.setGState(gState);
-  doc.addImage(watermarkData, 'PNG', pageWidth - 55, pageHeight - 55, 55, 55);
+  doc.addImage(watermarkData.dataUrl, 'PNG', pageWidth - 55, pageHeight - 55, 55, 55);
   doc.restoreGraphicsState();
 }
 
@@ -278,7 +435,7 @@ function addAccentStrip(doc: jsPDF) {
 
 // ── Page footers + watermark ──
 
-function addPageFooters(doc: jsPDF, watermarkData: string | null) {
+function addPageFooters(doc: jsPDF, watermarkData: ImageLoadResult | null) {
   const totalPages = doc.getNumberOfPages();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -301,16 +458,59 @@ function addPageFooters(doc: jsPDF, watermarkData: string | null) {
 
 // ── Custom addPage wrapper ──
 
-function addNewPage(doc: jsPDF, company: CompanyInfo, logoData: string | null): number {
+function addNewPage(doc: jsPDF, company: CompanyInfo, logoData: ImageLoadResult | null): number {
   doc.addPage();
-  return addHeader(doc, company, logoData);
+  const y = addHeader(doc, company, logoData);
+  // Reset font state after new page
+  doc.setFontSize(BODY_FONT);
+  doc.setFont('helvetica', 'normal');
+  return y;
+}
+
+// ── Render styled text content (with bold support) ──
+
+function renderStyledContent(
+  doc: jsPDF,
+  htmlContent: string,
+  y: number,
+  contentWidth: number,
+  maxY: number,
+  company: CompanyInfo,
+  logoData: ImageLoadResult | null
+): number {
+  const paragraphs = htmlToStyledParagraphs(htmlContent);
+
+  doc.setFontSize(BODY_FONT);
+  doc.setTextColor(55, 55, 55);
+
+  for (const segments of paragraphs) {
+    if (segments.length === 0) {
+      y += PARAGRAPH_GAP;
+      continue;
+    }
+
+    // Word-wrap the styled segments
+    const wrappedLines = wrapStyledSegments(doc, segments, contentWidth);
+
+    for (const lineSegments of wrappedLines) {
+      if (y > maxY) {
+        y = addNewPage(doc, company, logoData);
+        doc.setFontSize(BODY_FONT);
+        doc.setTextColor(55, 55, 55);
+      }
+      renderStyledLine(doc, lineSegments, MARGIN, y);
+      y += LINE_HEIGHT;
+    }
+  }
+
+  return y;
 }
 
 // ── Section renderer with rich text table support ──
 
 function addSection(
   doc: jsPDF, title: string, content: string, y: number,
-  pageWidth: number, company: CompanyInfo, logoData: string | null
+  pageWidth: number, company: CompanyInfo, logoData: ImageLoadResult | null
 ): number {
   const pageHeight = doc.internal.pageSize.getHeight();
   const maxY = pageHeight - FOOTER_RESERVE;
@@ -330,7 +530,6 @@ function addSection(
 
   for (const chunk of chunks) {
     if (chunk.type === 'table') {
-      // Render HTML table using autoTable
       const tableData = parseHtmlTable(chunk.content);
       if (tableData.body.length > 0 || tableData.head.length > 0) {
         if (y > maxY - 30) { y = addNewPage(doc, company, logoData); }
@@ -358,25 +557,17 @@ function addSection(
         });
 
         y = (doc as any).lastAutoTable.finalY + PARAGRAPH_GAP + 2;
+        // Reset font after autoTable
+        doc.setFontSize(BODY_FONT);
+        doc.setFont('helvetica', 'normal');
       }
     } else {
-      // Render as plain text
+      // Render with bold support
       doc.setFontSize(BODY_FONT);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(55, 55, 55);
 
-      const plainText = htmlToPlainText(chunk.content);
-      const paragraphs = plainText.split('\n');
-
-      for (const paragraph of paragraphs) {
-        if (paragraph.trim() === '') { y += PARAGRAPH_GAP; continue; }
-        const lines = doc.splitTextToSize(paragraph, contentWidth);
-        for (const line of lines) {
-          if (y > maxY) { y = addNewPage(doc, company, logoData); }
-          doc.text(line, MARGIN, y);
-          y += LINE_HEIGHT;
-        }
-      }
+      y = renderStyledContent(doc, chunk.content, y, contentWidth, maxY, company, logoData);
     }
   }
 
@@ -407,8 +598,8 @@ export async function generateProposalPDF(
   };
 
   // Load images
-  let logoData: string | null = null;
-  let watermarkData: string | null = null;
+  let logoData: ImageLoadResult | null = null;
+  let watermarkData: ImageLoadResult | null = null;
 
   const loadPromises: Promise<void>[] = [];
   if (company.logo_url) {
@@ -533,6 +724,9 @@ export async function generateProposalPDF(
     });
 
     y = (doc as any).lastAutoTable.finalY + 8;
+    // Reset font after autoTable
+    doc.setFontSize(BODY_FONT);
+    doc.setFont('helvetica', 'normal');
 
     if (y + 40 > maxY) { y = addNewPage(doc, company, logoData); }
 
@@ -572,8 +766,7 @@ export async function generateProposalPDF(
     y += 10;
   }
 
-  // ── Offer Letter End ──
-  // Offer Letter End — rendered without section heading
+  // ── Offer Letter End — rendered without section heading, with bold support ──
   if (data.offer_letter_end) {
     const chunks = splitContentByTables(data.offer_letter_end);
     doc.setFontSize(BODY_FONT);
@@ -591,19 +784,15 @@ export async function generateProposalPDF(
             margin: { left: MARGIN, right: MARGIN }, tableWidth: contentWidth,
           });
           y = (doc as any).lastAutoTable.finalY + PARAGRAPH_GAP + 2;
+          // Reset font after autoTable
+          doc.setFontSize(BODY_FONT);
+          doc.setFont('helvetica', 'normal');
         }
       } else {
-        const plainText = htmlToPlainText(chunk.content);
-        const paragraphs = plainText.split('\n');
-        for (const paragraph of paragraphs) {
-          if (paragraph.trim() === '') { y += PARAGRAPH_GAP; continue; }
-          const lines = doc.splitTextToSize(paragraph, contentWidth);
-          for (const line of lines) {
-            if (y > maxY) { y = addNewPage(doc, company, logoData); }
-            doc.text(line, MARGIN, y);
-            y += LINE_HEIGHT;
-          }
-        }
+        // Render with bold support
+        doc.setFontSize(BODY_FONT);
+        doc.setTextColor(55, 55, 55);
+        y = renderStyledContent(doc, chunk.content, y, contentWidth, maxY, company, logoData);
       }
     }
     y += PARAGRAPH_GAP + 1;
