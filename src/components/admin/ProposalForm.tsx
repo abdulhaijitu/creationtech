@@ -38,6 +38,13 @@ interface Proposal {
   terms: string | null;
   version: number;
   created_at: string;
+  offer_letter: string | null;
+  offer_letter_end: string | null;
+  expected_outcome: string | null;
+  subtotal: number | null;
+  tax_rate: number | null;
+  tax_amount: number | null;
+  discount_amount: number | null;
 }
 
 export interface ProposalItem {
@@ -91,17 +98,17 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         client_phone: proposal.client_phone || '',
         client_company: proposal.client_company || '',
         title: proposal.title,
-        offer_letter: (proposal as any).offer_letter || '',
+        offer_letter: proposal.offer_letter || '',
         scope_of_work: proposal.scope_of_work || '',
-        expected_outcome: (proposal as any).expected_outcome || '',
-        offer_letter_end: (proposal as any).offer_letter_end || '',
+        expected_outcome: proposal.expected_outcome || '',
+        offer_letter_end: proposal.offer_letter_end || '',
         timeline: proposal.timeline || '',
         deliverables: proposal.deliverables || '',
         valid_until: proposal.valid_until || '',
         notes: proposal.notes || '',
         terms: proposal.terms || '',
-        tax_rate: (proposal as any).tax_rate || 0,
-        discount_amount: (proposal as any).discount_amount || 0,
+        tax_rate: proposal.tax_rate || 0,
+        discount_amount: proposal.discount_amount || 0,
       });
       // Fetch proposal items
       fetchProposalItems(proposal.id);
