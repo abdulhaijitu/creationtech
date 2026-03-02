@@ -71,6 +71,7 @@
     half_day: 'warning',
     expired: 'warning',
     revised: 'warning',
+    negotiation: 'warning',
    
    // Info
    new: 'info',
