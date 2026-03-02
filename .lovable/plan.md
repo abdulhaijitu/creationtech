@@ -1,16 +1,13 @@
 
 
-## পরিকল্পনা: Offer Letter ফিল্ড যোগ
+## পরিকল্পনা: Expected Outcome ফিল্ড যোগ
 
-### পরিবর্তন
+### ডাটাবেজ মাইগ্রেশন
+- `proposals` টেবিলে `expected_outcome TEXT` কলাম যোগ
 
-**ফাইল: `src/components/admin/ProposalForm.tsx`**
-
-1. `formData` state-এ `offer_letter: ''` যোগ
-2. Proposal Details সেকশনে Subject ও Valid Until/Total Amount-এর পরে, Scope of Work-এর **আগে** একটি নতুন RichTextEditor ফিল্ড যোগ — লেবেল **"Offer Letter"**
-3. `handleSave` ফাংশনে `offer_letter` ফিল্ড insert/update-এ যোগ
-4. Edit মোডে `proposal` থেকে `offer_letter` লোড
-
-**ডাটাবেজ মাইগ্রেশন:**
-- `proposals` টেবিলে `offer_letter TEXT` কলাম যোগ করতে হবে
+### ফাইল: `src/components/admin/ProposalForm.tsx`
+1. `formData` state-এ `expected_outcome: ''` যোগ
+2. Edit মোডে `expected_outcome` লোড
+3. Pricing Summary-এর **আগে** RichTextEditor সহ "Expected Outcome" ফিল্ড যোগ
+4. `handleSave`-এ insert/update-এ `expected_outcome` যোগ
 
