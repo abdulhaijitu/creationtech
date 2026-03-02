@@ -535,35 +535,23 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         </CardContent>
       </Card>
 
-      {/* Summary & Notes */}
+      {/* Notes & Budget Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Notes & Terms */}
+        {/* Notes */}
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-base flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              Notes & Terms
+              Notes
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Notes</Label>
-              <RichTextEditor
-                content={formData.notes}
-                onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-                placeholder="Internal notes..."
-                className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Terms & Conditions</Label>
-              <RichTextEditor
-                content={formData.terms}
-                onChange={(value) => setFormData(prev => ({ ...prev, terms: value }))}
-                placeholder="Terms and conditions..."
-                className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
-              />
-            </div>
+          <CardContent>
+            <RichTextEditor
+              content={formData.notes}
+              onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+              placeholder="Internal notes..."
+              className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+            />
           </CardContent>
         </Card>
 
@@ -622,6 +610,24 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
           </CardContent>
         </Card>
       </div>
+
+      {/* Terms & Conditions - Full Width */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Terms & Conditions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RichTextEditor
+            content={formData.terms}
+            onChange={(value) => setFormData(prev => ({ ...prev, terms: value }))}
+            placeholder="Terms and conditions..."
+            className="min-h-[120px] [&_.ProseMirror]:min-h-[100px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+          />
+        </CardContent>
+      </Card>
 
       {/* Actions */}
       <div className="flex justify-end gap-3">
