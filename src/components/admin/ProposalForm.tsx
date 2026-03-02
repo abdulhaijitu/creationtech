@@ -55,10 +55,11 @@
      client_name: '',
      client_email: '',
      client_phone: '',
-     client_company: '',
-      title: '',
-      offer_letter: '',
-      scope_of_work: '',
+      client_company: '',
+       title: '',
+       offer_letter: '',
+       scope_of_work: '',
+      expected_outcome: '',
      timeline: '',
      deliverables: '',
      pricing_summary: '',
@@ -77,9 +78,10 @@
          client_email: proposal.client_email || '',
          client_phone: proposal.client_phone || '',
          client_company: proposal.client_company || '',
-          title: proposal.title,
-          offer_letter: (proposal as any).offer_letter || '',
-          scope_of_work: proposal.scope_of_work || '',
+           title: proposal.title,
+           offer_letter: (proposal as any).offer_letter || '',
+           scope_of_work: proposal.scope_of_work || '',
+          expected_outcome: (proposal as any).expected_outcome || '',
          timeline: proposal.timeline || '',
          deliverables: proposal.deliverables || '',
          pricing_summary: proposal.pricing_summary || '',
@@ -124,9 +126,10 @@
              client_email: formData.client_email || null,
              client_phone: formData.client_phone || null,
              client_company: formData.client_company || null,
-              title: formData.title,
-              offer_letter: formData.offer_letter || null,
-              scope_of_work: formData.scope_of_work || null,
+               title: formData.title,
+               offer_letter: formData.offer_letter || null,
+               scope_of_work: formData.scope_of_work || null,
+              expected_outcome: formData.expected_outcome || null,
              timeline: formData.timeline || null,
              deliverables: formData.deliverables || null,
              pricing_summary: formData.pricing_summary || null,
@@ -152,10 +155,11 @@
              client_email: formData.client_email || null,
              client_phone: formData.client_phone || null,
              client_company: formData.client_company || null,
-              title: formData.title,
-              offer_letter: formData.offer_letter || null,
-              scope_of_work: formData.scope_of_work || null,
-              timeline: formData.timeline || null,
+               title: formData.title,
+               offer_letter: formData.offer_letter || null,
+               scope_of_work: formData.scope_of_work || null,
+              expected_outcome: formData.expected_outcome || null,
+               timeline: formData.timeline || null,
               deliverables: formData.deliverables || null,
               pricing_summary: formData.pricing_summary || null,
               total_amount: formData.total_amount || null,
@@ -305,8 +309,18 @@
              </div>
            </div>
  
-           <div className="space-y-2">
-             <Label>Pricing Summary</Label>
+            <div className="space-y-2">
+              <Label>Expected Outcome</Label>
+              <RichTextEditor
+                content={formData.expected_outcome}
+                onChange={(value) => setFormData(prev => ({ ...prev, expected_outcome: value }))}
+                placeholder="Describe expected outcomes..."
+                className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Pricing Summary</Label>
              <RichTextEditor
                content={formData.pricing_summary}
                onChange={(value) => setFormData(prev => ({ ...prev, pricing_summary: value }))}
