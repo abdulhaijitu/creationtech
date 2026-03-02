@@ -256,7 +256,7 @@ function addWatermark(doc: jsPDF, watermarkData: string | null) {
   const gState = new (doc as any).GState({ opacity: 0.06 });
   doc.saveGraphicsState();
   doc.setGState(gState);
-  doc.addImage(watermarkData, 'PNG', pageWidth - 75, pageHeight - 75, 55, 55);
+  doc.addImage(watermarkData, 'PNG', pageWidth - 55, pageHeight - 55, 55, 55);
   doc.restoreGraphicsState();
 }
 
