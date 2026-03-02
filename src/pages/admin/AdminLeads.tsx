@@ -1,5 +1,5 @@
- import { useEffect, useState } from 'react';
- import { Eye, Mail, Phone, Calendar, MoreHorizontal, Search, MessageSquare, FileQuestion, CalendarDays } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Eye, Mail, Phone, Calendar, MoreHorizontal, Search, MessageSquare, FileQuestion, CalendarDays, Plus } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import { Card, CardContent } from '@/components/ui/card';
@@ -14,13 +14,14 @@
    SelectTrigger,
    SelectValue,
  } from '@/components/ui/select';
- import {
-   Dialog,
-   DialogContent,
-   DialogDescription,
-   DialogHeader,
-   DialogTitle,
- } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
  import {
    DropdownMenu,
    DropdownMenuContent,
@@ -86,8 +87,98 @@ import { getStatusColor } from '@/lib/status-colors';
    const [selectedItem, setSelectedItem] = useState<any>(null);
    const [selectedType, setSelectedType] = useState<'contact' | 'quote' | 'meeting'>('contact');
    const [isDetailOpen, setIsDetailOpen] = useState(false);
-   const [notes, setNotes] = useState('');
-   const [activeTab, setActiveTab] = useState('contacts');
+  const [notes, setNotes] = useState('');
+  const [activeTab, setActiveTab] = useState('contacts');
+
+  // Add Lead states
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [addType, setAddType] = useState<'contact' | 'quote' | 'meeting'>('contact');
+  const [addForm, setAddForm] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const resetAddForm = () => {
+    setAddForm({});
+    setAddType('contact');
+  };
+
+  const handleAddSubmit = async () => {
+    const { full_name, email } = addForm;
+    if (!full_name?.trim() || !email?.trim()) {
+      toast({ title: 'Error', description: 'নাম এবং ইমেইল আবশ্যক', variant: 'destructive' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      let error;
+      if (addType === 'contact') {
+        if (!addForm.message?.trim()) {
+          toast({ title: 'Error', description: 'মেসেজ আবশ্যক', variant: 'destructive' });
+          setIsSubmitting(false);
+          return;
+        }
+        ({ error } = await supabase.from('contact_submissions').insert({
+          full_name: addForm.full_name.trim(),
+          email: addForm.email.trim(),
+          phone: addForm.phone?.trim() || null,
+          subject: addForm.subject?.trim() || null,
+          message: addForm.message.trim(),
+          status: 'new',
+        }));
+      } else if (addType === 'quote') {
+        if (!addForm.project_details?.trim()) {
+          toast({ title: 'Error', description: 'প্রজেক্ট ডিটেইলস আবশ্যক', variant: 'destructive' });
+          setIsSubmitting(false);
+          return;
+        }
+        ({ error } = await supabase.from('quote_requests').insert({
+          full_name: addForm.full_name.trim(),
+          email: addForm.email.trim(),
+          phone: addForm.phone?.trim() || null,
+          company: addForm.company?.trim() || null,
+          service_interest: addForm.service_interest?.trim() || null,
+          budget: addForm.budget?.trim() || null,
+          project_details: addForm.project_details.trim(),
+          status: 'new',
+        }));
+      } else {
+        if (!addForm.phone?.trim() || !addForm.meeting_topic?.trim()) {
+          toast({ title: 'Error', description: 'ফোন এবং মিটিং টপিক আবশ্যক', variant: 'destructive' });
+          setIsSubmitting(false);
+          return;
+        }
+        ({ error } = await supabase.from('meeting_requests').insert({
+          full_name: addForm.full_name.trim(),
+          email: addForm.email.trim(),
+          phone: addForm.phone.trim(),
+          company: addForm.company?.trim() || null,
+          meeting_topic: addForm.meeting_topic.trim(),
+          preferred_date: addForm.preferred_date || null,
+          preferred_time: addForm.preferred_time || null,
+          additional_notes: addForm.additional_notes?.trim() || null,
+          status: 'new',
+        }));
+      }
+
+      if (error) throw error;
+      toast({ title: 'সফল!', description: 'নতুন Lead যোগ হয়েছে' });
+      setIsAddOpen(false);
+      resetAddForm();
+      fetchData();
+      // Switch to relevant tab
+      if (addType === 'contact') setActiveTab('contacts');
+      else if (addType === 'quote') setActiveTab('quotes');
+      else setActiveTab('meetings');
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const updateField = (field: string, value: string) => {
+    setAddForm(prev => ({ ...prev, [field]: value }));
+  };
  
    const fetchData = async () => {
      setIsLoading(true);
@@ -216,10 +307,15 @@ import { getStatusColor } from '@/lib/status-colors';
    return (
      <AdminLayout>
        <div className="space-y-6">
-         <AdminPageHeader
-           title="Leads"
-           description="Manage contact messages, quote requests, and meeting bookings"
-         />
+          <AdminPageHeader
+            title="Leads"
+            description="Manage contact messages, quote requests, and meeting bookings"
+            action={
+              <Button onClick={() => { resetAddForm(); setIsAddOpen(true); }}>
+                <Plus className="h-4 w-4 mr-1" /> Add Lead
+              </Button>
+            }
+          />
  
          {/* Stats Cards */}
          <div className="grid gap-4 md:grid-cols-3">
@@ -462,8 +558,123 @@ import { getStatusColor } from '@/lib/status-colors';
              </div>
            )}
          </DialogContent>
-       </Dialog>
-     </AdminLayout>
+        </Dialog>
+
+        {/* Add Lead Dialog */}
+        <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) resetAddForm(); }}>
+          <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>নতুন Lead যোগ করুন</DialogTitle>
+              <DialogDescription>Lead-এর টাইপ সিলেক্ট করে তথ্য পূরণ করুন</DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Lead টাইপ</Label>
+                <Select value={addType} onValueChange={(v: 'contact' | 'quote' | 'meeting') => { setAddType(v); setAddForm({}); }}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="contact">Contact Message</SelectItem>
+                    <SelectItem value="quote">Quote Request</SelectItem>
+                    <SelectItem value="meeting">Meeting Request</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Common fields */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>নাম *</Label>
+                  <Input placeholder="পুরো নাম" value={addForm.full_name || ''} onChange={(e) => updateField('full_name', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>ইমেইল *</Label>
+                  <Input type="email" placeholder="email@example.com" value={addForm.email || ''} onChange={(e) => updateField('email', e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>ফোন {addType === 'meeting' ? '*' : ''}</Label>
+                <Input placeholder="ফোন নম্বর" value={addForm.phone || ''} onChange={(e) => updateField('phone', e.target.value)} />
+              </div>
+
+              {/* Contact-specific */}
+              {addType === 'contact' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>বিষয়</Label>
+                    <Input placeholder="বিষয়" value={addForm.subject || ''} onChange={(e) => updateField('subject', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>মেসেজ *</Label>
+                    <Textarea placeholder="মেসেজ লিখুন..." value={addForm.message || ''} onChange={(e) => updateField('message', e.target.value)} rows={3} />
+                  </div>
+                </>
+              )}
+
+              {/* Quote-specific */}
+              {addType === 'quote' && (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>কোম্পানি</Label>
+                      <Input placeholder="কোম্পানির নাম" value={addForm.company || ''} onChange={(e) => updateField('company', e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>সার্ভিস</Label>
+                      <Input placeholder="সার্ভিস ইন্টারেস্ট" value={addForm.service_interest || ''} onChange={(e) => updateField('service_interest', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>বাজেট</Label>
+                    <Input placeholder="বাজেট রেঞ্জ" value={addForm.budget || ''} onChange={(e) => updateField('budget', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>প্রজেক্ট ডিটেইলস *</Label>
+                    <Textarea placeholder="প্রজেক্টের বিবরণ..." value={addForm.project_details || ''} onChange={(e) => updateField('project_details', e.target.value)} rows={3} />
+                  </div>
+                </>
+              )}
+
+              {/* Meeting-specific */}
+              {addType === 'meeting' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>কোম্পানি</Label>
+                    <Input placeholder="কোম্পানির নাম" value={addForm.company || ''} onChange={(e) => updateField('company', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>মিটিং টপিক *</Label>
+                    <Input placeholder="মিটিংয়ের বিষয়" value={addForm.meeting_topic || ''} onChange={(e) => updateField('meeting_topic', e.target.value)} />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>পছন্দের তারিখ</Label>
+                      <Input type="date" value={addForm.preferred_date || ''} onChange={(e) => updateField('preferred_date', e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>পছন্দের সময়</Label>
+                      <Input type="time" value={addForm.preferred_time || ''} onChange={(e) => updateField('preferred_time', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>অতিরিক্ত নোট</Label>
+                    <Textarea placeholder="অতিরিক্ত তথ্য..." value={addForm.additional_notes || ''} onChange={(e) => updateField('additional_notes', e.target.value)} rows={3} />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddOpen(false)}>বাতিল</Button>
+              <Button onClick={handleAddSubmit} disabled={isSubmitting}>
+                {isSubmitting ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </AdminLayout>
    );
  };
  
