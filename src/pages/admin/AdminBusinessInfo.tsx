@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Save, Building2, Phone, Mail, Clock, MapPin, Share2 } from 'lucide-react';
+import { Save, Building2, Phone, Mail, Clock, MapPin, Share2, Upload, Image, X } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useBusinessInfo, useUpdateBusinessInfo } from '@/hooks/useBusinessInfo';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminBusinessInfo = () => {
   const { toast } = useToast();
@@ -20,6 +21,7 @@ const AdminBusinessInfo = () => {
   const updateMutation = useUpdateBusinessInfo();
   const [formData, setFormData] = useState<Record<string, { value_en: string; value_bn: string }>>({});
   const [isDirty, setIsDirty] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const canEdit = role === 'admin' || role === 'manager';
 
@@ -171,6 +173,88 @@ const AdminBusinessInfo = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               {renderField('company_name', 'Company Name')}
+              {renderField('website', 'Website', 'input', 'www.yourcompany.com')}
+              
+              {/* Company Logo Upload */}
+              <div className="space-y-2">
+                <Label>Company Logo</Label>
+                <p className="text-xs text-muted-foreground">Used in PDF proposals, invoices, and documents</p>
+                <div className="flex items-start gap-4">
+                  {getFieldValue('company_logo', 'en') ? (
+                    <div className="relative group">
+                      <img 
+                        src={getFieldValue('company_logo', 'en')} 
+                        alt="Company Logo" 
+                        className="h-16 w-16 object-contain rounded border bg-white p-1"
+                      />
+                      {canEdit && (
+                        <button
+                          onClick={() => {
+                            handleChange('company_logo', 'en', '');
+                            handleChange('company_logo', 'bn', '');
+                            setIsDirty(true);
+                          }}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="h-16 w-16 rounded border border-dashed flex items-center justify-center bg-muted/50">
+                      <Image className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  {canEdit && (
+                    <div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isUploadingLogo}
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/png,image/jpeg,image/svg+xml,image/webp';
+                          input.onchange = async (e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0];
+                            if (!file) return;
+                            if (file.size > 2 * 1024 * 1024) {
+                              toast({ title: 'File too large', description: 'Logo must be under 2MB', variant: 'destructive' });
+                              return;
+                            }
+                            setIsUploadingLogo(true);
+                            try {
+                              const ext = file.name.split('.').pop();
+                              const filePath = `logo.${ext}`;
+                              const { error: uploadError } = await supabase.storage
+                                .from('company-assets')
+                                .upload(filePath, file, { upsert: true });
+                              if (uploadError) throw uploadError;
+                              const { data: urlData } = supabase.storage
+                                .from('company-assets')
+                                .getPublicUrl(filePath);
+                              const url = urlData.publicUrl + '?t=' + Date.now();
+                              handleChange('company_logo', 'en', url);
+                              handleChange('company_logo', 'bn', url);
+                              setIsDirty(true);
+                              toast({ title: 'Logo uploaded', description: 'Remember to save changes.' });
+                            } catch (err: any) {
+                              toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+                            } finally {
+                              setIsUploadingLogo(false);
+                            }
+                          };
+                          input.click();
+                        }}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG, WebP (max 2MB)</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
