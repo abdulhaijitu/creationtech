@@ -1,50 +1,39 @@
 
 
-## Proposal PDF Typography & Rich Text Table Rendering Upgrade
+## Proposal PDF Output Adjustments + Print Preview
 
 ### Changes to `src/utils/proposalPdfGenerator.ts`
 
-**1. Font Size & Line Spacing Updates**
-- Base body font: `9pt` → `12pt`
-- Line spacing: `4.5mm` → `~5.5mm` (matching single line spacing at 12pt)
-- Section heading: `11pt` → `14pt` (standard heading proportion)
-- All other text elements scaled proportionally
+1. **Header — Logo only, no text name/tagline**: Remove `doc.text(company.name...)` and `doc.text(company.tagline...)` from `addHeader()`. Keep only the logo image on the left side.
 
-**2. Rich Text HTML Table Rendering**
-Currently `htmlToPlainText()` strips all HTML including tables. The new approach:
-- Before converting to plain text, **detect `<table>` blocks** in the HTML
-- Extract each table and render it using `autoTable` with parsed rows/columns
-- For non-table content, continue using the existing plain text conversion
-- This means `addSection` will process content in chunks: text chunk → table → text chunk → etc.
+2. **Remove horizontal line above PROPOSAL**: Delete the separator lines at lines 503-506 (between Subject and sections).
 
-**Implementation approach:**
-- Split HTML content by `<table>...</table>` boundaries
-- For text segments: use existing `htmlToPlainText()` + line-by-line rendering
-- For table segments: parse `<tr>`, `<th>`, `<td>` elements from the HTML and feed them to `autoTable` with matching styles
-- Create a helper `parseHtmlTable(html: string)` that returns `{ head: string[][], body: string[][] }`
+3. **Remove underline below Subject**: The line at y after subject (lines 502-506) will be removed entirely.
 
-**3. Specific font size mapping:**
-| Element | Current | New |
-|---|---|---|
-| Body text | 9pt | 12pt |
-| Section heading | 11pt | 14pt |
-| "To," block | 9-10pt | 12pt |
-| Subject line | 10pt | 12pt |
-| PROPOSAL title | 18pt | 18pt (keep) |
-| Meta info (date, #) | 9pt | 10pt |
-| Budget table body | 8.5pt | 10pt |
-| Budget table head | 9pt | 10pt |
-| Totals | 9-11pt | 11-13pt |
-| Amount in words | 8pt | 9pt |
-| Validity note | 8pt | 9pt |
+4. **Section title "Offer Letter"**: Currently renders as `'Offer Letter'` — already correct (line 509). No change needed.
 
-**4. Line spacing constant:**
-- New constant `LINE_HEIGHT = 5.5` (for 12pt base, single spacing)
-- Paragraph gap: `3mm`
+5. **Remove letter spacing**: Check all `doc.text()` calls — jsPDF doesn't add letter spacing by default; however if `setCharSpace` is called anywhere, remove it. Currently none found, so no change needed.
 
-### File: `src/utils/proposalPdfGenerator.ts`
-- Update all font sizes per mapping above
-- Refactor `addSection` to handle mixed text+table content
-- Add `parseHtmlTable()` helper
-- Update line height constants
+6. **Timeline as table**: Currently `timeline` is rendered via `addSection` as rich text. Since the user enters timeline as an HTML table in the rich text editor, it should already render as a table via `splitContentByTables` + `parseHtmlTable`. No code change needed — this is handled by the existing table detection logic.
+
+7. **Budget Details — Remove Subtotal row**: Remove the subtotal rendering block (lines 559-563) where `data.subtotal` is displayed.
+
+8. **Remove "Closing" section title**: Change line 595 from `'Closing'` to render the `offer_letter_end` content without a section heading, or simply remove the "Closing" label. Will render `offer_letter_end` content inline without a heading.
+
+9. **Add PDF/Print Preview**: Add a preview mode that opens the PDF in a new browser tab (using `doc.output('bloburl')`) without auto-print or download. Update `AdminProposals.tsx` to add a "Preview" dropdown option.
+
+### Changes to `src/pages/admin/AdminProposals.tsx`
+- Add "Preview PDF" option in the dropdown menu
+- Pass `'preview'` action to `generateProposalPDF`
+
+### Specific code changes in `proposalPdfGenerator.ts`:
+
+| Line(s) | Change |
+|---|---|
+| 228-237 | Remove company name text and tagline text from header |
+| 400 | Update action type to include `'preview'` |
+| 502-506 | Remove separator line after Subject |
+| 559-563 | Remove Subtotal display in Budget Details |
+| 595 | Remove "Closing" heading — render `offer_letter_end` without section title |
+| 636-641 | Add `'preview'` case that opens bloburl in new tab without autoPrint |
 
