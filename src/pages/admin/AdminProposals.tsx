@@ -662,18 +662,18 @@ const AdminProposals = () => {
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>আপনি কি নিশ্চিত?</AlertDialogTitle>
-            <AlertDialogDescription>
-              "{deleteTarget?.proposal_number} - {deleteTarget?.title}" প্রপোজালটি স্থায়ীভাবে মুছে ফেলা হবে। এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
-            </AlertDialogDescription>
+             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+             <AlertDialogDescription>
+               "{deleteTarget?.proposal_number} - {deleteTarget?.title}" will be permanently deleted. This action cannot be undone.
+             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>বাতিল</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              ডিলিট করুন
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -266,7 +266,7 @@ import {
           <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingClient ? 'Edit Client' : 'Add New Client'}</DialogTitle>
-              <DialogDescription>ক্লায়েন্টের তথ্য পূরণ করুন</DialogDescription>
+              <DialogDescription>Fill in the client details</DialogDescription>
             </DialogHeader>
            <form onSubmit={handleSubmit} className="space-y-4">
              <div className="space-y-2">
