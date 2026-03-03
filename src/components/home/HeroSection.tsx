@@ -167,7 +167,7 @@ const HeroSection = () => {
 
             {/* Headline with Rotating Word */}
             <h1 
-              className="mb-6 text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem] hero-animate hero-animate-delay-1"
+              className="mb-6 text-2xl font-bold leading-[1.08] tracking-tight text-white sm:text-3xl md:text-4xl lg:text-[2.75rem] xl:text-[3rem] hero-animate hero-animate-delay-1"
               style={{ letterSpacing: '-0.02em' }}
             >
               <span 
