@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   Accordion,
@@ -71,12 +72,19 @@ const Feature197 = ({ features }: Feature197Props) => {
         </div>
 
         <div className="hidden lg:block">
-          <img
-            src={activeImage}
-            alt="Feature illustration"
-            className="h-full max-h-[500px] w-full rounded-2xl object-cover transition-all duration-500"
-            loading="lazy"
-          />
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={activeImage}
+              src={activeImage}
+              alt="Feature illustration"
+              className="h-full max-h-[500px] w-full rounded-2xl object-cover"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              loading="lazy"
+            />
+          </AnimatePresence>
         </div>
       </div>
     </div>
