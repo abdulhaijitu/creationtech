@@ -891,18 +891,32 @@ export async function generateProposalPDF(
           formatCurrency(item.amount),
         ]),
         theme: 'striped',
-        headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-        bodyStyles: { fontSize: 10 },
-        alternateRowStyles: { fillColor: [245, 247, 252] },
+        headStyles: {
+          fillColor: ACCENT_COLOR,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 10,
+          cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 },
+        },
+        bodyStyles: {
+          fontSize: 10,
+          cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
+          textColor: [40, 40, 40],
+          lineColor: [230, 230, 230],
+          lineWidth: 0.15,
+        },
+        alternateRowStyles: { fillColor: [245, 248, 255] },
         columnStyles: {
-          0: { cellWidth: 12, halign: 'center' },
+          0: { cellWidth: 12, halign: 'center', fontStyle: 'bold', textColor: [100, 100, 100] },
           1: { cellWidth: 'auto' },
-          2: { cellWidth: 22, halign: 'center' },
+          2: { cellWidth: 24, halign: 'center', fontSize: 9 },
           3: { cellWidth: 14, halign: 'center' },
           4: { cellWidth: 30, halign: 'right' },
-          5: { cellWidth: 30, halign: 'right' },
+          5: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
         },
         margin: { left: MARGIN, right: MARGIN },
+        tableLineColor: [220, 220, 220],
+        tableLineWidth: 0.1,
       });
       y = (doc as any).lastAutoTable.finalY + 4;
       doc.setFontSize(BODY_FONT);
@@ -924,17 +938,31 @@ export async function generateProposalPDF(
           formatCurrency(item.amount),
         ]),
         theme: 'striped',
-        headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-        bodyStyles: { fontSize: 10 },
-        alternateRowStyles: { fillColor: [245, 247, 252] },
+        headStyles: {
+          fillColor: ACCENT_COLOR,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 10,
+          cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 },
+        },
+        bodyStyles: {
+          fontSize: 10,
+          cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
+          textColor: [40, 40, 40],
+          lineColor: [230, 230, 230],
+          lineWidth: 0.15,
+        },
+        alternateRowStyles: { fillColor: [245, 248, 255] },
         columnStyles: {
-          0: { cellWidth: 12, halign: 'center' },
+          0: { cellWidth: 12, halign: 'center', fontStyle: 'bold', textColor: [100, 100, 100] },
           1: { cellWidth: 'auto' },
           2: { cellWidth: 18, halign: 'center' },
           3: { cellWidth: 32, halign: 'right' },
-          4: { cellWidth: 32, halign: 'right' },
+          4: { cellWidth: 32, halign: 'right', fontStyle: 'bold' },
         },
         margin: { left: MARGIN, right: MARGIN },
+        tableLineColor: [220, 220, 220],
+        tableLineWidth: 0.1,
       });
       y = (doc as any).lastAutoTable.finalY + 8;
       doc.setFontSize(BODY_FONT);
@@ -955,63 +983,85 @@ export async function generateProposalPDF(
     const taxAmount = data.tax_rate ? oneTimeSubtotal * ((data.tax_rate) / 100) : 0;
     const oneTimeTotal = oneTimeSubtotal + taxAmount - (data.discount_amount || 0);
 
-    // Totals section
+    // Totals section — styled box
     const totalsX = pageWidth - 90;
+    const totalsBoxX = totalsX - 8;
+    const totalsBoxW = pageWidth - MARGIN - totalsBoxX;
+    
+    // Background box for totals
+    let totalsStartY = y;
+    doc.setFillColor(250, 251, 255);
+    doc.setDrawColor(220, 225, 235);
+    doc.setLineWidth(0.3);
+    
+    // Calculate box height
+    let boxLines = 1; // subtotal
+    if (monthlyTotal > 0) boxLines++;
+    if (yearlyTotal > 0) boxLines++;
+    if (data.tax_rate && taxAmount) boxLines++;
+    if (data.discount_amount && data.discount_amount > 0) boxLines++;
+    const boxH = (boxLines * 7) + 22; // lines + total line + padding
+    
+    doc.roundedRect(totalsBoxX, y - 4, totalsBoxW, boxH, 2, 2, 'FD');
+    
+    y += 2;
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(55, 55, 55);
 
     // One-time subtotal
     doc.text('One-time Subtotal:', totalsX, y);
-    doc.text(formatCurrency(oneTimeSubtotal), pageWidth - MARGIN, y, { align: 'right' });
-    y += 6;
+    doc.text(formatCurrency(oneTimeSubtotal), pageWidth - MARGIN - 3, y, { align: 'right' });
+    y += 7;
 
     // Monthly recurring
     if (monthlyTotal > 0) {
       doc.text('Monthly Recurring:', totalsX, y);
-      doc.text(`${formatCurrency(monthlyTotal)}/mo`, pageWidth - MARGIN, y, { align: 'right' });
-      y += 6;
+      doc.text(`${formatCurrency(monthlyTotal)}/mo`, pageWidth - MARGIN - 3, y, { align: 'right' });
+      y += 7;
     }
 
     // Yearly recurring
     if (yearlyTotal > 0) {
       doc.text('Yearly Recurring:', totalsX, y);
-      doc.text(`${formatCurrency(yearlyTotal)}/yr`, pageWidth - MARGIN, y, { align: 'right' });
-      y += 6;
+      doc.text(`${formatCurrency(yearlyTotal)}/yr`, pageWidth - MARGIN - 3, y, { align: 'right' });
+      y += 7;
     }
 
     if (data.tax_rate && taxAmount) {
       doc.text(`VAT/Tax (${data.tax_rate}%):`, totalsX, y);
-      doc.text(formatCurrency(taxAmount), pageWidth - MARGIN, y, { align: 'right' });
-      y += 6;
+      doc.text(formatCurrency(taxAmount), pageWidth - MARGIN - 3, y, { align: 'right' });
+      y += 7;
     }
     if (data.discount_amount && data.discount_amount > 0) {
+      doc.setTextColor(200, 50, 50);
       doc.text('Discount:', totalsX, y);
-      doc.text(`-${formatCurrency(data.discount_amount)}`, pageWidth - MARGIN, y, { align: 'right' });
-      y += 6;
+      doc.text(`-${formatCurrency(data.discount_amount)}`, pageWidth - MARGIN - 3, y, { align: 'right' });
+      doc.setTextColor(55, 55, 55);
+      y += 7;
     }
 
     doc.setDrawColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
-    doc.setLineWidth(0.4);
-    doc.line(totalsX - 5, y, pageWidth - MARGIN, y);
-    y += 6;
+    doc.setLineWidth(0.5);
+    doc.line(totalsX - 3, y - 2, pageWidth - MARGIN - 1, y - 2);
+    y += 4;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
     doc.text('Total (One-time):', totalsX, y);
-    doc.text(formatCurrency(oneTimeTotal), pageWidth - MARGIN, y, { align: 'right' });
+    doc.text(formatCurrency(oneTimeTotal), pageWidth - MARGIN - 3, y, { align: 'right' });
     y += 7;
 
     if (monthlyTotal > 0) {
       doc.setFontSize(11);
       doc.text('+ Monthly:', totalsX, y);
-      doc.text(`${formatCurrency(monthlyTotal)}/mo`, pageWidth - MARGIN, y, { align: 'right' });
+      doc.text(`${formatCurrency(monthlyTotal)}/mo`, pageWidth - MARGIN - 3, y, { align: 'right' });
       y += 6;
     }
     if (yearlyTotal > 0) {
       doc.setFontSize(11);
       doc.text('+ Yearly:', totalsX, y);
-      doc.text(`${formatCurrency(yearlyTotal)}/yr`, pageWidth - MARGIN, y, { align: 'right' });
+      doc.text(`${formatCurrency(yearlyTotal)}/yr`, pageWidth - MARGIN - 3, y, { align: 'right' });
       y += 6;
     }
 
