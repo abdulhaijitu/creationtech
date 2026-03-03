@@ -1,25 +1,32 @@
 
 
-## Footer Redesign — Light/Minimal Style (Demo-inspired)
+## Services Section Redesign — Accordion Feature Block
 
 ### Overview
-Redesign the Footer to match the demo's clean, light-background aesthetic with dot-pattern decorations, while keeping all Creation Tech data, bilingual support, and dynamic business info from the database.
+Replace the current custom accordion+illustration layout with the `Feature197` accordion-feature-section pattern: left side has a shadcn `Accordion` with service titles/descriptions, right side shows the corresponding image that updates on accordion item change. Data remains dynamic from the database with bilingual support.
 
-### Design Changes
-- **Background**: Switch from dark (`bg-foreground`) to light (`bg-white`) with subtle dot-pattern SVG decorations and gradient blobs
-- **Layout**: 4-column grid — Brand+Social, Services, Company, Contact (matching demo structure)
-- **Social icons**: Inline row under brand description with circular hover effects (black bg on hover)
-- **Link style**: Gray text with black hover, small dot indicator on hover (like demo)
-- **Contact section**: Icons inline with text, clean minimal style
-- **Bottom bar**: Light gray border, centered copyright
-- **Remove newsletter section**: Demo doesn't have it (or keep it — will remove to match demo closely)
+### Plan
 
-### Data Preserved
-- All existing `useBusinessInfoMap()`, `getInfo()`, `getSocialLink()` helpers
-- Bilingual support (`language === 'en'`)
-- All existing link arrays (company, services/products, legal)
-- Logo import and dynamic business info
+**1. Create `src/components/ui/accordion-feature-section.tsx`**
+- Adapted from the provided `Feature197` component
+- Remove `"use client"` directive (not needed in Vite/React)
+- Two-column layout: left accordion, right image
+- Accept `features` prop with `id`, `title`, `image`, `description`
+- Uses existing `Accordion` from `@/components/ui/accordion`
+- Active item controls the displayed image on the right
+- Mobile: image shown inline below each accordion item's description (as in the original component)
+
+**2. Update `src/components/home/ServicesSection.tsx`**
+- Import and use `Feature197` (or renamed `AccordionFeatureSection`)
+- Map database services to the `features` format:
+  - `title` → bilingual `title_en/bn`
+  - `description` → bilingual `short_description_en/bn` or `description_en/bn`
+  - `image` → `featured_image_url` or fallback illustrations
+- Keep section header ("Our Services" / "আমাদের সেবাসমূহ") above the component
+- Keep loading skeleton and empty state logic
+- Remove old custom accordion markup, Sparkles icon, manual expand/collapse logic
 
 ### Files Changed
-- `src/components/layout/Footer.tsx` — full redesign with light theme, dot-pattern background, demo-inspired layout
+- `src/components/ui/accordion-feature-section.tsx` — **new file**
+- `src/components/home/ServicesSection.tsx` — refactored to use new component
 
