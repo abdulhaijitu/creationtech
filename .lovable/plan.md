@@ -1,20 +1,20 @@
 
 
-## সমস্যা ও সমাধান
+## Clone Proposal Feature
 
-### ১. "Add Term" কাজ না করার বাগ
-**কারণ:** `formData.terms.split('\n').filter(t => t.trim() !== '')` — এই `.filter()` নতুন যোগ করা খালি string `''` কে সাথে সাথে বাদ দিয়ে দিচ্ছে, তাই নতুন row দেখা যাচ্ছে না।
+### পরিবর্তন
+**`src/pages/admin/AdminProposals.tsx`:**
 
-**সমাধান:** খালি string filter করা বন্ধ করা — শুধু split করা হবে, filter শুধু save/serialize এর সময় হবে।
+1. **`cloneMutation` তৈরি** (Line ~131 এর কাছে, `versionMutation` এর পরে):
+   - `versionMutation` এর মতোই কাজ করবে, কিন্তু পার্থক্য:
+     - `version: 1` (নতুন proposal হিসেবে, version increment নয়)
+     - `title` এ "(Clone)" suffix যোগ হবে
+     - Original proposal-এর status পরিবর্তন হবে না (versionMutation এ original কে 'revised' করা হয়)
+   - Items কপি করবে `proposal_items` থেকে
 
-### ২. প্রতিটি Term-এ মিনিমাল রিচ টেক্সট
-প্লেইন `Input` এর বদলে প্রতি term-এ একটি কমপ্যাক্ট `RichTextEditor` বসানো হবে — toolbar ডিফল্টে hidden, focus-এ visible (যেমন Description ফিল্ডে করা হয়েছে)। এতে bold, italic, link ইত্যাদি ব্যবহার করা যাবে।
+2. **Dropdown menu তে Clone অপশন** (Line ~291-294):
+   - "Create New Version" এর পরে `<DropdownMenuItem>` যোগ — `Copy` icon সহ "Clone Proposal"
+   - `cloneMutation.mutate(proposal)` কল করবে
 
-**ডেটা ফরম্যাট পরিবর্তন:** `\n` split এর বদলে একটি delimiter (যেমন `|||`) ব্যবহার করা হবে, কারণ RichTextEditor এর আউটপুট HTML হওয়ায় `\n` কনফ্লিক্ট করবে।
-
-### ফাইল পরিবর্তন
-- **`src/components/admin/ProposalForm.tsx`** (Lines 720-771):
-  - `\n` split → `|||` delimiter দিয়ে parse/serialize
-  - প্রতি row তে `Input` → compact `RichTextEditor` (collapsed toolbar style)
-  - Empty item filter বাগ ফিক্স
+3. **Import**: `lucide-react` থেকে `Copy` icon import করা
 
