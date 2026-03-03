@@ -7,6 +7,7 @@ import ClientCombobox from '@/components/admin/ClientCombobox';
 import RichTextEditor from '@/components/ui/rich-text-editor';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileText, User, Calendar, Plus, Trash2, X, Calculator, NotepadText } from 'lucide-react';
 
 interface Client {
@@ -63,8 +64,7 @@ interface ProposalFormProps {
 
 export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) => {
   const { toast } = useToast();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [items, setItems] = useState<ProposalItem[]>([
     { description: '', quantity: 1, unit_price: 0, amount: 0 },
   ]);
@@ -88,8 +88,35 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
     discount_amount: 0,
   });
 
+  // TanStack Query for clients
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('clients').select('id, name, email, phone, address, company').order('name');
+      if (error) throw error;
+      return (data || []) as Client[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch proposal items via query when editing
+  const { data: proposalItemsData } = useQuery({
+    queryKey: ['proposal-items', proposal?.id],
+    queryFn: async () => {
+      if (!proposal?.id) return null;
+      const { data, error } = await supabase
+        .from('proposal_items')
+        .select('*')
+        .eq('proposal_id', proposal.id)
+        .order('display_order');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!proposal?.id,
+  });
+
+  // Populate form when editing
   useEffect(() => {
-    fetchClients();
     if (proposal) {
       setFormData({
         client_id: proposal.client_id || '',
@@ -110,23 +137,13 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         tax_rate: proposal.tax_rate || 0,
         discount_amount: proposal.discount_amount || 0,
       });
-      fetchProposalItems(proposal.id);
     }
   }, [proposal]);
 
-  const fetchClients = async () => {
-    const { data } = await supabase.from('clients').select('id, name, email, phone, address, company').order('name');
-    setClients(data || []);
-  };
-
-  const fetchProposalItems = async (proposalId: string) => {
-    const { data } = await supabase
-      .from('proposal_items')
-      .select('*')
-      .eq('proposal_id', proposalId)
-      .order('display_order');
-    if (data && data.length > 0) {
-      setItems(data.map(item => ({
+  // Populate items when fetched
+  useEffect(() => {
+    if (proposalItemsData && proposalItemsData.length > 0) {
+      setItems(proposalItemsData.map(item => ({
         id: item.id,
         description: item.description,
         quantity: Number(item.quantity),
@@ -134,7 +151,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         amount: Number(item.amount),
       })));
     }
-  };
+  }, [proposalItemsData]);
 
   const handleClientSelect = (client: Client) => {
     setFormData(prev => ({
@@ -170,14 +187,8 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
   const taxAmount = subtotal * (formData.tax_rate / 100);
   const total = subtotal + taxAmount - formData.discount_amount;
 
-  const handleSave = async () => {
-    if (!formData.client_name || !formData.title) {
-      toast({ title: 'Error', description: 'Please fill in required fields', variant: 'destructive' });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
+  const saveMutation = useMutation({
+    mutationFn: async () => {
       const proposalData = {
         client_id: formData.client_id || null,
         client_name: formData.client_name,
@@ -238,15 +249,24 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         const { error: itemsError } = await supabase.from('proposal_items').insert(itemsToInsert);
         if (itemsError) throw itemsError;
       }
-
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
       toast({ title: 'Success', description: proposal ? 'Proposal updated successfully' : 'Proposal created successfully' });
       onSave();
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       console.error('Error saving proposal:', error);
       toast({ title: 'Error', description: error.message || 'Failed to save proposal', variant: 'destructive' });
-    } finally {
-      setIsLoading(false);
+    },
+  });
+
+  const handleSave = () => {
+    if (!formData.client_name || !formData.title) {
+      toast({ title: 'Error', description: 'Please fill in required fields', variant: 'destructive' });
+      return;
     }
+    saveMutation.mutate();
   };
 
   const richEditorCompact = "min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm";
@@ -635,8 +655,8 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
           <Button variant="outline" onClick={onCancel} className="sm:w-auto w-full">
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isLoading} className="sm:w-auto w-full">
-            {isLoading ? 'Saving...' : proposal ? 'Update Proposal' : 'Create Proposal'}
+          <Button onClick={handleSave} disabled={saveMutation.isPending} className="sm:w-auto w-full">
+            {saveMutation.isPending ? 'Saving...' : proposal ? 'Update Proposal' : 'Create Proposal'}
           </Button>
         </div>
       </div>
