@@ -49,8 +49,20 @@ const Portfolio = () => {
     },
   });
 
-  // Extract unique categories
-  const categories = ['All', ...Array.from(new Set(projects?.map(p => p.category).filter(Boolean) as string[]))];
+  const { data: dbCategories } = useQuery({
+    queryKey: ['portfolio-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('portfolio_categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const categories = ['All', ...(dbCategories?.map(c => c.name_en) || [])];
 
   const filtered = activeCategory === 'All'
     ? projects

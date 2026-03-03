@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Eye, EyeOff, ArrowLeft, Save } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, ArrowLeft, Save, Settings2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import AdminStatusBadge from '@/components/admin/AdminStatusBadge';
 import ProductImageUpload from '@/components/admin/ProductImageUpload';
 import {
@@ -42,6 +44,15 @@ interface PortfolioProject {
   is_active: boolean;
 }
 
+interface PortfolioCategory {
+  id: string;
+  name_en: string;
+  name_bn: string | null;
+  slug: string;
+  is_active: boolean;
+  display_order: number;
+}
+
 const emptyFormData = {
   slug: '',
   title_en: '',
@@ -65,6 +76,7 @@ const generateSlug = (title: string) =>
 const AdminPortfolio = () => {
   const { toast } = useToast();
   const [projects, setProjects] = useState<PortfolioProject[]>([]);
+  const [categories, setCategories] = useState<PortfolioCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -72,6 +84,26 @@ const AdminPortfolio = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState(emptyFormData);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+
+  // Category management state
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<PortfolioCategory | null>(null);
+  const [catForm, setCatForm] = useState({ name_en: '', name_bn: '', slug: '' });
+  const [isCatSaving, setIsCatSaving] = useState(false);
+  const [deletingCategory, setDeletingCategory] = useState<PortfolioCategory | null>(null);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('portfolio_categories')
+        .select('*')
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   const fetchProjects = async () => {
     try {
@@ -89,7 +121,7 @@ const AdminPortfolio = () => {
     }
   };
 
-  useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => { fetchProjects(); fetchCategories(); }, []);
 
   const handleTitleEnChange = useCallback((value: string) => {
     setFormData(prev => ({
@@ -205,6 +237,74 @@ const AdminPortfolio = () => {
     }
   };
 
+  // ─── CATEGORY MANAGEMENT ───
+  const openCategoryCreate = () => {
+    setEditingCategory(null);
+    setCatForm({ name_en: '', name_bn: '', slug: '' });
+  };
+
+  const openCategoryEdit = (cat: PortfolioCategory) => {
+    setEditingCategory(cat);
+    setCatForm({ name_en: cat.name_en, name_bn: cat.name_bn || '', slug: cat.slug });
+  };
+
+  const handleCategorySave = async () => {
+    if (!catForm.name_en) {
+      toast({ title: 'Error', description: 'Category name (English) is required', variant: 'destructive' });
+      return;
+    }
+    setIsCatSaving(true);
+    const slug = catForm.slug || generateSlug(catForm.name_en);
+    try {
+      if (editingCategory) {
+        const { error } = await supabase.from('portfolio_categories')
+          .update({ name_en: catForm.name_en, name_bn: catForm.name_bn || null, slug })
+          .eq('id', editingCategory.id);
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Category updated' });
+      } else {
+        const { error } = await supabase.from('portfolio_categories')
+          .insert({ name_en: catForm.name_en, name_bn: catForm.name_bn || null, slug, display_order: categories.length });
+        if (error) throw error;
+        toast({ title: 'Success', description: 'Category created' });
+      }
+      setEditingCategory(null);
+      setCatForm({ name_en: '', name_bn: '', slug: '' });
+      fetchCategories();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to save category', variant: 'destructive' });
+    } finally {
+      setIsCatSaving(false);
+    }
+  };
+
+  const handleCategoryToggle = async (cat: PortfolioCategory) => {
+    try {
+      const { error } = await supabase.from('portfolio_categories')
+        .update({ is_active: !cat.is_active })
+        .eq('id', cat.id);
+      if (error) throw error;
+      fetchCategories();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const handleCategoryDelete = async () => {
+    if (!deletingCategory) return;
+    try {
+      const { error } = await supabase.from('portfolio_categories').delete().eq('id', deletingCategory.id);
+      if (error) throw error;
+      toast({ title: 'Success', description: 'Category deleted' });
+      setDeletingCategory(null);
+      fetchCategories();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
+
+  const activeCategories = categories.filter(c => c.is_active);
+
   // ─── FORM VIEW ───
   if (viewMode !== 'list') {
     return (
@@ -264,7 +364,17 @@ const AdminPortfolio = () => {
                 </div>
                 <div>
                   <Label>Category</Label>
-                  <Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="e.g. Web App, Mobile" />
+                  <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value === '__none__' ? '' : value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">No Category</SelectItem>
+                      {activeCategories.map(cat => (
+                        <SelectItem key={cat.id} value={cat.name_en}>{cat.name_en}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardContent>
@@ -363,10 +473,16 @@ const AdminPortfolio = () => {
             <h1 className="text-2xl font-bold">Portfolio</h1>
             <p className="text-muted-foreground">Manage your portfolio projects</p>
           </div>
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Project
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setIsCategoryDialogOpen(true)}>
+              <Settings2 className="mr-2 h-4 w-4" />
+              Manage Categories
+            </Button>
+            <Button onClick={openCreate}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Project
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-4">
@@ -416,6 +532,7 @@ const AdminPortfolio = () => {
         </div>
       </div>
 
+      {/* Delete Project Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -425,6 +542,91 @@ const AdminPortfolio = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Category Management Dialog */}
+      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Portfolio Categories</DialogTitle>
+          </DialogHeader>
+
+          {/* Add / Edit form */}
+          <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
+            <p className="text-sm font-medium">{editingCategory ? 'Edit Category' : 'Add New Category'}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Name (English) *</Label>
+                <Input
+                  value={catForm.name_en}
+                  onChange={(e) => {
+                    setCatForm(prev => ({
+                      ...prev,
+                      name_en: e.target.value,
+                      ...(!editingCategory ? { slug: generateSlug(e.target.value) } : {}),
+                    }));
+                  }}
+                  placeholder="Web App"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Name (Bangla)</Label>
+                <Input value={catForm.name_bn} onChange={(e) => setCatForm({ ...catForm, name_bn: e.target.value })} placeholder="ওয়েব অ্যাপ" className="font-bangla" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Slug</Label>
+              <Input value={catForm.slug} onChange={(e) => setCatForm({ ...catForm, slug: e.target.value })} placeholder="auto-generated" className="font-mono text-xs" />
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleCategorySave} disabled={isCatSaving}>
+                {isCatSaving ? 'Saving...' : editingCategory ? 'Update' : 'Add Category'}
+              </Button>
+              {editingCategory && (
+                <Button size="sm" variant="ghost" onClick={openCategoryCreate}>Cancel</Button>
+              )}
+            </div>
+          </div>
+
+          {/* Category list */}
+          <div className="space-y-2 mt-2">
+            {categories.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No categories yet.</p>
+            ) : (
+              categories.map(cat => (
+                <div key={cat.id} className="flex items-center justify-between rounded-lg border px-3 py-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{cat.name_en}</p>
+                    {cat.name_bn && <p className="text-xs text-muted-foreground font-bangla">{cat.name_bn}</p>}
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Switch checked={cat.is_active} onCheckedChange={() => handleCategoryToggle(cat)} />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openCategoryEdit(cat)}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeletingCategory(cat)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Category Confirm */}
+      <AlertDialog open={!!deletingCategory} onOpenChange={(open) => !open && setDeletingCategory(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Category</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete "{deletingCategory?.name_en}"? Projects using this category won't be affected.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCategoryDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
