@@ -11,10 +11,6 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-interface TopbarProps {
-  isVisible: boolean;
-}
-
 const socialLinks = [
   { icon: Facebook, key: 'social_facebook', label: 'Facebook' },
   { icon: Twitter, key: 'social_twitter', label: 'Twitter' },
@@ -23,20 +19,14 @@ const socialLinks = [
   { icon: WhatsAppIcon, key: 'social_whatsapp', label: 'WhatsApp' },
 ];
 
-const Topbar = ({ isVisible }: TopbarProps) => {
+const Topbar = () => {
   const { data: businessInfo } = useBusinessInfoMap();
 
   const getInfo = (key: string, fallback: string) => businessInfo[key]?.value_en || fallback;
   const getSocialLink = (key: string) => getInfo(key, '#');
 
   return (
-    <div className="hidden lg:block w-full overflow-hidden">
-      <div
-        className={cn(
-          'w-full bg-gradient-to-r from-primary/5 via-background to-primary/5 border-b border-border/30 transition-all duration-300 ease-out',
-          isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
-        )}
-      >
+    <div className="hidden lg:block w-full bg-gradient-to-r from-primary/5 via-background to-primary/5 border-b border-border/30">
       <div className="container-custom">
         <div className="flex h-10 items-center justify-between text-sm">
           {/* Left Side - Contact Info */}
@@ -87,7 +77,6 @@ const Topbar = ({ isVisible }: TopbarProps) => {
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };
