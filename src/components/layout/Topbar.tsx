@@ -1,13 +1,27 @@
-import { Mail, Phone, LogIn } from 'lucide-react';
+import { Mail, Phone, LogIn, Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
 
 interface TopbarProps {
   isVisible: boolean;
 }
 
+const socialLinks = [
+  { icon: Facebook, key: 'social_facebook', label: 'Facebook' },
+  { icon: Twitter, key: 'social_twitter', label: 'Twitter' },
+  { icon: Linkedin, key: 'social_linkedin', label: 'LinkedIn' },
+  { icon: Instagram, key: 'social_instagram', label: 'Instagram' },
+];
+
 const Topbar = ({ isVisible }: TopbarProps) => {
+  const { data: businessInfo } = useBusinessInfoMap();
+
+  const getSocialLink = (key: string) => {
+    const info = businessInfo[key];
+    return info?.value_en || '#';
+  };
 
   return (
     <div
@@ -37,8 +51,21 @@ const Topbar = ({ isVisible }: TopbarProps) => {
             </a>
           </div>
 
-          {/* Right Side - Language & Login */}
-          <div className="flex items-center gap-3">
+          {/* Right Side - Social & Login */}
+          <div className="flex items-center gap-2">
+            {socialLinks.map((social) => (
+              <a
+                key={social.key}
+                href={getSocialLink(social.key)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-all duration-200 hover:text-primary hover:bg-primary/10"
+              >
+                <social.icon className="h-3.5 w-3.5" />
+              </a>
+            ))}
+            <div className="h-4 w-px bg-border/60 mx-1" />
             <Button
               variant="ghost"
               size="sm"
