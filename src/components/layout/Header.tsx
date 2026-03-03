@@ -41,7 +41,10 @@ const Header = () => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setIsScrolled(scrollY > 50);
-      setIsTopbarVisible(scrollY < 30);
+      // Hysteresis: show only when near top, hide after scrolling past threshold
+      if (scrollY < 10) setIsTopbarVisible(true);
+      else if (scrollY > 40) setIsTopbarVisible(false);
+      // Between 10-40: keep previous state
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });

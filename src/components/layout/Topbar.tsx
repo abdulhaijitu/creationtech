@@ -30,12 +30,13 @@ const Topbar = ({ isVisible }: TopbarProps) => {
   const getSocialLink = (key: string) => getInfo(key, '#');
 
   return (
-    <div
-      className={cn(
-        'hidden lg:block w-full bg-gradient-to-r from-primary/5 via-background to-primary/5 border-b border-border/30 transition-all duration-300 ease-out overflow-hidden',
-        isVisible ? 'max-h-12 opacity-100' : 'max-h-0 opacity-0'
-      )}
-    >
+    <div className="hidden lg:block w-full overflow-hidden">
+      <div
+        className={cn(
+          'w-full bg-gradient-to-r from-primary/5 via-background to-primary/5 border-b border-border/30 transition-all duration-300 ease-out',
+          isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+        )}
+      >
       <div className="container-custom">
         <div className="flex h-10 items-center justify-between text-sm">
           {/* Left Side - Contact Info */}
@@ -86,6 +87,7 @@ const Topbar = ({ isVisible }: TopbarProps) => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
