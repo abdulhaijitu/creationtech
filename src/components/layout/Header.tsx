@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu, Home, Package, Briefcase, LayoutGrid, Building2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
@@ -20,6 +20,15 @@ import {
 } from '@/components/ui/navigation-menu';
 import Topbar from './Topbar';
 
+const navItems = [
+  { href: '/', label: 'Home', labelBn: 'হোম', icon: Home },
+  { href: '/products', label: 'Products', labelBn: 'প্রোডাক্ট', icon: Package },
+  { href: '/services', label: 'Services', labelBn: 'সেবাসমূহ', icon: Briefcase },
+  { href: '/portfolio', label: 'Portfolio', labelBn: 'পোর্টফোলিও', icon: LayoutGrid },
+  { href: '/about', label: 'Companies', labelBn: 'কোম্পানি', icon: Building2 },
+  { href: '/blog', label: 'Resources', labelBn: 'রিসোর্স', icon: BookOpen },
+];
+
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isTopbarVisible, setIsTopbarVisible] = useState(true);
@@ -27,25 +36,16 @@ const Header = () => {
   const { t, language } = useLanguage();
   const location = useLocation();
 
-
-
-
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setIsScrolled(scrollY > 50);
-      setIsTopbarVisible(scrollY < 10);
+      setIsTopbarVisible(scrollY < 30);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const simpleNavItems = [
-    { href: '/', label: 'Home' },
-  ];
-
-
 
   const isActive = (href: string) => {
     if (href === '/') return location.pathname === '/';
@@ -54,10 +54,8 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      {/* Topbar */}
       <Topbar isVisible={isTopbarVisible} />
 
-      {/* Main Navbar */}
       <nav
         className={cn(
           'w-full border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 transition-all duration-250 ease-out',
@@ -71,11 +69,8 @@ const Header = () => {
               isScrolled ? 'h-14 lg:h-16' : 'h-16 lg:h-[72px]'
             )}
           >
-            {/* Left - Logo */}
-            <Link
-              to="/"
-              className="flex items-center transition-opacity hover:opacity-80"
-            >
+            {/* Logo */}
+            <Link to="/" className="flex items-center transition-opacity hover:opacity-80">
               <img
                 src={logo}
                 alt="CreationTech"
@@ -86,25 +81,24 @@ const Header = () => {
               />
             </Link>
 
-            {/* Center - Desktop Navigation */}
+            {/* Desktop Navigation */}
             <NavigationMenu className="hidden lg:flex">
-              <NavigationMenuList className="gap-1">
-                {/* Simple nav items */}
-                {simpleNavItems.map((item) => (
+              <NavigationMenuList className="gap-0.5">
+                {navItems.map((item) => (
                   <NavigationMenuItem key={item.href}>
                     <Link
                       to={item.href}
                       className={cn(
-                        'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
+                        'group relative rounded-md px-3.5 py-2 text-sm font-medium transition-all duration-200 inline-flex items-center',
                         isActive(item.href)
-                          ? 'text-primary'
-                          : 'text-muted-foreground hover:text-foreground'
+                          ? 'text-primary bg-primary/5'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                       )}
                     >
                       {item.label}
                       <span
                         className={cn(
-                          'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
+                          'absolute inset-x-3.5 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
                           isActive(item.href)
                             ? 'scale-x-100'
                             : 'scale-x-0 group-hover:scale-x-100'
@@ -113,126 +107,12 @@ const Header = () => {
                     </Link>
                   </NavigationMenuItem>
                 ))}
-
-                {/* Products Link */}
-                <NavigationMenuItem>
-                  <Link
-                    to="/products"
-                    className={cn(
-                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
-                      isActive('/products')
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    Products
-                    <span
-                      className={cn(
-                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
-                        isActive('/products')
-                          ? 'scale-x-100'
-                          : 'scale-x-0 group-hover:scale-x-100'
-                      )}
-                    />
-                  </Link>
-                </NavigationMenuItem>
-
-                {/* Services Link */}
-                <NavigationMenuItem>
-                  <Link
-                    to="/services"
-                    className={cn(
-                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
-                      isActive('/services')
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    Services
-                    <span
-                      className={cn(
-                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
-                        isActive('/services')
-                          ? 'scale-x-100'
-                          : 'scale-x-0 group-hover:scale-x-100'
-                      )}
-                    />
-                  </Link>
-                </NavigationMenuItem>
-
-                {/* Portfolio Link */}
-                <NavigationMenuItem>
-                  <Link
-                    to="/portfolio"
-                    className={cn(
-                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
-                      isActive('/portfolio')
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    Portfolio
-                    <span
-                      className={cn(
-                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
-                        isActive('/portfolio')
-                          ? 'scale-x-100'
-                          : 'scale-x-0 group-hover:scale-x-100'
-                      )}
-                    />
-                  </Link>
-                </NavigationMenuItem>
-
-                {/* Companies Link */}
-                <NavigationMenuItem>
-                  <Link
-                    to="/about"
-                    className={cn(
-                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
-                      isActive('/about')
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    Companies
-                    <span
-                      className={cn(
-                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
-                        isActive('/about')
-                          ? 'scale-x-100'
-                          : 'scale-x-0 group-hover:scale-x-100'
-                      )}
-                    />
-                  </Link>
-                </NavigationMenuItem>
-
-                {/* Resources Link */}
-                <NavigationMenuItem>
-                  <Link
-                    to="/blog"
-                    className={cn(
-                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
-                      isActive('/blog')
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    Resources
-                    <span
-                      className={cn(
-                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
-                        isActive('/blog')
-                          ? 'scale-x-100'
-                          : 'scale-x-0 group-hover:scale-x-100'
-                      )}
-                    />
-                  </Link>
-                </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
 
-            {/* Right - CTA Button */}
-            <div className="hidden lg:flex lg:items-center lg:gap-4">
+            {/* Desktop Right - Language + CTA */}
+            <div className="hidden lg:flex lg:items-center lg:gap-3">
+              <LanguageToggle variant="minimal" />
               <Button
                 asChild
                 size="default"
@@ -246,12 +126,7 @@ const Header = () => {
             <div className="flex items-center gap-3 lg:hidden">
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Toggle menu"
-                    className="h-10 w-10"
-                  >
+                  <Button variant="ghost" size="icon" aria-label="Toggle menu" className="h-10 w-10">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -263,129 +138,44 @@ const Header = () => {
                   </SheetHeader>
 
                   <div className="flex flex-col h-[calc(100vh-80px)]">
-                    {/* Navigation Links */}
                     <nav className="flex-1 overflow-y-auto py-4">
                       <div className="flex flex-col gap-1 px-4">
-                        {simpleNavItems.map((item) => (
-                          <Link
-                            key={item.href}
-                            to={item.href}
-                            onClick={() => setIsSheetOpen(false)}
-                            className={cn(
-                              'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
-                              isActive(item.href)
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                            )}
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
-
-                        {/* Products Link */}
-                        <Link
-                          to="/products"
-                          onClick={() => setIsSheetOpen(false)}
-                          className={cn(
-                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
-                            isActive('/products')
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                          )}
-                        >
-                          {language === 'en' ? 'Products' : 'প্রোডাক্ট'}
-                        </Link>
-
-                        {/* Services Link */}
-                        <Link
-                          to="/services"
-                          onClick={() => setIsSheetOpen(false)}
-                          className={cn(
-                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
-                            isActive('/services')
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                          )}
-                        >
-                          {language === 'en' ? 'Services' : 'সেবাসমূহ'}
-                        </Link>
-
-                        {/* Portfolio Link */}
-                        <Link
-                          to="/portfolio"
-                          onClick={() => setIsSheetOpen(false)}
-                          className={cn(
-                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
-                            isActive('/portfolio')
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                          )}
-                        >
-                          {language === 'en' ? 'Portfolio' : 'পোর্টফোলিও'}
-                        </Link>
-
-                        {/* Companies Link */}
-                        <Link
-                          to="/about"
-                          onClick={() => setIsSheetOpen(false)}
-                          className={cn(
-                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
-                            isActive('/about')
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                          )}
-                        >
-                          {language === 'en' ? 'Companies' : 'কোম্পানি'}
-                        </Link>
-
-                        {/* Resources Link */}
-                        <Link
-                          to="/blog"
-                          onClick={() => setIsSheetOpen(false)}
-                          className={cn(
-                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
-                            isActive('/blog')
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                          )}
-                        >
-                          {language === 'en' ? 'Resources' : 'রিসোর্স'}
-                        </Link>
+                        {navItems.map((item) => {
+                          const Icon = item.icon;
+                          const active = isActive(item.href);
+                          return (
+                            <Link
+                              key={item.href}
+                              to={item.href}
+                              onClick={() => setIsSheetOpen(false)}
+                              className={cn(
+                                'flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
+                                active
+                                  ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                              )}
+                            >
+                              <Icon className={cn('h-4.5 w-4.5', active ? 'text-primary' : 'text-muted-foreground/70')} />
+                              {language === 'en' ? item.label : item.labelBn}
+                            </Link>
+                          );
+                        })}
                       </div>
                     </nav>
 
                     {/* Bottom Section */}
                     <div className="border-t border-border/50 p-4 space-y-4">
-                      {/* Language Switcher */}
                       <div className="flex items-center justify-between px-4 py-2">
                         <span className="text-sm text-muted-foreground">
                           {t('common.language') || 'Language'}
                         </span>
                         <LanguageToggle variant="minimal" />
                       </div>
-
-                      {/* CTA Button */}
-                      <Button
-                        asChild
-                        className="w-full"
-                        size="lg"
-                        onClick={() => setIsSheetOpen(false)}
-                      >
-                        <Link to="/contact">
-                          {t('common.getQuote') || 'Request a Quote'}
-                        </Link>
+                      <Button asChild className="w-full" size="lg" onClick={() => setIsSheetOpen(false)}>
+                        <Link to="/contact">{t('common.getQuote') || 'Request a Quote'}</Link>
                       </Button>
-
-                      {/* Login Link */}
-                      <Button
-                        variant="outline"
-                        asChild
-                        className="w-full"
-                        onClick={() => setIsSheetOpen(false)}
-                      >
-                        <Link to="/admin/login">
-                          {t('common.login') || 'Login'}
-                        </Link>
+                      <Button variant="outline" asChild className="w-full" onClick={() => setIsSheetOpen(false)}>
+                        <Link to="/admin/login">{t('common.login') || 'Login'}</Link>
                       </Button>
                     </div>
                   </div>
