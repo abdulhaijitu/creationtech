@@ -7,7 +7,7 @@ import ClientCombobox from '@/components/admin/ClientCombobox';
 import RichTextEditor from '@/components/ui/rich-text-editor';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, User, Calendar, Plus, Trash2, X, Calculator } from 'lucide-react';
+import { FileText, User, Calendar, Plus, Trash2, X, Calculator, NotepadText } from 'lucide-react';
 
 interface Client {
   id: string;
@@ -110,7 +110,6 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         tax_rate: proposal.tax_rate || 0,
         discount_amount: proposal.discount_amount || 0,
       });
-      // Fetch proposal items
       fetchProposalItems(proposal.id);
     }
   }, [proposal]);
@@ -148,7 +147,6 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
     }));
   };
 
-  // Line items helpers
   const addItem = () => {
     setItems([...items, { description: '', quantity: 1, unit_price: 0, amount: 0 }]);
   };
@@ -212,13 +210,10 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
           .eq('id', proposal.id);
         if (error) throw error;
         proposalId = proposal.id;
-
-        // Delete existing items and re-insert
         await supabase.from('proposal_items').delete().eq('proposal_id', proposalId);
       } else {
         const { data: numData } = await supabase.rpc('generate_proposal_number');
         const proposalNumber = numData || `PRO-${Date.now()}`;
-
         const { data: inserted, error } = await supabase
           .from('proposals')
           .insert({ ...proposalData, proposal_number: proposalNumber })
@@ -228,7 +223,6 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         proposalId = inserted.id;
       }
 
-      // Insert items
       const itemsToInsert = items
         .filter(item => item.description || item.amount > 0)
         .map((item, index) => ({
@@ -255,36 +249,38 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
     }
   };
 
+  const richEditorCompact = "min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm";
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-20">
       {/* Client Information */}
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3 border-b">
           <CardTitle className="text-base flex items-center gap-2">
-            <User className="h-4 w-4" />
+            <User className="h-4 w-4 text-primary" />
             Client Information
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Select Client (Optional)</Label>
+        <CardContent className="pt-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Select Client</Label>
               <ClientCombobox
                 clients={clients}
                 value={formData.client_id}
                 onSelect={handleClientSelect}
               />
             </div>
-            <div className="space-y-2">
-              <Label>Name (Client or Company) *</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Name (Client or Company) *</Label>
               <Input
                 value={formData.client_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, client_name: e.target.value }))}
-                placeholder="Enter client or company name"
+                placeholder="Client or company name"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Email</Label>
               <Input
                 type="email"
                 value={formData.client_email}
@@ -292,8 +288,8 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
                 placeholder="client@example.com"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Mobile</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Mobile</Label>
               <Input
                 value={formData.client_phone}
                 onChange={(e) => setFormData(prev => ({ ...prev, client_phone: e.target.value }))}
@@ -306,24 +302,25 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
 
       {/* Proposal Details */}
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3 border-b">
           <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-4 w-4" />
+            <FileText className="h-4 w-4 text-primary" />
             Proposal Details
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label>Subject *</Label>
+        <CardContent className="pt-4 space-y-4">
+          {/* Subject + Valid Until same row */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-[1fr_180px]">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Subject *</Label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="e.g., Website Development Proposal"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Valid Until</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Valid Until</Label>
               <Input
                 type="date"
                 value={formData.valid_until}
@@ -332,54 +329,54 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Offer Letter</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Offer Letter</Label>
             <RichTextEditor
               content={formData.offer_letter}
               onChange={(value) => setFormData(prev => ({ ...prev, offer_letter: value }))}
               placeholder="Write offer letter content..."
-              className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+              className={richEditorCompact}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Project Overview</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Project Overview</Label>
             <RichTextEditor
               content={formData.scope_of_work}
               onChange={(value) => setFormData(prev => ({ ...prev, scope_of_work: value }))}
               placeholder="Describe the project scope..."
-              className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+              className={richEditorCompact}
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Timeline</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Timeline</Label>
               <RichTextEditor
                 content={formData.timeline}
                 onChange={(value) => setFormData(prev => ({ ...prev, timeline: value }))}
                 placeholder="Project timeline and milestones..."
-                className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+                className={richEditorCompact}
               />
             </div>
-            <div className="space-y-2">
-              <Label>Key Deliverables</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Key Deliverables</Label>
               <RichTextEditor
                 content={formData.deliverables}
                 onChange={(value) => setFormData(prev => ({ ...prev, deliverables: value }))}
                 placeholder="List of deliverables..."
-                className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+                className={richEditorCompact}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Expected Outcome</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Expected Outcome</Label>
             <RichTextEditor
               content={formData.expected_outcome}
               onChange={(value) => setFormData(prev => ({ ...prev, expected_outcome: value }))}
               placeholder="Describe expected outcomes..."
-              className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+              className={richEditorCompact}
             />
           </div>
         </CardContent>
@@ -387,21 +384,27 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
 
       {/* Budget Details - Line Items */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 border-b">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
               <Calculator className="h-4 w-4 text-primary" />
               Budget Details
             </CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={addItem}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={addItem}
+              className="border border-dashed border-border hover:border-primary/50"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
               Add Item
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {/* Header for desktop */}
-          <div className="hidden md:grid md:grid-cols-12 gap-2 mb-2 px-1">
+          <div className="hidden md:grid md:grid-cols-12 gap-2 mb-2 px-2 py-2 bg-muted/50 rounded-lg">
             <div className="col-span-5 text-xs font-medium text-muted-foreground">Description</div>
             <div className="col-span-2 text-xs font-medium text-muted-foreground">Quantity</div>
             <div className="col-span-2 text-xs font-medium text-muted-foreground">Unit Price</div>
@@ -409,11 +412,11 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
             <div className="col-span-1"></div>
           </div>
 
-          <div className="space-y-3">
+          <div className="divide-y">
             {items.map((item, index) => (
               <div
                 key={index}
-                className="group relative grid grid-cols-1 md:grid-cols-12 gap-2 p-3 md:p-2 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                className="group relative grid grid-cols-1 md:grid-cols-12 gap-2 p-3 md:px-2 md:py-3 hover:bg-accent/30 transition-colors"
               >
                 {/* Mobile layout */}
                 <div className="md:hidden space-y-3">
@@ -517,109 +520,107 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         </CardContent>
       </Card>
 
-      {/* Offer Letter End */}
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Offer Letter End
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RichTextEditor
-            content={formData.offer_letter_end}
-            onChange={(value) => setFormData(prev => ({ ...prev, offer_letter_end: value }))}
-            placeholder="Write closing remarks for the offer letter..."
-            className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
-          />
-        </CardContent>
-      </Card>
-
-      {/* Notes & Budget Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Notes */}
+      {/* Offer Letter End + Notes side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <Card>
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-3 border-b">
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Notes
+              <FileText className="h-4 w-4 text-primary" />
+              Offer Letter End
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             <RichTextEditor
-              content={formData.notes}
-              onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-              placeholder="Internal notes..."
-              className="min-h-[80px] [&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+              content={formData.offer_letter_end}
+              onChange={(value) => setFormData(prev => ({ ...prev, offer_letter_end: value }))}
+              placeholder="Write closing remarks for the offer letter..."
+              className={richEditorCompact}
             />
           </CardContent>
         </Card>
 
-        {/* Budget Summary */}
-        <Card className="bg-muted/30">
-          <CardHeader className="pb-3">
+        <Card>
+          <CardHeader className="pb-3 border-b">
             <CardTitle className="text-base flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-primary" />
-              Budget Summary
+              <NotepadText className="h-4 w-4 text-primary" />
+              Notes
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium">৳{subtotal.toLocaleString()}</span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Tax</span>
-                <div className="flex items-center gap-1">
-                  <Input
-                    type="number"
-                    value={formData.tax_rate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, tax_rate: Number(e.target.value) }))}
-                    className="w-16 h-7 text-center"
-                    min="0"
-                    max="100"
-                  />
-                  <span className="text-sm text-muted-foreground">%</span>
-                </div>
-              </div>
-              <span className="font-medium">৳{taxAmount.toLocaleString()}</span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Discount</span>
-                <Input
-                  type="number"
-                  value={formData.discount_amount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, discount_amount: Number(e.target.value) }))}
-                  className="w-24 h-7 text-center"
-                  min="0"
-                />
-              </div>
-              <span className="font-medium text-destructive">-৳{formData.discount_amount.toLocaleString()}</span>
-            </div>
-
-            <div className="border-t pt-3">
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold">Total</span>
-                <span className="text-lg font-bold text-primary">৳{total.toLocaleString()}</span>
-              </div>
-            </div>
+          <CardContent className="pt-4">
+            <RichTextEditor
+              content={formData.notes}
+              onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+              placeholder="Internal notes..."
+              className={richEditorCompact}
+            />
           </CardContent>
         </Card>
       </div>
 
-      {/* Terms & Conditions - Full Width */}
-      <Card>
-        <CardHeader className="pb-4">
+      {/* Budget Summary */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader className="pb-3 border-b border-primary/10">
           <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-4 w-4" />
+            <Calculator className="h-4 w-4 text-primary" />
+            Budget Summary
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">Subtotal</span>
+            <span className="font-medium">৳{subtotal.toLocaleString()}</span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Tax</span>
+              <div className="flex items-center gap-1">
+                <Input
+                  type="number"
+                  value={formData.tax_rate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, tax_rate: Number(e.target.value) }))}
+                  className="w-16 h-7 text-center text-xs"
+                  min="0"
+                  max="100"
+                />
+                <span className="text-xs text-muted-foreground">%</span>
+              </div>
+            </div>
+            <span className="font-medium">৳{taxAmount.toLocaleString()}</span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Discount</span>
+              <Input
+                type="number"
+                value={formData.discount_amount}
+                onChange={(e) => setFormData(prev => ({ ...prev, discount_amount: Number(e.target.value) }))}
+                className="w-24 h-7 text-center text-xs"
+                min="0"
+              />
+            </div>
+            <span className="font-medium text-destructive">-৳{formData.discount_amount.toLocaleString()}</span>
+          </div>
+
+          <div className="bg-primary/10 rounded-lg p-3 mt-1">
+            <div className="flex justify-between items-center">
+              <span className="text-base font-semibold">Total</span>
+              <span className="text-lg font-bold text-primary">৳{total.toLocaleString()}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Terms & Conditions */}
+      <Card>
+        <CardHeader className="pb-3 border-b">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary" />
             Terms & Conditions
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <RichTextEditor
             content={formData.terms}
             onChange={(value) => setFormData(prev => ({ ...prev, terms: value }))}
@@ -629,12 +630,16 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         </CardContent>
       </Card>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3">
-        <Button variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button onClick={handleSave} disabled={isLoading}>
-          {isLoading ? 'Saving...' : proposal ? 'Update Proposal' : 'Create Proposal'}
-        </Button>
+      {/* Sticky Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 lg:sticky lg:bottom-0 bg-background/95 backdrop-blur-sm border-t py-3 px-4 lg:px-0 z-20">
+        <div className="flex flex-col sm:flex-row justify-end gap-2 max-w-screen-xl mx-auto">
+          <Button variant="outline" onClick={onCancel} className="sm:w-auto w-full">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isLoading} className="sm:w-auto w-full">
+            {isLoading ? 'Saving...' : proposal ? 'Update Proposal' : 'Create Proposal'}
+          </Button>
+        </div>
       </div>
     </div>
   );
