@@ -1,31 +1,22 @@
 
 
-## পরিবর্তন
+## পরিবর্তন — Terms & Conditions পয়েন্ট-ভিত্তিক ইনপুট
 
-### 1. "Add Item" বাটন ইনলাইন করা
-বর্তমানে "Add Item" বাটন Card Header-এ আছে। এটিকে items list-এর নিচে, CardContent-এর ভিতরে একটি dashed border row হিসেবে রাখা হবে — যাতে ইউজার items-এর ঠিক নিচেই নতুন item যোগ করতে পারে।
+### বর্তমান অবস্থা
+Terms & Conditions সেকশনে একটি RichTextEditor আছে যেখানে ফ্রি-ফর্ম টেক্সট লেখা যায়।
 
-**ProposalForm.tsx:**
-- Line 421-438: CardHeader থেকে "Add Item" বাটন সরানো, শুধু title রাখা
-- Line 584-586: Items list-এর পরে একটি inline "Add Item" row যোগ করা — full-width dashed border button স্টাইলে
+### নতুন ডিজাইন
+RichTextEditor সরিয়ে একটি **পয়েন্ট-ভিত্তিক ইনপুট সিস্টেম** তৈরি করা হবে:
 
-**QuotationForm.tsx:**
-- একই পরিবর্তন — CardHeader থেকে বাটন সরিয়ে items-এর নিচে inline করা
-
-### 2. Description-এর RichTextEditor কমপ্যাক্ট/কোলাপস স্টাইল
-Description ফিল্ডে RichTextEditor-এর toolbar বেশি জায়গা নেয়। এটিকে কমপ্যাক্ট করতে:
-- `min-h` কমানো: `min-h-[50px]` → `min-h-[36px]`
-- Toolbar collapse স্টাইল: editor-এ CSS ক্লাস যোগ করা যাতে toolbar ডিফল্টে hidden থাকে, focus-এ দেখায়
-
-**ProposalForm.tsx (Lines 528-533, 473-478):**
-- Desktop ও mobile উভয় layout-এ RichTextEditor-এ collapse class যোগ:
-  ```
-  className="[&_.ProseMirror]:min-h-[36px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm [&_.tiptap-toolbar]:hidden [&:focus-within_.tiptap-toolbar]:block"
-  ```
-
-**QuotationForm.tsx:** একই পরিবর্তন
+- প্রতিটি term একটি আলাদা Input row হিসেবে থাকবে — বামে সিরিয়াল নম্বর, ডানে delete (X) বাটন
+- নিচে একটি dashed-border "Add Term" বাটন (Budget Details-এর Add Item-এর মতো inline style)
+- `formData.terms` স্ট্রিং হিসেবেই থাকবে — পয়েন্টগুলো `\n` দিয়ে separated হিসেবে parse/serialize করা হবে (backward compatible)
+- Drag reorder দরকার নেই, শুধু add/remove/edit
 
 ### ফাইল পরিবর্তন
-- `src/components/admin/ProposalForm.tsx`
-- `src/components/admin/QuotationForm.tsx`
+- **`src/components/admin/ProposalForm.tsx`** (Lines 712-728):
+  - RichTextEditor সরিয়ে পয়েন্ট list UI বসানো
+  - terms string কে `\n` split করে array হিসেবে manage করা
+  - প্রতি row: `#{index+1}` badge + Input + Trash2 icon button
+  - নিচে dashed "Add Term" button (Plus icon সহ)
 
