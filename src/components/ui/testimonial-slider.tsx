@@ -59,20 +59,25 @@ export const TestimonialSlider = ({ testimonials, className, autoplayDelay = 500
 
   const currentTestimonial = testimonials[currentIndex];
 
+  // Disable slide animation on mobile for performance
   const slideVariants = {
     hidden: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
+      x: window.innerWidth < 768 ? 0 : (direction > 0 ? '100%' : '-100%'),
       opacity: 0,
     }),
     visible: {
       x: '0%',
       opacity: 1,
-      transition: { type: 'spring' as const, stiffness: 260, damping: 30 },
+      transition: window.innerWidth < 768
+        ? { duration: 0.2 }
+        : { type: 'spring' as const, stiffness: 260, damping: 30 },
     },
     exit: (direction: number) => ({
-      x: direction < 0 ? '100%' : '-100%',
+      x: window.innerWidth < 768 ? 0 : (direction < 0 ? '100%' : '-100%'),
       opacity: 0,
-      transition: { type: 'spring' as const, stiffness: 260, damping: 30 },
+      transition: window.innerWidth < 768
+        ? { duration: 0.15 }
+        : { type: 'spring' as const, stiffness: 260, damping: 30 },
     }),
   };
 
@@ -93,44 +98,52 @@ export const TestimonialSlider = ({ testimonials, className, autoplayDelay = 500
             exit="exit"
           >
             <div className="flex flex-col md:flex-row">
-              {/* Image Section */}
-              <div className="relative h-64 w-full md:h-auto md:w-2/5 flex-shrink-0">
+              {/* Image Section — compact on mobile */}
+              <div className="relative h-48 w-full sm:h-56 md:h-auto md:w-2/5 flex-shrink-0">
                 <img
                   src={currentTestimonial.image}
                   alt={currentTestimonial.name}
                   className="h-full w-full object-cover"
                 />
+                {/* Mobile: overlay author info on image */}
+                <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 bg-gradient-to-t from-black/70 to-transparent p-4 md:hidden">
+                  <div>
+                    <p className="text-sm font-bold text-white">{currentTestimonial.name}</p>
+                    <p className="text-xs text-white/70">{currentTestimonial.role}</p>
+                  </div>
+                </div>
               </div>
 
               {/* Text & Controls Section */}
-              <div className="flex flex-col justify-between p-6 sm:p-8 md:p-10 flex-1">
+              <div className="flex flex-col justify-between p-4 sm:p-6 md:p-10 flex-1">
                 <div>
-                  <StarRating rating={currentTestimonial.rating} className="mb-4" />
-                  <blockquote className="text-lg font-medium leading-relaxed text-foreground sm:text-xl">
+                  <StarRating rating={currentTestimonial.rating} className="mb-3 md:mb-4" />
+                  <blockquote className="text-base font-medium leading-relaxed text-foreground sm:text-lg md:text-xl line-clamp-5 md:line-clamp-none">
                     "{currentTestimonial.quote}"
                   </blockquote>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between">
-                  <div>
+                <div className="mt-4 md:mt-6 flex items-center justify-between">
+                  {/* Author — hidden on mobile (shown on image overlay instead) */}
+                  <div className="hidden md:block">
                     <p className="font-bold text-foreground">{currentTestimonial.name}</p>
                     <p className="text-sm text-muted-foreground">{currentTestimonial.role}</p>
                   </div>
                   {/* Navigation Controls */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 ml-auto">
                     <button
                       onClick={handlePrevious}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                      className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95"
                       aria-label="Previous testimonial"
                     >
-                      <ChevronLeft className="h-5 w-5" />
+                      <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
                     </button>
                     <button
                       onClick={handleNext}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                      className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95"
                       aria-label="Next testimonial"
                     >
-                      <ChevronRight className="h-5 w-5" />
+                      <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
                     </button>
                   </div>
                 </div>
