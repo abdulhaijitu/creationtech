@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import AdminStatusBadge from '@/components/admin/AdminStatusBadge';
+import ProductImageUpload from '@/components/admin/ProductImageUpload';
 import {
   Dialog,
   DialogContent,
@@ -184,6 +186,19 @@ const AdminPortfolio = () => {
       toast({ title: 'Error', description: error.message || 'Failed to delete project', variant: 'destructive' });
     }
   };
+  const handleToggleActive = async (project: PortfolioProject) => {
+    try {
+      const { error } = await supabase
+        .from('portfolio_projects')
+        .update({ is_active: !project.is_active })
+        .eq('id', project.id);
+      if (error) throw error;
+      toast({ title: 'Success', description: `Project ${project.is_active ? 'deactivated' : 'activated'}` });
+      fetchProjects();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to update', variant: 'destructive' });
+    }
+  };
 
   return (
     <AdminLayout>
@@ -233,9 +248,10 @@ const AdminPortfolio = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className={`text-xs px-2 py-1 rounded-full ${project.is_active ? 'bg-success-muted text-success-muted-foreground' : 'bg-neutral-muted text-neutral-muted-foreground'}`}>
-                      {project.is_active ? 'Active' : 'Inactive'}
-                    </span>
+                    <AdminStatusBadge status={project.is_active ? 'active' : 'inactive'} />
+                    <Button variant="ghost" size="icon" onClick={() => handleToggleActive(project)} title={project.is_active ? 'Deactivate' : 'Activate'}>
+                      {project.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => openEditDialog(project)}><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" onClick={() => { setSelectedProject(project); setIsDeleteDialogOpen(true); }} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                   </div>
@@ -246,102 +262,101 @@ const AdminPortfolio = () => {
         </div>
       </div>
 
-      {isDialogOpen && (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{selectedProject ? 'Edit Project' : 'Add New Project'}</DialogTitle>
+              <DialogDescription>Fill in the project details below</DialogDescription>
             </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="slug">Slug *</Label>
-                <Input id="slug" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} />
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="slug">Slug *</Label>
+                  <Input id="slug" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Input id="category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="title_en">Title (English) *</Label>
+                  <Input id="title_en" value={formData.title_en} onChange={(e) => setFormData({ ...formData, title_en: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="title_bn">Title (Bangla)</Label>
+                  <Input id="title_bn" value={formData.title_bn} onChange={(e) => setFormData({ ...formData, title_bn: e.target.value })} className="font-bangla" />
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="client_en">Client (English)</Label>
+                  <Input id="client_en" value={formData.client_en} onChange={(e) => setFormData({ ...formData, client_en: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="client_bn">Client (Bangla)</Label>
+                  <Input id="client_bn" value={formData.client_bn} onChange={(e) => setFormData({ ...formData, client_bn: e.target.value })} className="font-bangla" />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Input id="category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="title_en">Title (English) *</Label>
-                <Input id="title_en" value={formData.title_en} onChange={(e) => setFormData({ ...formData, title_en: e.target.value })} />
+                <Label htmlFor="description_en">Description (English)</Label>
+                <Textarea id="description_en" value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={3} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="title_bn">Title (Bangla)</Label>
-                <Input id="title_bn" value={formData.title_bn} onChange={(e) => setFormData({ ...formData, title_bn: e.target.value })} className="font-bangla" />
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="client_en">Client (English)</Label>
-                <Input id="client_en" value={formData.client_en} onChange={(e) => setFormData({ ...formData, client_en: e.target.value })} />
+                <Label htmlFor="description_bn">Description (Bangla)</Label>
+                <Textarea id="description_bn" value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={3} className="font-bangla" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="client_bn">Client (Bangla)</Label>
-                <Input id="client_bn" value={formData.client_bn} onChange={(e) => setFormData({ ...formData, client_bn: e.target.value })} className="font-bangla" />
+                <Label htmlFor="tags">Tags (comma separated)</Label>
+                <Input id="tags" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="React, Node.js, AWS" />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="result_en">Result (English)</Label>
+                  <Input id="result_en" value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="result_bn">Result (Bangla)</Label>
+                  <Input id="result_bn" value={formData.result_bn} onChange={(e) => setFormData({ ...formData, result_bn: e.target.value })} placeholder="বিক্রয়ে ২০০% বৃদ্ধি" className="font-bangla" />
+                </div>
+              </div>
+              <ProductImageUpload
+                productId={selectedProject?.id || 'new-portfolio'}
+                currentImageUrl={formData.image_url || null}
+                onImageUploaded={(url) => setFormData({ ...formData, image_url: url })}
+                onImageRemoved={() => setFormData({ ...formData, image_url: '' })}
+              />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch id="is_featured" checked={formData.is_featured} onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })} />
+                  <Label htmlFor="is_featured">Featured</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })} />
+                  <Label htmlFor="is_active">Active</Label>
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="description_en">Description (English)</Label>
-              <Textarea id="description_en" value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={3} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description_bn">Description (Bangla)</Label>
-              <Textarea id="description_bn" value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={3} className="font-bangla" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tags">Tags (comma separated)</Label>
-              <Input id="tags" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="React, Node.js, AWS" />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="result_en">Result (English)</Label>
-                <Input id="result_en" value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="result_bn">Result (Bangla)</Label>
-                <Input id="result_bn" value={formData.result_bn} onChange={(e) => setFormData({ ...formData, result_bn: e.target.value })} placeholder="বিক্রয়ে ২০০% বৃদ্ধি" className="font-bangla" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="image_url">Image URL</Label>
-              <Input id="image_url" value={formData.image_url} onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} />
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Switch id="is_featured" checked={formData.is_featured} onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })} />
-                <Label htmlFor="is_featured">Featured</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })} />
-                <Label htmlFor="is_active">Active</Label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving...' : selectedProject ? 'Update' : 'Create'}</Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving...' : selectedProject ? 'Update' : 'Create'}</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
-      )}
 
-      {isDeleteDialogOpen && (
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <AlertDialogContent>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
             <AlertDialogDescription>Are you sure you want to delete "{selectedProject?.title_en}"?</AlertDialogDescription>
           </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };
