@@ -527,7 +527,7 @@ function addPageFooters(doc: jsPDF, watermarkData: ImageLoadResult | null) {
     doc.setLineWidth(0.2);
     doc.line(MARGIN, pageHeight - 16, pageWidth - MARGIN, pageHeight - 16);
 
-    doc.setFontSize(6.5);
+    doc.setFontSize(7.5);
     doc.setTextColor(150, 150, 150);
     doc.text('CONFIDENTIAL — This document contains proprietary information intended solely for the recipient.', MARGIN, pageHeight - 12);
     doc.text(`Page ${i} of ${totalPages}`, pageWidth - MARGIN, pageHeight - 12, { align: 'right' });
