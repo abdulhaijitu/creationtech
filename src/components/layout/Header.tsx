@@ -25,7 +25,7 @@ const navItems = [
   { href: '/products', label: 'Products', labelBn: 'প্রোডাক্ট', icon: Package },
   { href: '/services', label: 'Services', labelBn: 'সেবাসমূহ', icon: Briefcase },
   { href: '/portfolio', label: 'Portfolio', labelBn: 'পোর্টফোলিও', icon: LayoutGrid },
-  { href: '/about', label: 'Companies', labelBn: 'কোম্পানি', icon: Building2 },
+  { href: '/about', label: 'About', labelBn: 'সম্পর্কে', icon: Building2 },
   { href: '/blog', label: 'Resources', labelBn: 'রিসোর্স', icon: BookOpen },
 ];
 
