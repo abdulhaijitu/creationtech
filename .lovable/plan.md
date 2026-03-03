@@ -1,22 +1,20 @@
 
 
-## পরিবর্তন — Terms & Conditions পয়েন্ট-ভিত্তিক ইনপুট
+## সমস্যা ও সমাধান
 
-### বর্তমান অবস্থা
-Terms & Conditions সেকশনে একটি RichTextEditor আছে যেখানে ফ্রি-ফর্ম টেক্সট লেখা যায়।
+### ১. "Add Term" কাজ না করার বাগ
+**কারণ:** `formData.terms.split('\n').filter(t => t.trim() !== '')` — এই `.filter()` নতুন যোগ করা খালি string `''` কে সাথে সাথে বাদ দিয়ে দিচ্ছে, তাই নতুন row দেখা যাচ্ছে না।
 
-### নতুন ডিজাইন
-RichTextEditor সরিয়ে একটি **পয়েন্ট-ভিত্তিক ইনপুট সিস্টেম** তৈরি করা হবে:
+**সমাধান:** খালি string filter করা বন্ধ করা — শুধু split করা হবে, filter শুধু save/serialize এর সময় হবে।
 
-- প্রতিটি term একটি আলাদা Input row হিসেবে থাকবে — বামে সিরিয়াল নম্বর, ডানে delete (X) বাটন
-- নিচে একটি dashed-border "Add Term" বাটন (Budget Details-এর Add Item-এর মতো inline style)
-- `formData.terms` স্ট্রিং হিসেবেই থাকবে — পয়েন্টগুলো `\n` দিয়ে separated হিসেবে parse/serialize করা হবে (backward compatible)
-- Drag reorder দরকার নেই, শুধু add/remove/edit
+### ২. প্রতিটি Term-এ মিনিমাল রিচ টেক্সট
+প্লেইন `Input` এর বদলে প্রতি term-এ একটি কমপ্যাক্ট `RichTextEditor` বসানো হবে — toolbar ডিফল্টে hidden, focus-এ visible (যেমন Description ফিল্ডে করা হয়েছে)। এতে bold, italic, link ইত্যাদি ব্যবহার করা যাবে।
+
+**ডেটা ফরম্যাট পরিবর্তন:** `\n` split এর বদলে একটি delimiter (যেমন `|||`) ব্যবহার করা হবে, কারণ RichTextEditor এর আউটপুট HTML হওয়ায় `\n` কনফ্লিক্ট করবে।
 
 ### ফাইল পরিবর্তন
-- **`src/components/admin/ProposalForm.tsx`** (Lines 712-728):
-  - RichTextEditor সরিয়ে পয়েন্ট list UI বসানো
-  - terms string কে `\n` split করে array হিসেবে manage করা
-  - প্রতি row: `#{index+1}` badge + Input + Trash2 icon button
-  - নিচে dashed "Add Term" button (Plus icon সহ)
+- **`src/components/admin/ProposalForm.tsx`** (Lines 720-771):
+  - `\n` split → `|||` delimiter দিয়ে parse/serialize
+  - প্রতি row তে `Input` → compact `RichTextEditor` (collapsed toolbar style)
+  - Empty item filter বাগ ফিক্স
 
