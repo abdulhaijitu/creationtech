@@ -1,36 +1,31 @@
 
 
-## Make Products Dropdown Dynamic in Header Navigation
+## Add Sister Concern Section After Hero
 
-### Current State
-- **Services**: Already dynamic in the header -- fetches from `services` table via `nav-services` query (line 36-49). Homepage and /services page also dynamic.
-- **Products**: Header dropdown is **hardcoded** (lines 66-71) with 3 fixed products. Homepage ProductsSection and /products page already fetch dynamically from `products` table.
-- **Portfolio**: Just a direct link in header (no dropdown needed). Homepage and /portfolio page already fetch dynamically from `portfolio_projects` table.
+### What
+Create a new `SisterConcernSection` component showing Creation Tech's three sister companies (CHost BD, Productly, Zobayer Shop) with their logos, names, and external links. Place it right after `HeroSection` on the homepage.
 
-So the only thing that needs to change is the **Products dropdown in the Header** -- it currently lists hardcoded items instead of fetching from the backend.
+### Design
+- Clean, minimal section with a subtle background
+- Section title: "Our Sister Concerns" (EN) / "আমাদের সিস্টার কনসার্ন" (BN)
+- Three logo cards in a row, each linking to the respective website (opens in new tab)
+- Cards with border, hover lift effect, and grayscale-to-color logo transition (matching the existing PartnersSection style)
+- Responsive: 3 columns on desktop, stacked or 1-per-row on mobile
 
-### Plan
+### Files
 
-**File: `src/components/layout/Header.tsx`**
+1. **Copy uploaded logos to `src/assets/sister-concerns/`**:
+   - `user-uploads://image-18.png` → `src/assets/sister-concerns/chost-logo.png`
+   - `user-uploads://image-19.png` → `src/assets/sister-concerns/productly-logo.png`
+   - `user-uploads://image-20.png` → `src/assets/sister-concerns/zobayershop-logo.png`
 
-1. Add a new query to fetch active products (similar to the existing `nav-services` query):
-```ts
-const { data: dynamicProducts } = useQuery({
-  queryKey: ['nav-products'],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('id, slug, name_en, name_bn, short_description_en, short_description_bn')
-      .eq('status', 'active')
-      .order('display_order', { ascending: true });
-    if (error) throw error;
-    return data;
-  },
-  staleTime: 5 * 60 * 1000,
-});
-```
+2. **Create `src/components/home/SisterConcernSection.tsx`**:
+   - Import logos, use `useLanguage` for bilingual title/subtitle
+   - Render 3 linked cards with company name, logo, and tagline
+   - Use `ScrollReveal` for entrance animation
+   - Each card: rounded border, hover scale, grayscale-to-color effect, external link icon
 
-2. Replace the hardcoded `productsItems` array (lines 66-71) with a dynamically built array from `dynamicProducts`, plus a "View All Products" link at the end.
-
-3. Update both the desktop dropdown (lines 188-204) and mobile Products section (lines 402-415) to use the dynamic items with bilingual support.
+3. **Update `src/pages/Index.tsx`**:
+   - Import `SisterConcernSection`
+   - Place `<SisterConcernSection />` between `<HeroSection />` and `<PartnersSection />`
 
