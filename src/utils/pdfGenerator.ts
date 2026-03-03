@@ -52,7 +52,13 @@ const ACCENT_COLOR: [number, number, number] = [34, 55, 94];
 
 // ── Helpers ──
 
-function loadImageAsDataUrl(url: string): Promise<string | null> {
+interface ImageLoadResult {
+  dataUrl: string;
+  width: number;
+  height: number;
+}
+
+function loadImageAsDataUrl(url: string): Promise<ImageLoadResult | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -63,7 +69,11 @@ function loadImageAsDataUrl(url: string): Promise<string | null> {
       const ctx = canvas.getContext('2d');
       if (!ctx) { resolve(null); return; }
       ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
+      resolve({
+        dataUrl: canvas.toDataURL('image/png'),
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      });
     };
     img.onerror = () => resolve(null);
     img.src = url;
@@ -106,29 +116,17 @@ function stripHtml(html: string): string {
 
 // ── Reusable header ──
 
-function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): number {
+function addHeader(doc: jsPDF, company: CompanyInfo, logoData: ImageLoadResult | null): number {
   const pageWidth = doc.internal.pageSize.getWidth();
   const rightX = pageWidth - MARGIN;
 
   doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
   doc.rect(0, 0, pageWidth, 3, 'F');
 
-  let nameX = MARGIN;
   if (logoData) {
-    doc.addImage(logoData, 'PNG', MARGIN, 6, 12, 12);
-    nameX = MARGIN + 14;
-  }
-
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
-  doc.text(company.name || 'Creation Tech', nameX, 13);
-
-  if (company.tagline) {
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(120, 120, 120);
-    doc.text(company.tagline, nameX, 17);
+    const logoHeight = 12;
+    const logoWidth = (logoData.width * logoHeight) / logoData.height;
+    doc.addImage(logoData.dataUrl, 'PNG', MARGIN, 6, logoWidth, logoHeight);
   }
 
   doc.setFontSize(7.5);
@@ -140,27 +138,19 @@ function addHeader(doc: jsPDF, company: CompanyInfo, logoData: string | null): n
   if (company.email) { doc.text(`Email: ${company.email}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
   if (company.website) { doc.text(`Web: ${company.website}`, rightX, infoY, { align: 'right' }); infoY += 3.5; }
 
-  const lineY = Math.max(infoY + 2, 22);
-  doc.setDrawColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
-  doc.setLineWidth(0.6);
-  doc.line(MARGIN, lineY, rightX, lineY);
-  doc.setDrawColor(200, 210, 230);
-  doc.setLineWidth(0.2);
-  doc.line(MARGIN, lineY + 1.5, rightX, lineY + 1.5);
-
-  return lineY + 5;
+  return Math.max(infoY + 4, 24);
 }
 
 // ── Watermark ──
 
-function addWatermark(doc: jsPDF, watermarkData: string | null) {
+function addWatermark(doc: jsPDF, watermarkData: ImageLoadResult | null) {
   if (!watermarkData) return;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const gState = new (doc as any).GState({ opacity: 0.06 });
   doc.saveGraphicsState();
   doc.setGState(gState);
-  doc.addImage(watermarkData, 'PNG', pageWidth - 75, pageHeight - 75, 55, 55);
+  doc.addImage(watermarkData.dataUrl, 'PNG', pageWidth - 75, pageHeight - 75, 55, 55);
   doc.restoreGraphicsState();
 }
 
@@ -178,7 +168,7 @@ function addAccentStrip(doc: jsPDF) {
   }
 }
 
-function addPageFooters(doc: jsPDF, watermarkData: string | null) {
+function addPageFooters(doc: jsPDF, watermarkData: ImageLoadResult | null) {
   const totalPages = doc.getNumberOfPages();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -199,7 +189,7 @@ function addPageFooters(doc: jsPDF, watermarkData: string | null) {
   }
 }
 
-function addNewPage(doc: jsPDF, company: CompanyInfo, logoData: string | null): number {
+function addNewPage(doc: jsPDF, company: CompanyInfo, logoData: ImageLoadResult | null): number {
   doc.addPage();
   return addHeader(doc, company, logoData);
 }
@@ -222,8 +212,8 @@ export const buildPDFDoc = async (data: DocumentData, companyInfo?: CompanyInfo)
     ...companyInfo,
   };
 
-  let logoData: string | null = null;
-  let watermarkData: string | null = null;
+  let logoData: ImageLoadResult | null = null;
+  let watermarkData: ImageLoadResult | null = null;
 
   const loadPromises: Promise<void>[] = [];
   if (company.logo_url) {
@@ -365,7 +355,7 @@ export const buildPDFDoc = async (data: DocumentData, companyInfo?: CompanyInfo)
   if (y + 40 > maxY) { y = addNewPage(doc, company, logoData); }
 
   // ── Totals ──
-  const totalsX = pageWidth - 70;
+  const totalsX = pageWidth - 85;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(55, 55, 55);
@@ -422,8 +412,10 @@ export const buildPDFDoc = async (data: DocumentData, companyInfo?: CompanyInfo)
   doc.setFontSize(8);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(80, 80, 80);
-  doc.text(`Amount in Words: ${numberToWords(data.total)}`, MARGIN, y);
-  y += 10;
+  const wordsText = `Amount in Words: ${numberToWords(data.total)}`;
+  const wordsLines = doc.splitTextToSize(wordsText, pageWidth - MARGIN * 2);
+  doc.text(wordsLines, MARGIN, y);
+  y += wordsLines.length * 4.5 + 4;
 
   // ── Notes & Terms ──
   doc.setFont('helvetica', 'normal');
@@ -476,6 +468,7 @@ export const buildPDFDoc = async (data: DocumentData, companyInfo?: CompanyInfo)
   doc.setTextColor(60, 60, 60);
   doc.text('Authorized Signature', MARGIN, y + 20);
   doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
   doc.text(company.name || '', MARGIN, y + 25);
   doc.text('Date: ____________________', MARGIN, y + 30);
 
