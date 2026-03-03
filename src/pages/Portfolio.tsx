@@ -112,8 +112,8 @@ const Portfolio = () => {
         <section className="py-12 lg:py-16">
           <div className="container-custom">
             {isLoading ? (
-              <div className="grid gap-8 md:grid-cols-2">
-                {Array.from({ length: 4 }).map((_, i) => (
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i} className="overflow-hidden">
                     <Skeleton className="h-56 w-full rounded-none" />
                     <CardContent className="p-6 space-y-3">
@@ -125,7 +125,7 @@ const Portfolio = () => {
                 ))}
               </div>
             ) : filtered && filtered.length > 0 ? (
-              <div className="grid gap-8 md:grid-cols-2">
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((project, index) => {
                   const imgSrc = project.image_url || fallbackImages[project.slug] || '';
                   const title = language === 'en' ? project.title_en : (project.title_bn || project.title_en);
