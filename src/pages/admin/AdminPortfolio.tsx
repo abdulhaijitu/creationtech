@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Eye, EyeOff, ArrowLeft, Save, Settings2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, ArrowLeft, Save, Settings2, Search } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -93,7 +93,9 @@ const AdminPortfolio = () => {
   const [catForm, setCatForm] = useState({ name_en: '', name_bn: '', slug: '' });
   const [isCatSaving, setIsCatSaving] = useState(false);
   const [deletingCategory, setDeletingCategory] = useState<PortfolioCategory | null>(null);
-
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
@@ -454,13 +456,55 @@ const AdminPortfolio = () => {
           </div>
         </div>
 
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by title, client or slug..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.slug}>{cat.name_en}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="grid gap-4">
-          {isLoading ? (
+          {(() => {
+            const q = searchQuery.toLowerCase();
+            const filtered = projects.filter((p) => {
+              const matchesSearch = !q || p.title_en.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q) || (p.client_en || '').toLowerCase().includes(q);
+              const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? p.is_active : !p.is_active);
+              const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
+              return matchesSearch && matchesStatus && matchesCategory;
+            });
+            return isLoading ? (
             <Card><CardContent className="py-8 text-center text-muted-foreground">Loading...</CardContent></Card>
-          ) : projects.length === 0 ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">No projects yet.</CardContent></Card>
+          ) : filtered.length === 0 ? (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">{projects.length === 0 ? 'No projects yet.' : 'No matching projects found.'}</CardContent></Card>
           ) : (
-            projects.map((project) => (
+            filtered.map((project) => (
               <Card key={project.id} className="overflow-hidden">
                 <CardContent className="flex items-center gap-4 py-4">
                   {project.image_url ? (
@@ -497,7 +541,8 @@ const AdminPortfolio = () => {
                 </CardContent>
               </Card>
             ))
-          )}
+          );
+          })()}
         </div>
       </div>
 
