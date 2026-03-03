@@ -225,18 +225,12 @@
  
        {/* Line Items Section */}
        <Card>
-         <CardHeader className="pb-3">
-           <div className="flex items-center justify-between">
-             <CardTitle className="text-base flex items-center gap-2">
-               <FileText className="h-4 w-4 text-primary" />
-               Line Items
-             </CardTitle>
-             <Button type="button" variant="outline" size="sm" onClick={addItem}>
-               <Plus className="mr-2 h-4 w-4" />
-               Add Item
-             </Button>
-           </div>
-         </CardHeader>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              Line Items
+            </CardTitle>
+          </CardHeader>
          <CardContent>
            {/* Header for desktop */}
            <div className="hidden md:grid md:grid-cols-12 gap-2 mb-2 px-1">
@@ -270,12 +264,12 @@
                    </div>
                    <div className="space-y-1.5">
                      <Label className="text-xs text-muted-foreground">Description</Label>
-                     <RichTextEditor
-                       content={item.description}
-                       onChange={(value) => updateItem(index, 'description', value)}
-                       placeholder="Item description with formatting..."
-                       className="[&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
-                     />
+                      <RichTextEditor
+                        content={item.description}
+                        onChange={(value) => updateItem(index, 'description', value)}
+                        placeholder="Item description with formatting..."
+                        className="[&_.ProseMirror]:min-h-[36px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm [&_.tiptap-toolbar]:hidden [&:focus-within_.tiptap-toolbar]:block"
+                      />
                    </div>
                    <div className="grid grid-cols-3 gap-2">
                      <div>
@@ -308,12 +302,12 @@
                  {/* Desktop layout */}
                  <div className="hidden md:contents">
                    <div className="col-span-5 self-start">
-                     <RichTextEditor
-                       content={item.description}
-                       onChange={(value) => updateItem(index, 'description', value)}
-                       placeholder="Item description with formatting..."
-                       className="[&_.ProseMirror]:min-h-[50px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
-                     />
+                      <RichTextEditor
+                        content={item.description}
+                        onChange={(value) => updateItem(index, 'description', value)}
+                        placeholder="Item description with formatting..."
+                        className="[&_.ProseMirror]:min-h-[36px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm [&_.tiptap-toolbar]:hidden [&:focus-within_.tiptap-toolbar]:block"
+                      />
                    </div>
                    <div className="col-span-2">
                      <Input
@@ -350,9 +344,20 @@
                    </div>
                  </div>
                </div>
-             ))}
-           </div>
-         </CardContent>
+              ))}
+            </div>
+
+            {/* Inline Add Item */}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={addItem}
+              className="w-full mt-3 border border-dashed border-border hover:border-primary/50 hover:bg-accent/30 text-muted-foreground"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              Add Item
+            </Button>
+          </CardContent>
        </Card>
  
        {/* Summary & Notes Section */}

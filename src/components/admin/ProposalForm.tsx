@@ -419,22 +419,10 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
       {/* Budget Details - Line Items */}
       <Card>
         <CardHeader className="pb-3 border-b">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-primary" />
-              Budget Details
-            </CardTitle>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={addItem}
-              className="border border-dashed border-border hover:border-primary/50"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              Add Item
-            </Button>
-          </div>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Calculator className="h-4 w-4 text-primary" />
+            Budget Details
+          </CardTitle>
         </CardHeader>
         <CardContent className="pt-4">
           {/* Header for desktop */}
@@ -474,7 +462,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
                       content={item.description}
                       onChange={(value) => updateItem(index, 'description', value)}
                       placeholder="Item description..."
-                      className="[&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+                      className="[&_.ProseMirror]:min-h-[36px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm [&_.tiptap-toolbar]:hidden [&:focus-within_.tiptap-toolbar]:block"
                     />
                   </div>
                   <div className="space-y-2">
@@ -529,7 +517,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
                       content={item.description}
                       onChange={(value) => updateItem(index, 'description', value)}
                       placeholder="Item description..."
-                      className="[&_.ProseMirror]:min-h-[50px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
+                      className="[&_.ProseMirror]:min-h-[36px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm [&_.tiptap-toolbar]:hidden [&:focus-within_.tiptap-toolbar]:block"
                     />
                   </div>
                   <div className="col-span-2">
@@ -583,6 +571,17 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
               </div>
             ))}
           </div>
+
+          {/* Inline Add Item */}
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={addItem}
+            className="w-full mt-3 border border-dashed border-border hover:border-primary/50 hover:bg-accent/30 text-muted-foreground"
+          >
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Add Item
+          </Button>
         </CardContent>
       </Card>
 
