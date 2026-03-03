@@ -45,7 +45,22 @@ const Header = () => {
       if (error) throw error;
       return data;
     },
-    staleTime: 5 * 60 * 1000, // cache 5 min
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch active products for mega menu
+  const { data: dynamicProducts } = useQuery({
+    queryKey: ['nav-products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, slug, name_en, name_bn, short_description_en, short_description_bn')
+        .eq('status', 'active')
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
@@ -63,20 +78,22 @@ const Header = () => {
     { href: '/', label: 'Home' },
   ];
 
-  const productsItems = [
-    { href: '/products/isp-manager', label: 'ISP Manager', description: 'Complete ISP billing and customer management solution.' },
-    { href: '/products/somity-app', label: 'Somity App', description: 'Digital platform for cooperative society management.' },
-    { href: '/products/restaurant-app', label: 'Restaurant App', description: 'Modern POS and order management for restaurants.' },
-    { href: '/products', label: 'View All Products', description: 'Explore our complete product lineup.' },
-  ];
+  // Build dynamic products menu items
+  const productsItems = (dynamicProducts || []).map(p => ({
+    href: `/products/${p.slug}`,
+    label: language === 'en' ? p.name_en : (p.name_bn || p.name_en),
+    description: language === 'en'
+      ? (p.short_description_en || '')
+      : (p.short_description_bn || p.short_description_en || ''),
+  }));
 
   // Build dynamic services menu items
   const servicesMenuItems = (dynamicServices || []).map(s => ({
     href: `/services#${s.slug}`,
     label: language === 'en' ? s.title_en : (s.title_bn || s.title_en),
     description: language === 'en'
-      ? ((s as any).short_description_en || '')
-      : ((s as any).short_description_bn || (s as any).short_description_en || ''),
+      ? (s.short_description_en || '')
+      : (s.short_description_bn || s.short_description_en || ''),
   }));
 
   const companiesItems = [
@@ -185,23 +202,40 @@ const Header = () => {
                       Products
                     </Link>
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid w-[400px] gap-3 p-4 md:grid-cols-1">
-                      {productsItems.map((item) => (
-                        <NavigationMenuLink key={item.href} asChild>
-                          <Link
-                            to={item.href}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">{item.label}</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              {item.description}
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
+                  {productsItems.length > 0 && (
+                    <NavigationMenuContent>
+                      <div className="w-[400px] p-4">
+                        <div className="grid gap-2 grid-cols-1">
+                          {productsItems.map((item) => (
+                            <NavigationMenuLink key={item.href} asChild>
+                              <Link
+                                to={item.href}
+                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              >
+                                <div className="text-sm font-medium leading-none">{item.label}</div>
+                                {item.description && (
+                                  <p className="line-clamp-2 text-xs leading-snug text-muted-foreground mt-1">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </Link>
+                            </NavigationMenuLink>
+                          ))}
+                        </div>
+                        <div className="mt-3 border-t border-border/50 pt-3">
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to="/products"
+                              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline px-3"
+                            >
+                              {language === 'en' ? 'View All Products' : 'সকল প্রোডাক্ট দেখুন'}
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
+                          </NavigationMenuLink>
+                        </div>
+                      </div>
+                    </NavigationMenuContent>
+                  )}
                 </NavigationMenuItem>
 
                 {/* Services Mega Menu */}
@@ -401,8 +435,16 @@ const Header = () => {
 
                         {/* Products Section */}
                         <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Products
+                          {language === 'en' ? 'Products' : 'প্রোডাক্ট'}
                         </div>
+                        <Link
+                          to="/products"
+                          onClick={() => setIsSheetOpen(false)}
+                          className="rounded-lg px-4 py-2 text-sm font-medium text-primary hover:bg-secondary flex items-center gap-1"
+                        >
+                          {language === 'en' ? 'View All Products' : 'সকল প্রোডাক্ট দেখুন'}
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
                         {productsItems.map((item) => (
                           <Link
                             key={item.href}
