@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 
 import {
   Accordion,
@@ -13,13 +15,16 @@ interface FeatureItem {
   title: string;
   image: string;
   description: string;
+  link?: string;
 }
 
 interface Feature197Props {
   features: FeatureItem[];
+  learnMoreLink?: string;
+  learnMoreText?: string;
 }
 
-const Feature197 = ({ features }: Feature197Props) => {
+const Feature197 = ({ features, learnMoreLink = "/services", learnMoreText = "Learn More" }: Feature197Props) => {
   const [activeTabId, setActiveTabId] = useState<string | number>(features[0]?.id);
   const [activeImage, setActiveImage] = useState(features[0]?.image);
 
@@ -56,6 +61,13 @@ const Feature197 = ({ features }: Feature197Props) => {
                       className="prose prose-sm max-w-none text-muted-foreground leading-relaxed"
                       dangerouslySetInnerHTML={{ __html: tab.description }} 
                     />
+                    <Link 
+                      to={tab.link || learnMoreLink} 
+                      className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline transition-colors"
+                    >
+                      {learnMoreText}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
                     <div className="mt-4 lg:hidden">
                       <img
                         src={tab.image}
