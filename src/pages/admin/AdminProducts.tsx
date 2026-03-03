@@ -35,7 +35,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save, Trash2, Settings } from 'lucide-react';
+import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save, Trash2, Settings, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MediaItem {
@@ -72,6 +72,8 @@ const AdminProducts = () => {
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
   const [newCategory, setNewCategory] = useState({ name_en: '', name_bn: '', slug: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const [formData, setFormData] = useState({
     name_en: '',
@@ -516,11 +518,42 @@ const AdminProducts = () => {
         }
       />
 
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name or slug..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-[160px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {isLoading ? (
         <AdminLoadingSkeleton />
       ) : !products?.length ? (
         <AdminEmptyState icon={Package} title="No products found" description="Products will appear here" />
-      ) : (
+      ) : (() => {
+        const filtered = products.filter((p) => {
+          const matchesSearch = !searchQuery || p.name_en.toLowerCase().includes(searchQuery.toLowerCase()) || p.slug.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+          return matchesSearch && matchesStatus;
+        });
+        return filtered.length === 0 ? (
+          <AdminEmptyState icon={Package} title="No matching products" description="Try adjusting your search or filter" />
+        ) : (
         <div className="border rounded-lg">
           <Table>
             <TableHeader>
@@ -535,7 +568,7 @@ const AdminProducts = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => (
+              {filtered.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name_en}</TableCell>
                   <TableCell className="text-xs text-muted-foreground font-mono">{product.slug}</TableCell>
@@ -585,7 +618,8 @@ const AdminProducts = () => {
             </TableBody>
           </Table>
         </div>
-      )}
+        );
+      })()}
     </AdminLayout>
   );
 };
