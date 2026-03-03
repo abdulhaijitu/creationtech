@@ -1,47 +1,33 @@
 
 
-## Products হিরো সেকশন ফিক্স
+## প্রোডাক্ট কার্ড UI/UX অডিট ও ফিক্স
 
-### সমস্যা
-বর্তমান ProductHero হালকা ব্যাকগ্রাউন্ডে আছে (`bg-gradient-to-br from-[hsl(var(--primary)/0.08)]`) যেটা সাইটের বাকি ডার্ক হিরো সেকশনগুলোর সাথে মেলে না। ইমেজ কোলাজ ওভারফ্লো করছে, ফ্লোটিং ব্যাজ বাইরে চলে যাচ্ছে, আর মোবাইলে কোনো ভিজুয়াল কনটেন্ট নেই।
+### সমস্যা চিহ্নিত
+
+**ক্রিটিক্যাল:** Products পেইজে হিরোর পর সব সেকশন (ProductShowcase, ProductOverview, ProductFeatures, ProductHowItWorks, ProductTechnology) অদৃশ্য — সরাসরি CTA ও ফুটার দেখায়। কারণ হলো ScrollReveal অ্যানিমেশন কাজ করছে না — এলিমেন্টগুলো `opacity: 0` এ আটকে আছে এবং IntersectionObserver ট্রিগার হচ্ছে না।
+
+**ProductShowcase কার্ডের UI সমস্যা (কোড রিভিউ থেকে):**
+1. কার্ডের বাইরের `div` এ `flex flex-col` নেই, তাই ভেতরের `flex-1` কাজ করে না — কার্ড হাইট অসমান হয়
+2. প্রোডাক্ট টাইপ/ক্যাটাগরি ব্যাজ নেই — কার্ডে কন্টেক্সট অভাব
+3. CTA বাটন দুটো মোবাইলে `flex-col gap-3` এ স্ট্যাক হয় — ক্র্যাম্পড লাগে
+4. ডেসক্রিপশন `text-sm` — পড়তে কষ্ট
+5. ইমেজে হোভার ওভারলে খুব সাটল (`from-background/30`)
 
 ### সমাধান
 
-Home পেইজের HeroSection এর ডার্ক থিম প্যাটার্ন হুবহু ফলো করে ProductHero সম্পূর্ণ রিডিজাইন করা হবে।
+#### ১. ScrollReveal ফিক্স — `src/hooks/useScrollReveal.ts`
+- `useState(false)` এর পরিবর্তে SSR/hydration সমস্যা এড়াতে একটু delay দিয়ে IntersectionObserver সেটআপ করা
+- রিপোর্ট করা সমস্যা অনুযায়ী, observer কাজ না করলে fallback হিসেবে ১ সেকেন্ড পর `setIsVisible(true)` করা (safety net)
 
-### পরিবর্তন — `src/components/products/ProductHero.tsx`
+#### ২. ProductShowcase কার্ড রিডিজাইন — `src/components/products/ProductShowcase.tsx`
+- কার্ড wrapper এ `flex flex-col` যোগ করে হাইট সমান করা
+- ইমেজের উপর প্রোডাক্ট ক্যাটাগরি ব্যাজ যোগ (যেমন "ISP Solution", "Cooperative" ইত্যাদি)
+- ডেসক্রিপশন `text-sm` → `text-base` করা
+- CTA বাটন গ্যাপ বাড়ানো এবং মোবাইলেও `flex-row` করা (বাটন দুটো পাশাপাশি)
+- ইমেজ ওভারলে আরো ভিজিবল করা
+- `active:scale-[0.96]` বজায় রাখা
 
-**ব্যাকগ্রাউন্ড:**
-- `bg-hero-background` ক্লাস ব্যবহার (Home হিরোর মতো)
-- Teal গ্রেডিয়েন্ট অর্ব + গ্রিড প্যাটার্ন + SVG নেটওয়ার্ক লাইন যোগ
-- Bottom fade: `from-[#0a1628]`
-
-**টেক্সট কালার:**
-- সব টেক্সট `text-white`, `text-white/60` এ পরিবর্তন
-- Badge: `border-teal-500/30 bg-teal-500/10 text-teal-400`
-- Title: প্রথম লাইন `text-white`, দ্বিতীয় লাইন `text-teal-400`
-
-**CTA বাটন:**
-- Primary: `bg-gradient-to-r from-teal-500 to-teal-400` + shadow
-- Outline: `border-white/20 bg-white/5 text-white`
-
-**ইমেজ কোলাজ ফিক্স:**
-- কন্টেইনারের মধ্যে ইমেজ রাখা — `overflow-hidden` যোগ
-- ইমেজ সাইজ ও পজিশন সঠিকভাবে সেট করা যাতে ওভারল্যাপ না হয়
-- ফ্লোটিং ব্যাজ কন্টেইনারের ভেতরে রাখা
-- ইমেজ বর্ডার: `border-teal-500/20`
-- Decorative circles: teal কালার (`bg-teal-500/15`)
-
-**Stats কার্ড:**
-- ডার্ক থিম: `border-teal-500/20 bg-gradient-to-br from-teal-900/40 to-teal-900/20`
-- আইকন: `text-teal-400/70`
-- টেক্সট: `text-white`, লেবেল: `text-white/50`
-
-**মোবাইল:**
-- Stats গ্রিড `grid-cols-3` বজায় রাখা, তবে ছোট স্ক্রিনে সুন্দরভাবে দেখানোর জন্য প্যাডিং এডজাস্ট
-- ইমেজ কোলাজ `lg:block` হিসেবে রাখা (ডেস্কটপে দেখাবে)
-
-**Bottom fade:** `from-[#0a1628]` — Home হিরোর সাথে মিল
-
-শুধু একটি ফাইল পরিবর্তন হবে: `src/components/products/ProductHero.tsx`
+#### ফাইল পরিবর্তন:
+1. `src/hooks/useScrollReveal.ts` — fallback timer যোগ
+2. `src/components/products/ProductShowcase.tsx` — কার্ড স্ট্রাকচার ও স্টাইল ফিক্স
 
