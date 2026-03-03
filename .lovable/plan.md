@@ -1,46 +1,26 @@
 
 
-## Sidebar Simplification
+## Proposal WhatsApp Send
 
-### Current → New Structure
+`src/pages/admin/AdminProposals.tsx` এ পরিবর্তন:
 
-Remove all items not in the user's list. New `navGroups`:
+1. **Import**: `MessageCircle` icon যোগ করা (lucide-react থেকে)
 
-```text
-Dashboard
-  - Overview          /admin
+2. **`handleWhatsAppSend` ফাংশন**: Invoice/Quotation এর মতোই — client_phone sanitize করে (digits only, `88` prefix ensure), message তৈরি করে `wa.me` link দিয়ে open করবে। ফোন না থাকলে toast warning।
 
-Sales & Clients
-  - Leads             /admin/leads
-  - Clients           /admin/clients
-  - Invoices          /admin/invoices
-  - Payments          /admin/payments
-  - Quotations        /admin/quotations
-  - Proposals         /admin/proposals
+3. **Message format**:
+```
+Dear {client_name},
 
-Products & Services
-  - Products          /admin/products
-  - Services          /admin/services
+Proposal #{proposal_number} - {title}
+Amount: ৳{total_amount}
 
-Content
-  - Portfolio         /admin/portfolio
-  - Testimonials      /admin/testimonials
-
-Settings
-  - General           /admin/settings
-  - Preferences       /admin/settings/system
-  - Payment Gateway   /admin/settings/payment
-  - SMS Settings      /admin/settings/sms
-
-Team
-  - User Management   /admin/users
-  - Roles & Permissions /admin/roles
-  - Careers           /admin/careers
+Thank you for your business.
+- {company_name}
 ```
 
-### Removed Items
-Blog, Employees, Attendance, Internal Notes, ISP/Somity/Restaurant sub-products, all Frontend Control (CMS pages), Tasks, Notifications, Activity Logs, System Preferences (merged into Settings as "Preferences")
+4. **Dropdown menu**: Email to Client এর পরে "Send via WhatsApp" আইটেম যোগ (line ~373 এর পরে), `renderDropdownActions` এর dependency array তে `handleWhatsAppSend` যোগ।
 
-### File Changed
-- `src/components/admin/AdminSidebar.tsx` — replace `navGroups` array, remove unused icon imports
+### File changed
+- `src/pages/admin/AdminProposals.tsx`
 
