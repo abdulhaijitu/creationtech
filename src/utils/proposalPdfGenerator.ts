@@ -51,8 +51,8 @@ const MARGIN = 20;
 const HEADER_HEIGHT = 38;
 const FOOTER_RESERVE = 22;
 const ACCENT_COLOR: [number, number, number] = [34, 55, 94];
-const LINE_HEIGHT = 5.5;
-const PARAGRAPH_GAP = 3;
+const LINE_HEIGHT = 5.0;
+const PARAGRAPH_GAP = 2;
 const BODY_FONT = 12;
 const HEADING_FONT = 14;
 
@@ -574,11 +574,16 @@ function renderStyledContent(
   doc.setFontSize(BODY_FONT);
   doc.setTextColor(55, 55, 55);
 
+  let consecutiveEmpty = 0;
   for (const para of paragraphs) {
     if (para.segments.length === 0) {
-      y += PARAGRAPH_GAP;
+      consecutiveEmpty++;
+      if (consecutiveEmpty <= 1) {
+        y += PARAGRAPH_GAP;
+      }
       continue;
     }
+    consecutiveEmpty = 0;
 
     // Word-wrap the styled segments
     const wrappedLines = wrapStyledSegments(doc, para.segments, contentWidth);
@@ -664,7 +669,90 @@ function addSection(
     }
   }
 
-  return y + PARAGRAPH_GAP + 1;
+  return y + PARAGRAPH_GAP;
+}
+
+// ── Terms & Conditions compact renderer ──
+
+function addTermsSection(
+  doc: jsPDF, title: string, content: string, y: number,
+  pageWidth: number, company: CompanyInfo, logoData: ImageLoadResult | null
+): number {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxY = pageHeight - FOOTER_RESERVE;
+  const contentWidth = pageWidth - MARGIN * 2;
+  const TERMS_FONT = 10;
+  const TERMS_HEADING = 12;
+  const TERMS_LINE_HEIGHT = 4.5;
+  const TERMS_LEFT_PADDING = 5;
+  const accentX = MARGIN;
+
+  if (y > maxY - 25) { y = addNewPage(doc, company, logoData); }
+
+  // Section heading
+  doc.setFontSize(TERMS_HEADING);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.text(title, MARGIN + TERMS_LEFT_PADDING, y);
+  y += 5;
+
+  // Parse content into paragraphs
+  const paragraphs = htmlToStyledParagraphs(content);
+
+  // Pre-calculate total height for the accent border (estimate)
+  const startY = y - 7;
+
+  doc.setFontSize(TERMS_FONT);
+  doc.setTextColor(70, 70, 70);
+
+  let consecutiveEmpty = 0;
+  for (const para of paragraphs) {
+    if (para.segments.length === 0) {
+      consecutiveEmpty++;
+      if (consecutiveEmpty <= 1) {
+        y += 1.5;
+      }
+      continue;
+    }
+    consecutiveEmpty = 0;
+
+    const wrappedLines = wrapStyledSegments(doc, para.segments, contentWidth - TERMS_LEFT_PADDING);
+
+    for (let li = 0; li < wrappedLines.length; li++) {
+      if (y > maxY) {
+        // Draw accent strip for current page before breaking
+        const endY = maxY;
+        doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+        doc.rect(accentX, startY, 1.5, endY - startY, 'F');
+
+        y = addNewPage(doc, company, logoData);
+        doc.setFontSize(TERMS_FONT);
+        doc.setTextColor(70, 70, 70);
+      }
+      const isLastLine = li === wrappedLines.length - 1;
+      renderStyledLine(doc, wrappedLines[li], MARGIN + TERMS_LEFT_PADDING, y, para.justify, contentWidth - TERMS_LEFT_PADDING, isLastLine);
+      y += TERMS_LINE_HEIGHT;
+    }
+  }
+
+  // Draw left accent border
+  const endY = y;
+  doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.rect(accentX, startY, 1.5, endY - startY + 2, 'F');
+
+  // Light background
+  const bgGState = new (doc as any).GState({ opacity: 0.04 });
+  doc.saveGraphicsState();
+  doc.setGState(bgGState);
+  doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+  doc.rect(accentX + 1.5, startY, contentWidth - 1.5, endY - startY + 2, 'F');
+  doc.restoreGraphicsState();
+
+  // Reset font
+  doc.setFontSize(BODY_FONT);
+  doc.setFont('helvetica', 'normal');
+
+  return y + PARAGRAPH_GAP + 2;
 }
 
 // ── Main generator ──
@@ -984,7 +1072,7 @@ export async function generateProposalPDF(
 
   // ── Notes & Terms ──
   if (data.notes) y = addSection(doc, 'Notes', data.notes, y, pageWidth, company, logoData);
-  if (data.terms) y = addSection(doc, 'Terms & Conditions', data.terms, y, pageWidth, company, logoData);
+  if (data.terms) y = addTermsSection(doc, 'Terms & Conditions', data.terms, y, pageWidth, company, logoData);
 
   // ── Signature section ──
   if (y > maxY - 35) { y = addNewPage(doc, company, logoData); }
