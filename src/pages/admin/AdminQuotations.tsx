@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download, Trash2 } from 'lucide-react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download, Trash2, Printer, Send } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
  import ClientLink from '@/components/admin/ClientLink';
- import { generatePDF, DocumentData, CompanyInfo } from '@/utils/pdfGenerator';
+ import { generatePDF, printPDF, DocumentData, CompanyInfo } from '@/utils/pdfGenerator';
 import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
 import companyLogo from '@/assets/logo.png';
 import watermarkImage from '@/assets/jolchap.png';
@@ -36,12 +36,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
- import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuTrigger,
- } from '@/components/ui/dropdown-menu';
+  import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+  } from '@/components/ui/dropdown-menu';
  import { useToast } from '@/hooks/use-toast';
  import { supabase } from '@/integrations/supabase/client';
  import QuotationForm, { QuotationItem, QuotationFormData } from '@/components/admin/QuotationForm';
@@ -373,6 +374,60 @@ const AdminQuotations = () => {
 
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString('en-BD', { minimumFractionDigits: 2 })}`;
+
+  const buildQuotationPDFData = async (quotation: Quotation): Promise<DocumentData> => {
+    const { data: quotationItems } = await supabase
+      .from('quotation_items')
+      .select('*')
+      .eq('quotation_id', quotation.id)
+      .order('display_order');
+
+    return {
+      documentNumber: quotation.quotation_number,
+      documentType: 'Quotation',
+      clientName: quotation.client_name,
+      clientEmail: quotation.client_email,
+      clientPhone: quotation.client_phone,
+      clientAddress: quotation.client_address,
+      issueDate: quotation.issue_date,
+      validUntil: quotation.valid_until,
+      items: (quotationItems || []).map(item => ({
+        description: item.description,
+        quantity: Number(item.quantity),
+        unit_price: Number(item.unit_price),
+        amount: Number(item.amount),
+      })),
+      subtotal: Number(quotation.subtotal),
+      taxRate: Number(quotation.tax_rate || 0),
+      taxAmount: Number(quotation.tax_amount || 0),
+      discountAmount: Number(quotation.discount_amount || 0),
+      total: Number(quotation.total),
+      notes: quotation.notes,
+      terms: quotation.terms,
+      status: quotation.status,
+    };
+  };
+
+  const handleDownloadPDF = async (quotation: Quotation) => {
+    const pdfData = await buildQuotationPDFData(quotation);
+    await generatePDF(pdfData, getCompanyInfo());
+    toast({ title: 'PDF downloaded successfully' });
+  };
+
+  const handlePrintQuotation = async (quotation: Quotation) => {
+    const pdfData = await buildQuotationPDFData(quotation);
+    await printPDF(pdfData, getCompanyInfo());
+  };
+
+  const handleSendQuotation = async (quotation: Quotation) => {
+    const pdfData = await buildQuotationPDFData(quotation);
+    await generatePDF(pdfData, getCompanyInfo());
+    if (['draft', 'pending'].includes(quotation.status)) {
+      await supabase.from('quotations').update({ status: 'sent' }).eq('id', quotation.id);
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+    }
+    toast({ title: 'Quotation sent', description: 'PDF downloaded and status updated' });
+  };
  
    return (
      <AdminLayout>
@@ -441,72 +496,42 @@ const AdminQuotations = () => {
                          <span className="font-medium text-foreground">{formatCurrency(quotation.total)}</span>
                        </div>
                      </div>
-                     <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          title="Download PDF"
-                          onClick={async () => {
-                            const { data: quotationItems } = await supabase
-                              .from('quotation_items')
-                              .select('*')
-                              .eq('quotation_id', quotation.id)
-                              .order('display_order');
-                            
-                            const pdfData: DocumentData = {
-                              documentNumber: quotation.quotation_number,
-                              documentType: 'Quotation',
-                              clientName: quotation.client_name,
-                              clientEmail: quotation.client_email,
-                              clientPhone: quotation.client_phone,
-                              clientAddress: quotation.client_address,
-                              issueDate: quotation.issue_date,
-                              validUntil: quotation.valid_until,
-                              items: (quotationItems || []).map(item => ({
-                                description: item.description,
-                                quantity: Number(item.quantity),
-                                unit_price: Number(item.unit_price),
-                                amount: Number(item.amount),
-                              })),
-                              subtotal: Number(quotation.subtotal),
-                              taxRate: Number(quotation.tax_rate || 0),
-                              taxAmount: Number(quotation.tax_amount || 0),
-                              discountAmount: Number(quotation.discount_amount || 0),
-                              total: Number(quotation.total),
-                              notes: quotation.notes,
-                              terms: quotation.terms,
-                              status: quotation.status,
-                            };
-                            await generatePDF(pdfData, getCompanyInfo());
-                            toast({ title: 'PDF downloaded successfully' });
-                          }}
-                        >
-                          <Download className="h-4 w-4 mr-1" /> PDF
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openEditDialog(quotation)}>
+                          <Eye className="h-4 w-4 mr-1" /> View
                         </Button>
-                       <Button variant="outline" size="sm" onClick={() => openEditDialog(quotation)}>
-                         <Eye className="h-4 w-4 mr-1" /> View
-                       </Button>
-                       <DropdownMenu>
-                         <DropdownMenuTrigger asChild>
-                           <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                         </DropdownMenuTrigger>
-                         <DropdownMenuContent align="end" className="max-h-[var(--radix-dropdown-menu-content-available-height,400px)] overflow-y-auto">
-                            <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'pending' })}>Mark Pending</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'approved' })}>Mark Approved</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'rejected' })}>Mark Rejected</DropdownMenuItem>
-                            {quotation.status !== 'converted' && (
-                               <DropdownMenuItem onClick={() => convertMutation.mutate(quotation)}>
-                                <ArrowRight className="h-4 w-4 mr-2" /> Convert to Invoice
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => setDeleteId(quotation.id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" /> Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                       </DropdownMenu>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="max-h-[var(--radix-dropdown-menu-content-available-height,400px)] overflow-y-auto">
+                             <DropdownMenuItem onClick={() => handleDownloadPDF(quotation)}>
+                               <Download className="h-4 w-4 mr-2" /> Download PDF
+                             </DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => handlePrintQuotation(quotation)}>
+                               <Printer className="h-4 w-4 mr-2" /> Print
+                             </DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => handleSendQuotation(quotation)}>
+                               <Send className="h-4 w-4 mr-2" /> Send Quotation
+                             </DropdownMenuItem>
+                             <DropdownMenuSeparator />
+                             <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'pending' })}>Mark Pending</DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'approved' })}>Mark Approved</DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'rejected' })}>Mark Rejected</DropdownMenuItem>
+                             {quotation.status !== 'converted' && (
+                                <DropdownMenuItem onClick={() => convertMutation.mutate(quotation)}>
+                                 <ArrowRight className="h-4 w-4 mr-2" /> Convert to Invoice
+                               </DropdownMenuItem>
+                             )}
+                             <DropdownMenuSeparator />
+                             <DropdownMenuItem
+                               className="text-destructive focus:text-destructive"
+                               onClick={() => setDeleteId(quotation.id)}
+                             >
+                               <Trash2 className="h-4 w-4 mr-2" /> Delete
+                             </DropdownMenuItem>
+                           </DropdownMenuContent>
+                        </DropdownMenu>
                      </div>
                    </div>
                  </CardContent>
