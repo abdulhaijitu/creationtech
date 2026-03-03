@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ClientCombobox from '@/components/admin/ClientCombobox';
 import RichTextEditor from '@/components/ui/rich-text-editor';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileText, User, Calendar, Plus, Trash2, X, Calculator, NotepadText } from 'lucide-react';
+import { FileText, User, Calendar, Plus, Trash2, X, Calculator, NotepadText, Repeat } from 'lucide-react';
 
 interface Client {
   id: string;
@@ -48,12 +50,15 @@ interface Proposal {
   discount_amount: number | null;
 }
 
+export type BillingType = 'one_time' | 'monthly' | 'yearly';
+
 export interface ProposalItem {
   id?: string;
   description: string;
   quantity: number;
   unit_price: number;
   amount: number;
+  billing_type: BillingType;
 }
 
 interface ProposalFormProps {
@@ -66,7 +71,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [items, setItems] = useState<ProposalItem[]>([
-    { description: '', quantity: 1, unit_price: 0, amount: 0 },
+    { description: '', quantity: 1, unit_price: 0, amount: 0, billing_type: 'one_time' },
   ]);
   const [formData, setFormData] = useState({
     client_id: '',
@@ -149,6 +154,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         quantity: Number(item.quantity),
         unit_price: Number(item.unit_price),
         amount: Number(item.amount),
+        billing_type: ((item as any).billing_type || 'one_time') as BillingType,
       })));
     }
   }, [proposalItemsData]);
@@ -165,7 +171,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unit_price: 0, amount: 0 }]);
+    setItems([...items, { description: '', quantity: 1, unit_price: 0, amount: 0, billing_type: 'one_time' }]);
   };
 
   const removeItem = (index: number) => {
@@ -183,9 +189,17 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
     setItems(newItems);
   };
 
+  // Grouped totals by billing type
+  const { oneTimeSubtotal, monthlyTotal, yearlyTotal } = useMemo(() => {
+    const oneTime = items.filter(i => i.billing_type === 'one_time').reduce((s, i) => s + i.amount, 0);
+    const monthly = items.filter(i => i.billing_type === 'monthly').reduce((s, i) => s + i.amount, 0);
+    const yearly = items.filter(i => i.billing_type === 'yearly').reduce((s, i) => s + i.amount, 0);
+    return { oneTimeSubtotal: oneTime, monthlyTotal: monthly, yearlyTotal: yearly };
+  }, [items]);
+
+  const taxAmount = oneTimeSubtotal * (formData.tax_rate / 100);
+  const total = oneTimeSubtotal + taxAmount - formData.discount_amount;
   const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-  const taxAmount = subtotal * (formData.tax_rate / 100);
-  const total = subtotal + taxAmount - formData.discount_amount;
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -243,6 +257,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
           unit_price: item.unit_price,
           amount: item.amount,
           display_order: index,
+          billing_type: item.billing_type,
         }));
 
       if (itemsToInsert.length > 0) {
@@ -424,8 +439,9 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         <CardContent className="pt-4">
           {/* Header for desktop */}
           <div className="hidden md:grid md:grid-cols-12 gap-2 mb-2 px-2 py-2 bg-muted/50 rounded-lg">
-            <div className="col-span-5 text-xs font-medium text-muted-foreground">Description</div>
-            <div className="col-span-2 text-xs font-medium text-muted-foreground">Quantity</div>
+            <div className="col-span-4 text-xs font-medium text-muted-foreground">Description</div>
+            <div className="col-span-2 text-xs font-medium text-muted-foreground">Type</div>
+            <div className="col-span-1 text-xs font-medium text-muted-foreground">Qty</div>
             <div className="col-span-2 text-xs font-medium text-muted-foreground">Unit Price</div>
             <div className="col-span-2 text-xs font-medium text-muted-foreground text-right">Amount</div>
             <div className="col-span-1"></div>
@@ -461,29 +477,46 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
                       className="[&_.ProseMirror]:min-h-[60px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-2">
                     <div>
-                      <Label className="text-xs text-muted-foreground">Qty</Label>
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(index, 'quantity', Number(e.target.value))}
-                        min="1"
-                      />
+                      <Label className="text-xs text-muted-foreground">Type</Label>
+                      <Select value={item.billing_type} onValueChange={(v) => updateItem(index, 'billing_type', v)}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="one_time">One-time</SelectItem>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="yearly">Yearly</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Price</Label>
-                      <Input
-                        type="number"
-                        value={item.unit_price}
-                        onChange={(e) => updateItem(index, 'unit_price', Number(e.target.value))}
-                        min="0"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Amount</Label>
-                      <div className="h-10 px-3 py-2 bg-muted rounded-md text-sm font-medium flex items-center justify-end">
-                        ৳{item.amount.toLocaleString()}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Qty</Label>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(index, 'quantity', Number(e.target.value))}
+                          min="1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Price</Label>
+                        <Input
+                          type="number"
+                          value={item.unit_price}
+                          onChange={(e) => updateItem(index, 'unit_price', Number(e.target.value))}
+                          min="0"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Amount</Label>
+                        <div className="h-10 px-3 py-2 bg-muted rounded-md text-sm font-medium flex items-center justify-end">
+                          ৳{item.amount.toLocaleString()}
+                          {item.billing_type === 'monthly' && <span className="text-xs text-muted-foreground ml-1">/mo</span>}
+                          {item.billing_type === 'yearly' && <span className="text-xs text-muted-foreground ml-1">/yr</span>}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -491,7 +524,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
 
                 {/* Desktop layout */}
                 <div className="hidden md:contents">
-                  <div className="col-span-5 self-start">
+                  <div className="col-span-4 self-start">
                     <RichTextEditor
                       content={item.description}
                       onChange={(value) => updateItem(index, 'description', value)}
@@ -500,6 +533,18 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
                     />
                   </div>
                   <div className="col-span-2">
+                    <Select value={item.billing_type} onValueChange={(v) => updateItem(index, 'billing_type', v)}>
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="one_time">One-time</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="yearly">Yearly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="col-span-1">
                     <Input
                       type="number"
                       value={item.quantity}
@@ -517,8 +562,10 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
                       className="h-9"
                     />
                   </div>
-                  <div className="col-span-2 flex items-center justify-end">
+                  <div className="col-span-2 flex items-center justify-end gap-1">
                     <span className="font-medium text-sm">৳{item.amount.toLocaleString()}</span>
+                    {item.billing_type === 'monthly' && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">/mo</Badge>}
+                    {item.billing_type === 'yearly' && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">/yr</Badge>}
                   </div>
                   <div className="col-span-1 flex items-center justify-center">
                     <Button
@@ -584,14 +631,35 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4 space-y-3">
+          {/* Cost breakdown by type */}
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Subtotal</span>
-            <span className="font-medium">৳{subtotal.toLocaleString()}</span>
+            <span className="text-sm text-muted-foreground">One-time Cost</span>
+            <span className="font-medium">৳{oneTimeSubtotal.toLocaleString()}</span>
           </div>
+          {monthlyTotal > 0 && (
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-1.5">
+                <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Monthly Recurring</span>
+              </div>
+              <span className="font-medium">৳{monthlyTotal.toLocaleString()}<span className="text-xs text-muted-foreground">/mo</span></span>
+            </div>
+          )}
+          {yearlyTotal > 0 && (
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-1.5">
+                <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Yearly Recurring</span>
+              </div>
+              <span className="font-medium">৳{yearlyTotal.toLocaleString()}<span className="text-xs text-muted-foreground">/yr</span></span>
+            </div>
+          )}
+
+          <div className="border-t border-border/50 pt-3" />
 
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Tax</span>
+              <span className="text-sm text-muted-foreground">Tax (on one-time)</span>
               <div className="flex items-center gap-1">
                 <Input
                   type="number"
@@ -621,11 +689,23 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
             <span className="font-medium text-destructive">-৳{formData.discount_amount.toLocaleString()}</span>
           </div>
 
-          <div className="bg-primary/10 rounded-lg p-3 mt-1">
+          <div className="bg-primary/10 rounded-lg p-3 mt-1 space-y-1.5">
             <div className="flex justify-between items-center">
-              <span className="text-base font-semibold">Total</span>
+              <span className="text-base font-semibold">Total (One-time)</span>
               <span className="text-lg font-bold text-primary">৳{total.toLocaleString()}</span>
             </div>
+            {monthlyTotal > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">+ Monthly</span>
+                <span className="text-sm font-semibold">৳{monthlyTotal.toLocaleString()}<span className="text-xs text-muted-foreground">/mo</span></span>
+              </div>
+            )}
+            {yearlyTotal > 0 && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">+ Yearly</span>
+                <span className="text-sm font-semibold">৳{yearlyTotal.toLocaleString()}<span className="text-xs text-muted-foreground">/yr</span></span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

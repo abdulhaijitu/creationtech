@@ -1031,6 +1031,7 @@ export type Database = {
       proposal_items: {
         Row: {
           amount: number
+          billing_type: string
           created_at: string
           description: string
           display_order: number | null
@@ -1041,6 +1042,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          billing_type?: string
           created_at?: string
           description: string
           display_order?: number | null
@@ -1051,6 +1053,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          billing_type?: string
           created_at?: string
           description?: string
           display_order?: number | null
