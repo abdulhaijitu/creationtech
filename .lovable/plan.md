@@ -1,48 +1,41 @@
 
 
-## মোডাল UI/UX অডিট ও ফিক্স
+## Backend ও Frontend Bangla টেক্সট → English রূপান্তর
 
-### অডিট ফলাফল
+### সমস্যা
+Admin panel এবং কিছু frontend কোডে সরাসরি বাংলা টেক্সট হার্ডকোড করা আছে (DialogDescription, toast messages, button labels ইত্যাদি)। এগুলো English-এ পরিবর্তন করতে হবে।
 
-সকল admin পেজের মোডাল পরীক্ষা করে নিম্নলিখিত সমস্যা পাওয়া গেছে:
+> **নোট:** `LanguageContext.tsx`-এর বাংলা translations এবং public-facing পেজগুলোতে `language === 'bn'` conditional rendering রাখা হবে — কারণ সেগুলো bilingual UI-এর অংশ, হার্ডকোড না।
 
-**সমস্যা ১: Overflow/Scroll অনুপস্থিত** — কিছু মোডালে `max-h` ও `overflow-y-auto` নেই, ফলে ছোট স্ক্রিনে কন্টেন্ট কেটে যায় বা পেজের বাইরে চলে যায়।
+### পরিবর্তন
 
-| পেজ | মোডাল | সমস্যা |
-|------|--------|---------|
-| AdminLeads | Detail Dialog | `max-h` ও scroll নেই |
-| AdminClients | Add/Edit Client | `max-h` ও scroll নেই |
-| AdminPayments | View/Edit/Add (তিনটিই) | `max-h` ও scroll নেই |
-| AdminCareers | Application Detail | `max-h` ও scroll নেই |
+**১. `src/pages/admin/AdminLeads.tsx`** — সবচেয়ে বেশি Bangla
+- Toast: `'সফল!'` → `'Success!'`, `'নতুন Lead যোগ হয়েছে'` → `'New lead added'`
+- Convert button: `'রূপান্তর হচ্ছে...'` → `'Converting...'`, `'ক্লায়েন্টে রূপান্তর করুন'` → `'Convert to Client'`
+- Helper text: `'Lead-এর তথ্য নিয়ে নতুন ক্লায়েন্ট তৈরি হবে'` → `'A new client will be created from this lead's info'`
+- Dialog title: `'নতুন Lead যোগ করুন'` → `'Add New Lead'`
+- DialogDescription: `'Lead-এর টাইপ সিলেক্ট করে তথ্য পূরণ করুন'` → `'Select lead type and fill in the details'`
+- Buttons: `'বাতিল'` → `'Cancel'`, `'সেভ হচ্ছে...'` → `'Saving...'`, `'সেভ করুন'` → `'Save'`
 
-**সমস্যা ২: DialogDescription অনুপস্থিত** — Accessibility warning দেয় (Radix UI)। নিম্নলিখিত মোডালগুলোতে `DialogDescription` নেই:
+**২. `src/pages/admin/AdminClients.tsx`**
+- DialogDescription: `'ক্লায়েন্টের তথ্য পূরণ করুন'` → `'Fill in the client details'`
 
-- AdminClients (Add/Edit)
-- AdminPayments (View/Edit/Add)
-- AdminCareers (Job Dialog)
+**৩. `src/pages/admin/AdminPayments.tsx`**
+- 3টি DialogDescription: English-এ পরিবর্তন (`'View payment details'`, `'Update payment information'`, `'Add a new payment record'`)
 
-**সমস্যা ৩: মোবাইল UX** — Leads Detail মোডালে দীর্ঘ কন্টেন্ট (notes, convert section) থাকলে মোবাইলে scroll সমস্যা।
+**৪. `src/pages/admin/AdminCareers.tsx`**
+- 2টি DialogDescription: English-এ পরিবর্তন (`'Fill in the job posting details'`, `'View applicant details'`)
 
-### ফিক্স প্ল্যান
+**৫. `src/pages/admin/AdminProposals.tsx`**
+- Alert button: `'ডিলিট করুন'` → `'Delete'`
 
-**১. AdminLeads.tsx**
-- Detail Dialog: `max-w-lg` → `max-w-lg max-h-[90vh] overflow-y-auto` যোগ
-
-**২. AdminClients.tsx**
-- Dialog: `<DialogContent>` → `<DialogContent className="max-h-[90vh] overflow-y-auto">`
-- `DialogDescription` যোগ: "ক্লায়েন্ট তৈরি বা সম্পাদনা করুন"
-
-**৩. AdminPayments.tsx**
-- তিনটি Dialog-ই: `<DialogContent>` → `<DialogContent className="max-h-[90vh] overflow-y-auto">`
-- View/Edit/Add সবগুলোতে `DialogDescription` যোগ
-
-**৪. AdminCareers.tsx**
-- Application Detail: `max-w-lg` → `max-w-lg max-h-[90vh] overflow-y-auto`
-- Job Dialog: `DialogDescription` যোগ
+**৬. `src/pages/admin/AdminServices.tsx`**
+- Default/placeholder values for `cta_text_bn`: এগুলো ঠিকই আছে কারণ এটা bilingual content field — কিন্তু placeholder text রাখা যায়
 
 ### ফাইল পরিবর্তন
 - `src/pages/admin/AdminLeads.tsx`
 - `src/pages/admin/AdminClients.tsx`
 - `src/pages/admin/AdminPayments.tsx`
 - `src/pages/admin/AdminCareers.tsx`
+- `src/pages/admin/AdminProposals.tsx`
 
