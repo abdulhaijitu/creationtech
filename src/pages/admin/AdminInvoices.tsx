@@ -47,7 +47,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, FileText, Search, Download, RefreshCw, MoreVertical, Printer, Send } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Search, Download, RefreshCw, MoreVertical, Printer, Send, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { generatePDF, printPDF, DocumentData, LineItem, CompanyInfo } from '@/utils/pdfGenerator';
 import ClientLink from '@/components/admin/ClientLink';
@@ -421,6 +421,32 @@ const AdminInvoices = () => {
     toast({ title: 'Invoice PDF downloaded & status updated to Sent' });
   };
 
+  const handleWhatsAppSend = (invoice: Invoice) => {
+    const phone = invoice.client_phone;
+    if (!phone) {
+      toast({ title: 'Client phone number not available', variant: 'destructive' });
+      return;
+    }
+    // Sanitize phone: keep only digits, ensure country code
+    let sanitized = phone.replace(/[^0-9]/g, '');
+    if (sanitized.startsWith('0')) {
+      sanitized = '88' + sanitized;
+    } else if (!sanitized.startsWith('88')) {
+      sanitized = '88' + sanitized;
+    }
+    const companyName = businessInfo?.company_name?.value_en || 'Creation Tech';
+    const dueDate = invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : 'N/A';
+    const message = `Dear ${invoice.client_name},
+
+Invoice #${invoice.invoice_number}
+Amount: ৳${Number(invoice.total).toLocaleString()}
+Due Date: ${dueDate}
+
+Thank you for your business.
+- ${companyName}`;
+    window.open(`https://wa.me/${sanitized}?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
   const filteredInvoices = invoices?.filter(invoice => {
     const matchesSearch = invoice.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       invoice.invoice_number.toLowerCase().includes(searchTerm.toLowerCase());
@@ -549,6 +575,10 @@ const AdminInvoices = () => {
                         <DropdownMenuItem onClick={() => handleSendInvoice(invoice)}>
                           <Send className="mr-2 h-4 w-4" />
                           Send Invoice
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleWhatsAppSend(invoice)}>
+                          <MessageCircle className="mr-2 h-4 w-4" />
+                          Send via WhatsApp
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => handleEdit(invoice)}>
