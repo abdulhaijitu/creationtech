@@ -1,33 +1,25 @@
 
 
-## Leads পেজে Edit ও Delete ফিচার যোগ
+## মেনুবার কাপাকাপি (Flickering) ফিক্স
 
-### বর্তমান অবস্থা
-- **Add**: ইতোমধ্যে আছে (Add Lead ডায়ালগ)
-- **Edit**: নেই — Detail ডায়ালগে শুধু View ও Notes সেভ করা যায়
-- **Delete**: নেই
+### সমস্যা
+Header `sticky top-0` — এর ভেতরে Topbar আছে যেটা scroll-এ `max-h-12` থেকে `max-h-0` হয়ে collapse হয়। এই height পরিবর্তন layout shift ঘটায় — content উপরে উঠে যায় → scroll position বদলায় → Topbar আবার দেখায় → আবার লুকায় = **feedback loop / jitter**।
 
-### পরিবর্তন
+### সমাধান
+Topbar-কে header height থেকে আলাদা করা — `max-h` transition-এর বদলে `transform: translateY` ব্যবহার করা যাতে layout shift না হয়:
 
-**ফাইল: `src/pages/admin/AdminLeads.tsx`**
+**ফাইল: `src/components/layout/Topbar.tsx`**
+- `max-h-12`/`max-h-0` সরিয়ে fixed height রাখা
+- `overflow-hidden` + `max-h` এর বদলে `translate-y` + `opacity` দিয়ে hide করা — GPU accelerated, no layout shift
 
-1. **Edit ফিচার**:
-   - Detail ডায়ালগে "Edit" বাটন যোগ — ক্লিক করলে Edit মোডে যাবে
-   - Edit মোডে সব ফিল্ড editable হবে (Add ফর্মের মতো, কিন্তু existing data pre-filled)
-   - `isEditing` + `editForm` state যোগ
-   - `handleEditSubmit` ফাংশন — সংশ্লিষ্ট টেবিলে update করবে
-   - Card-এর DropdownMenu-তে "Edit" অপশন যোগ
+**ফাইল: `src/components/layout/Header.tsx`**
+- Topbar-কে header-এর বাইরে রাখা অথবা scroll threshold-এ hysteresis যোগ করা (show at <10px, hide at >40px) যাতে rapid toggling না হয়
 
-2. **Delete ফিচার**:
-   - Card-এর DropdownMenu-তে "Delete" অপশন যোগ (destructive স্টাইল)
-   - AlertDialog দিয়ে confirmation
-   - `handleDelete` ফাংশন — সংশ্লিষ্ট টেবিল থেকে row delete করবে
-   - `deleteTarget` state (id + type) ট্র্যাক করার জন্য
+### পরিবর্তন বিস্তারিত
 
-3. **UI উন্নতি**:
-   - Detail ডায়ালগের header-এ Edit ও Delete বাটন
-   - DropdownMenu-তে Edit/Delete আইটেম (Pencil ও Trash2 আইকন সহ)
+1. **Header.tsx**: Scroll handler-এ hysteresis প্যাটার্ন — `setIsTopbarVisible` শুধু তখনই `true` হবে যখন `scrollY < 10`, এবং `false` হবে যখন `scrollY > 40`। মাঝের zone-এ previous state বজায় থাকবে।
 
-### কোনো ডাটাবেজ মাইগ্রেশন দরকার নেই
-বিদ্যমান RLS policies (`Admin can manage...` with ALL command) ইতোমধ্যে UPDATE ও DELETE সাপোর্ট করে।
+2. **Topbar.tsx**: `max-h-12`/`max-h-0` replace করা `h-10` fixed height + `-translate-y-full opacity-0` দিয়ে hide করা। Parent-এ `overflow-hidden` wrapper দিয়ে collapsed space ঢাকা।
+
+**মোট ২টি ফাইল পরিবর্তন।**
 
