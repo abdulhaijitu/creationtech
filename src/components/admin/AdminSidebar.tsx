@@ -30,6 +30,7 @@ import {
   LogOut,
   FolderKanban,
   Star,
+  Building2,
   GraduationCap,
   ChevronsUpDown,
 } from 'lucide-react';
@@ -102,6 +103,7 @@ const navGroups = [
     items: [
       { label: 'Portfolio', href: '/admin/portfolio', icon: FolderKanban },
       { label: 'Testimonials', href: '/admin/testimonials', icon: Star },
+      { label: 'Sister Concerns', href: '/admin/sister-concerns', icon: Building2 },
     ],
   },
   {

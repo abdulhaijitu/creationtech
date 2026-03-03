@@ -51,6 +51,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminPaymentGateway from "./pages/admin/AdminPaymentGateway";
 import AdminSMSSettings from "./pages/admin/AdminSMSSettings";
 import AdminSystemPreferences from "./pages/admin/AdminSystemPreferences";
+import AdminSisterConcerns from "./pages/admin/AdminSisterConcerns";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import ScrollToTop from "./components/common/ScrollToTop";
 
@@ -110,6 +111,7 @@ const App = () => (
                 <Route path="/admin/settings/payment" element={<ProtectedRoute requiredRole="admin"><AdminPaymentGateway /></ProtectedRoute>} />
                 <Route path="/admin/settings/sms" element={<ProtectedRoute requiredRole="admin"><AdminSMSSettings /></ProtectedRoute>} />
                 <Route path="/admin/settings/system" element={<ProtectedRoute requiredRole="admin"><AdminSystemPreferences /></ProtectedRoute>} />
+                <Route path="/admin/sister-concerns" element={<ProtectedRoute><AdminSisterConcerns /></ProtectedRoute>} />
 
                 {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
