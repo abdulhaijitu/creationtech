@@ -32,22 +32,6 @@ const Header = () => {
   const { t, language } = useLanguage();
   const location = useLocation();
 
-  // Fetch active services for mega menu
-  const { data: dynamicServices } = useQuery({
-    queryKey: ['nav-services'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('services')
-        .select('id, slug, title_en, title_bn, short_description_en, short_description_bn, icon')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true })
-        .limit(12);
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
   // Fetch active portfolio projects for mega menu
   const { data: dynamicPortfolio } = useQuery({
     queryKey: ['nav-portfolio'],
@@ -79,14 +63,7 @@ const Header = () => {
     { href: '/', label: 'Home' },
   ];
 
-  // Build dynamic services menu items
-  const servicesMenuItems = (dynamicServices || []).map(s => ({
-    href: `/services#${s.slug}`,
-    label: language === 'en' ? s.title_en : (s.title_bn || s.title_en),
-    description: language === 'en'
-      ? (s.short_description_en || '')
-      : (s.short_description_bn || s.short_description_en || ''),
-  }));
+
 
   const companiesItems = [
     { href: '/about', label: 'About Us', description: 'Learn about our mission, vision, and values.' },
@@ -203,57 +180,27 @@ const Header = () => {
                   </Link>
                 </NavigationMenuItem>
 
-                {/* Services Mega Menu */}
+                {/* Services Link */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger
+                  <Link
+                    to="/services"
                     className={cn(
-                      'bg-transparent px-4 py-2 text-sm font-medium',
-                      isDropdownActive(servicesMenuItems) || location.pathname === '/services'
+                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
+                      isActive('/services')
                         ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    <Link to="/services" onClick={(e) => e.stopPropagation()}>
-                      Services
-                    </Link>
-                  </NavigationMenuTrigger>
-                  {servicesMenuItems.length > 0 && (
-                    <NavigationMenuContent>
-                      <div className="w-[560px] p-4">
-                        <div className={cn(
-                          "grid gap-2",
-                          servicesMenuItems.length <= 4 ? "grid-cols-1" : servicesMenuItems.length <= 8 ? "grid-cols-2" : "grid-cols-3"
-                        )}>
-                          {servicesMenuItems.map((item) => (
-                            <NavigationMenuLink key={item.href} asChild>
-                              <Link
-                                to={item.href}
-                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                              >
-                                <div className="text-sm font-medium leading-none">{item.label}</div>
-                                {item.description && (
-                                  <p className="line-clamp-1 text-xs leading-snug text-muted-foreground mt-1">
-                                    {item.description}
-                                  </p>
-                                )}
-                              </Link>
-                            </NavigationMenuLink>
-                          ))}
-                        </div>
-                        <div className="mt-3 border-t border-border/50 pt-3">
-                          <NavigationMenuLink asChild>
-                            <Link
-                              to="/services"
-                              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline px-3"
-                            >
-                              {language === 'en' ? 'View All Services' : 'সকল সেবা দেখুন'}
-                              <ArrowRight className="h-3.5 w-3.5" />
-                            </Link>
-                          </NavigationMenuLink>
-                        </div>
-                      </div>
-                    </NavigationMenuContent>
-                  )}
+                    Services
+                    <span
+                      className={cn(
+                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
+                        isActive('/services')
+                          ? 'scale-x-100'
+                          : 'scale-x-0 group-hover:scale-x-100'
+                      )}
+                    />
+                  </Link>
                 </NavigationMenuItem>
 
                 {/* Portfolio Dropdown */}
@@ -444,28 +391,19 @@ const Header = () => {
                           {language === 'en' ? 'Products' : 'প্রোডাক্ট'}
                         </Link>
 
-                        {/* Services Section */}
-                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Services
-                        </div>
+                        {/* Services Link */}
                         <Link
                           to="/services"
                           onClick={() => setIsSheetOpen(false)}
-                          className="rounded-lg px-4 py-2 text-sm font-medium text-primary hover:bg-secondary flex items-center gap-1"
+                          className={cn(
+                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
+                            isActive('/services')
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                          )}
                         >
-                          {language === 'en' ? 'View All Services' : 'সকল সেবা দেখুন'}
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          {language === 'en' ? 'Services' : 'সেবাসমূহ'}
                         </Link>
-                        {servicesMenuItems.map((item) => (
-                          <Link
-                            key={item.href}
-                            to={item.href}
-                            onClick={() => setIsSheetOpen(false)}
-                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
 
                         {/* Portfolio Section */}
                         <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
