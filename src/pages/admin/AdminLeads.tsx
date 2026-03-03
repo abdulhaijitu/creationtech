@@ -107,7 +107,7 @@ import { getStatusColor } from '@/lib/status-colors';
   const handleAddSubmit = async () => {
     const { full_name, email } = addForm;
     if (!full_name?.trim() || !email?.trim()) {
-      toast({ title: 'Error', description: 'নাম এবং ইমেইল আবশ্যক', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Name and email are required', variant: 'destructive' });
       return;
     }
 
@@ -116,7 +116,7 @@ import { getStatusColor } from '@/lib/status-colors';
       let error;
       if (addType === 'contact') {
         if (!addForm.message?.trim()) {
-          toast({ title: 'Error', description: 'মেসেজ আবশ্যক', variant: 'destructive' });
+          toast({ title: 'Error', description: 'Message is required', variant: 'destructive' });
           setIsSubmitting(false);
           return;
         }
@@ -130,7 +130,7 @@ import { getStatusColor } from '@/lib/status-colors';
         }));
       } else if (addType === 'quote') {
         if (!addForm.project_details?.trim()) {
-          toast({ title: 'Error', description: 'প্রজেক্ট ডিটেইলস আবশ্যক', variant: 'destructive' });
+          toast({ title: 'Error', description: 'Project details are required', variant: 'destructive' });
           setIsSubmitting(false);
           return;
         }
@@ -146,7 +146,7 @@ import { getStatusColor } from '@/lib/status-colors';
         }));
       } else {
         if (!addForm.phone?.trim() || !addForm.meeting_topic?.trim()) {
-          toast({ title: 'Error', description: 'ফোন এবং মিটিং টপিক আবশ্যক', variant: 'destructive' });
+          toast({ title: 'Error', description: 'Phone and meeting topic are required', variant: 'destructive' });
           setIsSubmitting(false);
           return;
         }
@@ -164,7 +164,7 @@ import { getStatusColor } from '@/lib/status-colors';
       }
 
       if (error) throw error;
-      toast({ title: 'সফল!', description: 'নতুন Lead যোগ হয়েছে' });
+      toast({ title: 'Success!', description: 'New lead added' });
       setIsAddOpen(false);
       resetAddForm();
       fetchData();
@@ -256,8 +256,8 @@ import { getStatusColor } from '@/lib/status-colors';
 
         if (existing) {
           toast({
-            title: 'ক্লায়েন্ট আগে থেকেই আছে',
-            description: `"${existing.name}" এই ইমেইলে ইতিমধ্যে ক্লায়েন্ট হিসেবে আছে।`,
+            title: 'Client already exists',
+            description: `"${existing.name}" is already a client with this email.`,
             variant: 'destructive',
           });
           setIsConverting(false);
@@ -283,8 +283,8 @@ import { getStatusColor } from '@/lib/status-colors';
         setSelectedItem({ ...selectedItem, status: 'converted' });
 
         toast({
-          title: 'ক্লায়েন্ট তৈরি হয়েছে!',
-          description: `"${selectedItem.full_name}" সফলভাবে ক্লায়েন্টে রূপান্তরিত হয়েছে।`,
+          title: 'Client created!',
+          description: `"${selectedItem.full_name}" has been successfully converted to a client.`,
         });
 
         fetchData();
@@ -629,17 +629,17 @@ import { getStatusColor } from '@/lib/status-colors';
                       className="w-full gap-2"
                     >
                       <UserPlus className="h-4 w-4" />
-                      {isConverting ? 'রূপান্তর হচ্ছে...' : 'ক্লায়েন্টে রূপান্তর করুন'}
+                      {isConverting ? 'Converting...' : 'Convert to Client'}
                     </Button>
                     <p className="text-xs text-muted-foreground mt-1 text-center">
-                      Lead-এর তথ্য নিয়ে নতুন ক্লায়েন্ট তৈরি হবে
+                      A new client will be created from this lead's info
                     </p>
                   </div>
                 )}
                 {selectedItem.status === 'converted' && (
                   <div className="border-t pt-4">
                     <Badge className="bg-success-muted text-success w-full justify-center py-1.5">
-                      ✓ ক্লায়েন্টে রূপান্তরিত হয়েছে
+                      ✓ Converted to Client
                     </Badge>
                   </div>
                 )}
@@ -652,13 +652,13 @@ import { getStatusColor } from '@/lib/status-colors';
         <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) resetAddForm(); }}>
           <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>নতুন Lead যোগ করুন</DialogTitle>
-              <DialogDescription>Lead-এর টাইপ সিলেক্ট করে তথ্য পূরণ করুন</DialogDescription>
+               <DialogTitle>Add New Lead</DialogTitle>
+               <DialogDescription>Select lead type and fill in the details</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Lead টাইপ</Label>
+                <Label>Lead Type</Label>
                 <Select value={addType} onValueChange={(v: 'contact' | 'quote' | 'meeting') => { setAddType(v); setAddForm({}); }}>
                   <SelectTrigger>
                     <SelectValue />
@@ -674,29 +674,29 @@ import { getStatusColor } from '@/lib/status-colors';
               {/* Common fields */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>নাম *</Label>
-                  <Input placeholder="পুরো নাম" value={addForm.full_name || ''} onChange={(e) => updateField('full_name', e.target.value)} />
+                   <Label>Name *</Label>
+                   <Input placeholder="Full name" value={addForm.full_name || ''} onChange={(e) => updateField('full_name', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>ইমেইল *</Label>
+                  <Label>Email *</Label>
                   <Input type="email" placeholder="email@example.com" value={addForm.email || ''} onChange={(e) => updateField('email', e.target.value)} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>ফোন {addType === 'meeting' ? '*' : ''}</Label>
-                <Input placeholder="ফোন নম্বর" value={addForm.phone || ''} onChange={(e) => updateField('phone', e.target.value)} />
+                 <Label>Phone {addType === 'meeting' ? '*' : ''}</Label>
+                 <Input placeholder="Phone number" value={addForm.phone || ''} onChange={(e) => updateField('phone', e.target.value)} />
               </div>
 
               {/* Contact-specific */}
               {addType === 'contact' && (
                 <>
                   <div className="space-y-2">
-                    <Label>বিষয়</Label>
-                    <Input placeholder="বিষয়" value={addForm.subject || ''} onChange={(e) => updateField('subject', e.target.value)} />
+                     <Label>Subject</Label>
+                     <Input placeholder="Subject" value={addForm.subject || ''} onChange={(e) => updateField('subject', e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>মেসেজ *</Label>
-                    <Textarea placeholder="মেসেজ লিখুন..." value={addForm.message || ''} onChange={(e) => updateField('message', e.target.value)} rows={3} />
+                     <Label>Message *</Label>
+                     <Textarea placeholder="Write your message..." value={addForm.message || ''} onChange={(e) => updateField('message', e.target.value)} rows={3} />
                   </div>
                 </>
               )}
@@ -706,21 +706,21 @@ import { getStatusColor } from '@/lib/status-colors';
                 <>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>কোম্পানি</Label>
-                      <Input placeholder="কোম্পানির নাম" value={addForm.company || ''} onChange={(e) => updateField('company', e.target.value)} />
+                       <Label>Company</Label>
+                       <Input placeholder="Company name" value={addForm.company || ''} onChange={(e) => updateField('company', e.target.value)} />
                     </div>
                     <div className="space-y-2">
-                      <Label>সার্ভিস</Label>
-                      <Input placeholder="সার্ভিস ইন্টারেস্ট" value={addForm.service_interest || ''} onChange={(e) => updateField('service_interest', e.target.value)} />
+                       <Label>Service</Label>
+                       <Input placeholder="Service interest" value={addForm.service_interest || ''} onChange={(e) => updateField('service_interest', e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>বাজেট</Label>
-                    <Input placeholder="বাজেট রেঞ্জ" value={addForm.budget || ''} onChange={(e) => updateField('budget', e.target.value)} />
+                     <Label>Budget</Label>
+                     <Input placeholder="Budget range" value={addForm.budget || ''} onChange={(e) => updateField('budget', e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>প্রজেক্ট ডিটেইলস *</Label>
-                    <Textarea placeholder="প্রজেক্টের বিবরণ..." value={addForm.project_details || ''} onChange={(e) => updateField('project_details', e.target.value)} rows={3} />
+                     <Label>Project Details *</Label>
+                     <Textarea placeholder="Project description..." value={addForm.project_details || ''} onChange={(e) => updateField('project_details', e.target.value)} rows={3} />
                   </div>
                 </>
               )}
@@ -729,35 +729,35 @@ import { getStatusColor } from '@/lib/status-colors';
               {addType === 'meeting' && (
                 <>
                   <div className="space-y-2">
-                    <Label>কোম্পানি</Label>
-                    <Input placeholder="কোম্পানির নাম" value={addForm.company || ''} onChange={(e) => updateField('company', e.target.value)} />
+                     <Label>Company</Label>
+                     <Input placeholder="Company name" value={addForm.company || ''} onChange={(e) => updateField('company', e.target.value)} />
                   </div>
                   <div className="space-y-2">
-                    <Label>মিটিং টপিক *</Label>
-                    <Input placeholder="মিটিংয়ের বিষয়" value={addForm.meeting_topic || ''} onChange={(e) => updateField('meeting_topic', e.target.value)} />
+                     <Label>Meeting Topic *</Label>
+                     <Input placeholder="Meeting topic" value={addForm.meeting_topic || ''} onChange={(e) => updateField('meeting_topic', e.target.value)} />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>পছন্দের তারিখ</Label>
+                      <Label>Preferred Date</Label>
                       <Input type="date" value={addForm.preferred_date || ''} onChange={(e) => updateField('preferred_date', e.target.value)} />
                     </div>
                     <div className="space-y-2">
-                      <Label>পছন্দের সময়</Label>
+                      <Label>Preferred Time</Label>
                       <Input type="time" value={addForm.preferred_time || ''} onChange={(e) => updateField('preferred_time', e.target.value)} />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>অতিরিক্ত নোট</Label>
-                    <Textarea placeholder="অতিরিক্ত তথ্য..." value={addForm.additional_notes || ''} onChange={(e) => updateField('additional_notes', e.target.value)} rows={3} />
+                     <Label>Additional Notes</Label>
+                     <Textarea placeholder="Additional information..." value={addForm.additional_notes || ''} onChange={(e) => updateField('additional_notes', e.target.value)} rows={3} />
                   </div>
                 </>
               )}
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddOpen(false)}>বাতিল</Button>
-              <Button onClick={handleAddSubmit} disabled={isSubmitting}>
-                {isSubmitting ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+               <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+               <Button onClick={handleAddSubmit} disabled={isSubmitting}>
+                 {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
             </DialogFooter>
           </DialogContent>

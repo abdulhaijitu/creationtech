@@ -290,7 +290,7 @@
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Payment Details</DialogTitle>
-            <DialogDescription>পেমেন্টের বিস্তারিত তথ্য</DialogDescription>
+            <DialogDescription>View payment details</DialogDescription>
           </DialogHeader>
            {selectedPayment && (
              <div className="space-y-3">
@@ -312,7 +312,7 @@
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Update Payment</DialogTitle>
-            <DialogDescription>পেমেন্ট তথ্য আপডেট করুন</DialogDescription>
+            <DialogDescription>Update payment information</DialogDescription>
           </DialogHeader>
            <PaymentForm payment={selectedPayment} onSubmit={(data) => updatePaymentMutation.mutate({ id: selectedPayment!.id, ...data })} />
          </DialogContent>
@@ -322,7 +322,7 @@
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Payment</DialogTitle>
-            <DialogDescription>নতুন পেমেন্ট যোগ করুন</DialogDescription>
+            <DialogDescription>Add a new payment record</DialogDescription>
           </DialogHeader>
            <PaymentForm isNew onSubmit={(data) => addPaymentMutation.mutate(data)} />
          </DialogContent>
