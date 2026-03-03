@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Plus, Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -96,8 +97,22 @@ const AdminPortfolio = () => {
     fetchProjects();
   }, []);
 
+  const generateSlug = (title: string) =>
+    title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+
+  const handleTitleEnChange = useCallback((value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      title_en: value,
+      ...(!slugManuallyEdited ? { slug: generateSlug(value) } : {}),
+    }));
+  }, [slugManuallyEdited]);
+
   const openCreateDialog = () => {
     setSelectedProject(null);
+    setSlugManuallyEdited(false);
     setFormData({
       slug: '', title_en: '', title_bn: '', client_en: '', client_bn: '',
       description_en: '', description_bn: '', category: '', tags: '',
@@ -108,6 +123,7 @@ const AdminPortfolio = () => {
 
   const openEditDialog = (project: PortfolioProject) => {
     setSelectedProject(project);
+    setSlugManuallyEdited(true); // existing project, don't auto-generate
     setFormData({
       slug: project.slug,
       title_en: project.title_en,
@@ -263,82 +279,118 @@ const AdminPortfolio = () => {
       </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>{selectedProject ? 'Edit Project' : 'Add New Project'}</DialogTitle>
               <DialogDescription>Fill in the project details below</DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Slug *</Label>
-                  <Input id="slug" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} />
+
+            <div className="flex-1 overflow-y-auto px-1 -mx-1 space-y-6 py-4">
+              {/* Section 1: Basic Info */}
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Basic Info</h4>
+                  <Separator className="mt-2" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Input id="category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="title_en">Title (English) <span className="text-destructive">*</span></Label>
+                    <Input id="title_en" value={formData.title_en} onChange={(e) => handleTitleEnChange(e.target.value)} placeholder="Project title" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="title_bn">Title (Bangla)</Label>
+                    <Input id="title_bn" value={formData.title_bn} onChange={(e) => setFormData({ ...formData, title_bn: e.target.value })} className="font-bangla" placeholder="প্রজেক্ট টাইটেল" />
+                  </div>
                 </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="title_en">Title (English) *</Label>
-                  <Input id="title_en" value={formData.title_en} onChange={(e) => setFormData({ ...formData, title_en: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="title_bn">Title (Bangla)</Label>
-                  <Input id="title_bn" value={formData.title_bn} onChange={(e) => setFormData({ ...formData, title_bn: e.target.value })} className="font-bangla" />
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="client_en">Client (English)</Label>
-                  <Input id="client_en" value={formData.client_en} onChange={(e) => setFormData({ ...formData, client_en: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="client_bn">Client (Bangla)</Label>
-                  <Input id="client_bn" value={formData.client_bn} onChange={(e) => setFormData({ ...formData, client_bn: e.target.value })} className="font-bangla" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description_en">Description (English)</Label>
-                <Textarea id="description_en" value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={3} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description_bn">Description (Bangla)</Label>
-                <Textarea id="description_bn" value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={3} className="font-bangla" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tags">Tags (comma separated)</Label>
-                <Input id="tags" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="React, Node.js, AWS" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="result_en">Result (English)</Label>
-                  <Input id="result_en" value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="result_bn">Result (Bangla)</Label>
-                  <Input id="result_bn" value={formData.result_bn} onChange={(e) => setFormData({ ...formData, result_bn: e.target.value })} placeholder="বিক্রয়ে ২০০% বৃদ্ধি" className="font-bangla" />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="slug">Slug <span className="text-destructive">*</span></Label>
+                    <Input id="slug" value={formData.slug} onChange={(e) => { setSlugManuallyEdited(true); setFormData({ ...formData, slug: e.target.value }); }} placeholder="auto-generated-from-title" className="font-mono text-xs" />
+                    <p className="text-[11px] text-muted-foreground">Auto-generated from title. Edit to customize.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input id="category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="e.g. Web App, Mobile" />
+                  </div>
                 </div>
               </div>
-              <ProductImageUpload
-                productId={selectedProject?.id || 'new-portfolio'}
-                currentImageUrl={formData.image_url || null}
-                onImageUploaded={(url) => setFormData({ ...formData, image_url: url })}
-                onImageRemoved={() => setFormData({ ...formData, image_url: '' })}
-              />
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Switch id="is_featured" checked={formData.is_featured} onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })} />
-                  <Label htmlFor="is_featured">Featured</Label>
+
+              {/* Section 2: Client & Description */}
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client & Description</h4>
+                  <Separator className="mt-2" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })} />
-                  <Label htmlFor="is_active">Active</Label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="client_en">Client (English)</Label>
+                    <Input id="client_en" value={formData.client_en} onChange={(e) => setFormData({ ...formData, client_en: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="client_bn">Client (Bangla)</Label>
+                    <Input id="client_bn" value={formData.client_bn} onChange={(e) => setFormData({ ...formData, client_bn: e.target.value })} className="font-bangla" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description_en">Description (English)</Label>
+                  <Textarea id="description_en" value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description_bn">Description (Bangla)</Label>
+                  <Textarea id="description_bn" value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={3} className="font-bangla" />
+                </div>
+              </div>
+
+              {/* Section 3: Tags & Results */}
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tags & Results</h4>
+                  <Separator className="mt-2" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tags">Tags (comma separated)</Label>
+                  <Input id="tags" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="React, Node.js, AWS" />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="result_en">Result (English)</Label>
+                    <Input id="result_en" value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="result_bn">Result (Bangla)</Label>
+                    <Input id="result_bn" value={formData.result_bn} onChange={(e) => setFormData({ ...formData, result_bn: e.target.value })} placeholder="বিক্রয়ে ২০০% বৃদ্ধি" className="font-bangla" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 4: Media & Settings */}
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Media & Settings</h4>
+                  <Separator className="mt-2" />
+                </div>
+                <div className="rounded-lg border border-dashed border-border p-4 bg-muted/30">
+                  <ProductImageUpload
+                    productId={selectedProject?.id || 'new-portfolio'}
+                    currentImageUrl={formData.image_url || null}
+                    onImageUploaded={(url) => setFormData({ ...formData, image_url: url })}
+                    onImageRemoved={() => setFormData({ ...formData, image_url: '' })}
+                  />
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <Switch id="is_featured" checked={formData.is_featured} onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })} />
+                    <Label htmlFor="is_featured">Featured</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })} />
+                    <Label htmlFor="is_active">Active</Label>
+                  </div>
                 </div>
               </div>
             </div>
-            <DialogFooter>
+
+            <DialogFooter className="flex-shrink-0 border-t pt-4">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving...' : selectedProject ? 'Update' : 'Create'}</Button>
             </DialogFooter>
