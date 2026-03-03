@@ -720,9 +720,16 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         <CardContent className="pt-4 space-y-2">
           {(() => {
             const DELIMITER = '|||';
-            const termsArray = formData.terms
+            const termsArray = (formData.terms != null && formData.terms !== '')
               ? formData.terms.split(DELIMITER)
               : [];
+            
+            const addTerm = () => {
+              setFormData(prev => ({
+                ...prev,
+                terms: prev.terms ? prev.terms + DELIMITER : ' '
+              }));
+            };
             
             const updateTerms = (newArr: string[]) => {
               setFormData(prev => ({ ...prev, terms: newArr.join(DELIMITER) }));
@@ -763,7 +770,7 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
                 ))}
                 <button
                   type="button"
-                  onClick={() => updateTerms([...termsArray, ''])}
+                  onClick={addTerm}
                   className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-2.5 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
                 >
                   <Plus className="h-4 w-4" />
