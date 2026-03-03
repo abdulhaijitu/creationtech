@@ -507,11 +507,11 @@ import { getStatusColor } from '@/lib/status-colors';
  
        {/* Detail Dialog */}
        <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-         <DialogContent className="max-w-lg">
-           <DialogHeader>
-             <DialogTitle>
-               {selectedType === 'contact' ? 'Contact' : selectedType === 'quote' ? 'Quote Request' : 'Meeting Request'} Details
-             </DialogTitle>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+              <DialogTitle>
+                {selectedType === 'contact' ? 'Contact' : selectedType === 'quote' ? 'Quote Request' : 'Meeting Request'} Details
+              </DialogTitle>
              <DialogDescription>
                Submitted on {selectedItem && formatDate(selectedItem.created_at)}
              </DialogDescription>
