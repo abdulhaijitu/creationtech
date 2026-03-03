@@ -6,6 +6,7 @@ interface ProposalItem {
   quantity: number;
   unit_price: number;
   amount: number;
+  billing_type?: 'one_time' | 'monthly' | 'yearly';
 }
 
 interface CompanyInfo {
@@ -791,46 +792,122 @@ export async function generateProposalPDF(
     doc.text('Budget Details', MARGIN, y);
     y += 5;
 
-    autoTable(doc, {
-      startY: y,
-      head: [['#', 'Description', 'Qty', 'Unit Price', 'Amount']],
-      body: data.items.map((item, i) => [
-        (i + 1).toString(),
-        stripHtml(item.description),
-        item.quantity.toString(),
-        formatCurrency(item.unit_price),
-        formatCurrency(item.amount),
-      ]),
-      theme: 'striped',
-      headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-      bodyStyles: { fontSize: 10 },
-      alternateRowStyles: { fillColor: [245, 247, 252] },
-      columnStyles: {
-        0: { cellWidth: 12, halign: 'center' },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 18, halign: 'center' },
-        3: { cellWidth: 32, halign: 'right' },
-        4: { cellWidth: 32, halign: 'right' },
-      },
-      margin: { left: MARGIN, right: MARGIN },
-    });
+    // Group items by billing type
+    const oneTimeItems = data.items.filter(i => !i.billing_type || i.billing_type === 'one_time');
+    const monthlyItems = data.items.filter(i => i.billing_type === 'monthly');
+    const yearlyItems = data.items.filter(i => i.billing_type === 'yearly');
 
-    y = (doc as any).lastAutoTable.finalY + 8;
-    // Reset font after autoTable
-    doc.setFontSize(BODY_FONT);
-    doc.setFont('helvetica', 'normal');
+    const billingTypeLabel = (type?: string) => {
+      if (type === 'monthly') return 'Monthly';
+      if (type === 'yearly') return 'Yearly';
+      return 'One-time';
+    };
 
-    if (y + 40 > maxY) { y = addNewPage(doc, company, logoData); }
+    const renderItemsTable = (items: ProposalItem[], startIndex: number) => {
+      autoTable(doc, {
+        startY: y,
+        head: [['#', 'Description', 'Type', 'Qty', 'Unit Price', 'Amount']],
+        body: items.map((item, i) => [
+          (startIndex + i + 1).toString(),
+          stripHtml(item.description),
+          billingTypeLabel(item.billing_type),
+          item.quantity.toString(),
+          formatCurrency(item.unit_price),
+          formatCurrency(item.amount),
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+        bodyStyles: { fontSize: 10 },
+        alternateRowStyles: { fillColor: [245, 247, 252] },
+        columnStyles: {
+          0: { cellWidth: 12, halign: 'center' },
+          1: { cellWidth: 'auto' },
+          2: { cellWidth: 22, halign: 'center' },
+          3: { cellWidth: 14, halign: 'center' },
+          4: { cellWidth: 30, halign: 'right' },
+          5: { cellWidth: 30, halign: 'right' },
+        },
+        margin: { left: MARGIN, right: MARGIN },
+      });
+      y = (doc as any).lastAutoTable.finalY + 4;
+      doc.setFontSize(BODY_FONT);
+      doc.setFont('helvetica', 'normal');
+    };
 
-    // Totals
+    // If all items are one_time (no recurring), render single table without Type column
+    const hasRecurring = monthlyItems.length > 0 || yearlyItems.length > 0;
+
+    if (!hasRecurring) {
+      autoTable(doc, {
+        startY: y,
+        head: [['#', 'Description', 'Qty', 'Unit Price', 'Amount']],
+        body: data.items.map((item, i) => [
+          (i + 1).toString(),
+          stripHtml(item.description),
+          item.quantity.toString(),
+          formatCurrency(item.unit_price),
+          formatCurrency(item.amount),
+        ]),
+        theme: 'striped',
+        headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+        bodyStyles: { fontSize: 10 },
+        alternateRowStyles: { fillColor: [245, 247, 252] },
+        columnStyles: {
+          0: { cellWidth: 12, halign: 'center' },
+          1: { cellWidth: 'auto' },
+          2: { cellWidth: 18, halign: 'center' },
+          3: { cellWidth: 32, halign: 'right' },
+          4: { cellWidth: 32, halign: 'right' },
+        },
+        margin: { left: MARGIN, right: MARGIN },
+      });
+      y = (doc as any).lastAutoTable.finalY + 8;
+      doc.setFontSize(BODY_FONT);
+      doc.setFont('helvetica', 'normal');
+    } else {
+      // Render with Type column — all items in one table
+      renderItemsTable(data.items, 0);
+      y += 4;
+    }
+
+    if (y + 50 > maxY) { y = addNewPage(doc, company, logoData); }
+
+    // Calculate grouped totals
+    const oneTimeSubtotal = oneTimeItems.reduce((s, i) => s + i.amount, 0);
+    const monthlyTotal = monthlyItems.reduce((s, i) => s + i.amount, 0);
+    const yearlyTotal = yearlyItems.reduce((s, i) => s + i.amount, 0);
+
+    const taxAmount = data.tax_rate ? oneTimeSubtotal * ((data.tax_rate) / 100) : 0;
+    const oneTimeTotal = oneTimeSubtotal + taxAmount - (data.discount_amount || 0);
+
+    // Totals section
     const totalsX = pageWidth - 70;
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(55, 55, 55);
 
-    if (data.tax_rate && data.tax_amount) {
+    // One-time subtotal
+    doc.text('One-time Subtotal:', totalsX, y);
+    doc.text(formatCurrency(oneTimeSubtotal), pageWidth - MARGIN, y, { align: 'right' });
+    y += 6;
+
+    // Monthly recurring
+    if (monthlyTotal > 0) {
+      doc.text('Monthly Recurring:', totalsX, y);
+      doc.text(`${formatCurrency(monthlyTotal)}/mo`, pageWidth - MARGIN, y, { align: 'right' });
+      y += 6;
+    }
+
+    // Yearly recurring
+    if (yearlyTotal > 0) {
+      doc.text('Yearly Recurring:', totalsX, y);
+      doc.text(`${formatCurrency(yearlyTotal)}/yr`, pageWidth - MARGIN, y, { align: 'right' });
+      y += 6;
+    }
+
+    if (data.tax_rate && taxAmount) {
       doc.text(`VAT/Tax (${data.tax_rate}%):`, totalsX, y);
-      doc.text(formatCurrency(data.tax_amount), pageWidth - MARGIN, y, { align: 'right' });
+      doc.text(formatCurrency(taxAmount), pageWidth - MARGIN, y, { align: 'right' });
       y += 6;
     }
     if (data.discount_amount && data.discount_amount > 0) {
@@ -846,15 +923,30 @@ export async function generateProposalPDF(
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
-    doc.text('Total:', totalsX, y);
-    doc.text(formatCurrency(data.total_amount || 0), pageWidth - MARGIN, y, { align: 'right' });
-    y += 8;
+    doc.text('Total (One-time):', totalsX - 10, y);
+    doc.text(formatCurrency(oneTimeTotal), pageWidth - MARGIN, y, { align: 'right' });
+    y += 7;
 
-    // Amount in Words
+    if (monthlyTotal > 0) {
+      doc.setFontSize(11);
+      doc.text('+ Monthly:', totalsX, y);
+      doc.text(`${formatCurrency(monthlyTotal)}/mo`, pageWidth - MARGIN, y, { align: 'right' });
+      y += 6;
+    }
+    if (yearlyTotal > 0) {
+      doc.setFontSize(11);
+      doc.text('+ Yearly:', totalsX, y);
+      doc.text(`${formatCurrency(yearlyTotal)}/yr`, pageWidth - MARGIN, y, { align: 'right' });
+      y += 6;
+    }
+
+    y += 2;
+
+    // Amount in Words (one-time total)
     doc.setFontSize(9);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(80, 80, 80);
-    doc.text(`Amount in Words: ${numberToWords(data.total_amount || 0)}`, MARGIN, y);
+    doc.text(`Amount in Words: ${numberToWords(oneTimeTotal)}`, MARGIN, y);
     y += 10;
   }
 
