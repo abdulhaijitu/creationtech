@@ -969,7 +969,7 @@ export async function generateProposalPDF(
     const oneTimeTotal = oneTimeSubtotal + taxAmount - (data.discount_amount || 0);
 
     // Totals section
-    const totalsX = pageWidth - 70;
+    const totalsX = pageWidth - 90;
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(55, 55, 55);
@@ -1011,7 +1011,7 @@ export async function generateProposalPDF(
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
     doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
-    doc.text('Total (One-time):', totalsX - 10, y);
+    doc.text('Total (One-time):', totalsX, y);
     doc.text(formatCurrency(oneTimeTotal), pageWidth - MARGIN, y, { align: 'right' });
     y += 7;
 
