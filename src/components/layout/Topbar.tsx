@@ -26,7 +26,7 @@ const Topbar = () => {
   const getSocialLink = (key: string) => getInfo(key, '#');
 
   return (
-    <div className="hidden lg:block w-full bg-gradient-to-r from-primary/5 via-background to-primary/5 border-b border-border/30">
+    <div className="hidden lg:block w-full bg-background border-b border-border/30">
       <div className="container-custom">
         <div className="flex h-10 items-center justify-between text-sm">
           {/* Left Side - Contact Info */}
