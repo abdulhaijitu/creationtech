@@ -39,10 +39,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, FileText, Search, Download, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, Search, Download, RefreshCw, MoreVertical, Printer, Send } from 'lucide-react';
 import { format } from 'date-fns';
-import { generatePDF, DocumentData, LineItem, CompanyInfo } from '@/utils/pdfGenerator';
+import { generatePDF, printPDF, DocumentData, LineItem, CompanyInfo } from '@/utils/pdfGenerator';
 import ClientLink from '@/components/admin/ClientLink';
 import InvoiceForm, { InvoiceItem, InvoiceFormData } from '@/components/admin/InvoiceForm';
 import { useBusinessInfoMap } from '@/hooks/useBusinessInfo';
@@ -354,6 +361,66 @@ const AdminInvoices = () => {
     }
   };
 
+  const buildInvoicePDFData = async (invoice: Invoice): Promise<DocumentData> => {
+    const { data: invoiceItems } = await supabase
+      .from('invoice_items')
+      .select('*')
+      .eq('invoice_id', invoice.id)
+      .order('display_order');
+
+    return {
+      documentNumber: invoice.invoice_number,
+      documentType: 'Invoice',
+      clientName: invoice.client_name,
+      clientEmail: invoice.client_email,
+      clientPhone: invoice.client_phone,
+      clientAddress: invoice.client_address,
+      issueDate: invoice.issue_date,
+      dueDate: invoice.due_date,
+      items: (invoiceItems || []).map((item: any) => ({
+        description: item.description,
+        quantity: Number(item.quantity),
+        unit_price: Number(item.unit_price),
+        amount: Number(item.amount),
+        billing_type: item.billing_type || 'one_time',
+        billing_period: item.billing_period || '',
+      })),
+      subtotal: Number(invoice.subtotal),
+      taxRate: Number(invoice.tax_rate),
+      taxAmount: Number(invoice.tax_amount),
+      discountAmount: Number(invoice.discount_amount),
+      total: Number(invoice.total),
+      notes: invoice.notes,
+      terms: invoice.terms,
+      status: invoice.status,
+      isRecurring: invoice.is_recurring,
+      billingPeriodStart: invoice.billing_period_start,
+      billingPeriodEnd: invoice.billing_period_end,
+    };
+  };
+
+  const handleDownloadPDF = async (invoice: Invoice) => {
+    const pdfData = await buildInvoicePDFData(invoice);
+    await generatePDF(pdfData, getCompanyInfo());
+    toast({ title: 'PDF downloaded successfully' });
+  };
+
+  const handlePrintPDF = async (invoice: Invoice) => {
+    const pdfData = await buildInvoicePDFData(invoice);
+    await printPDF(pdfData, getCompanyInfo());
+  };
+
+  const handleSendInvoice = async (invoice: Invoice) => {
+    // Download PDF for manual sending
+    const pdfData = await buildInvoicePDFData(invoice);
+    await generatePDF(pdfData, getCompanyInfo());
+    // Update status to sent
+    if (invoice.status === 'draft') {
+      updateStatusMutation.mutate({ id: invoice.id, status: 'sent' });
+    }
+    toast({ title: 'Invoice PDF downloaded & status updated to Sent' });
+  };
+
   const filteredInvoices = invoices?.filter(invoice => {
     const matchesSearch = invoice.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       invoice.invoice_number.toLowerCase().includes(searchTerm.toLowerCase());
@@ -464,64 +531,39 @@ const AdminInvoices = () => {
                     </Select>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Download PDF"
-                        onClick={async () => {
-                          const { data: invoiceItems } = await supabase
-                            .from('invoice_items')
-                            .select('*')
-                            .eq('invoice_id', invoice.id)
-                            .order('display_order');
-                          
-                          const pdfData: DocumentData = {
-                            documentNumber: invoice.invoice_number,
-                            documentType: 'Invoice',
-                            clientName: invoice.client_name,
-                            clientEmail: invoice.client_email,
-                            clientPhone: invoice.client_phone,
-                            clientAddress: invoice.client_address,
-                            issueDate: invoice.issue_date,
-                            dueDate: invoice.due_date,
-                            items: (invoiceItems || []).map((item: any) => ({
-                              description: item.description,
-                              quantity: Number(item.quantity),
-                              unit_price: Number(item.unit_price),
-                              amount: Number(item.amount),
-                              billing_type: item.billing_type || 'one_time',
-                              billing_period: item.billing_period || '',
-                            })),
-                            subtotal: Number(invoice.subtotal),
-                            taxRate: Number(invoice.tax_rate),
-                            taxAmount: Number(invoice.tax_amount),
-                            discountAmount: Number(invoice.discount_amount),
-                            total: Number(invoice.total),
-                            notes: invoice.notes,
-                            terms: invoice.terms,
-                            status: invoice.status,
-                            isRecurring: invoice.is_recurring,
-                            billingPeriodStart: invoice.billing_period_start,
-                            billingPeriodEnd: invoice.billing_period_end,
-                          };
-                          await generatePDF(pdfData, getCompanyInfo());
-                          toast({ title: 'PDF downloaded successfully' });
-                        }}
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" title="Edit" onClick={() => handleEdit(invoice)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteId(invoice.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDownloadPDF(invoice)}>
+                          <Download className="mr-2 h-4 w-4" />
+                          Download PDF
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handlePrintPDF(invoice)}>
+                          <Printer className="mr-2 h-4 w-4" />
+                          Print
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSendInvoice(invoice)}>
+                          <Send className="mr-2 h-4 w-4" />
+                          Send Invoice
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleEdit(invoice)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => setDeleteId(invoice.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
