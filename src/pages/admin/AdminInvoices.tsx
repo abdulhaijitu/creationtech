@@ -243,7 +243,7 @@ const AdminInvoices = () => {
         billing_period: item.billing_period || null,
       }));
 
-      const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert as any);
+      const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert);
       if (itemsError) throw itemsError;
     },
     onSuccess: () => {

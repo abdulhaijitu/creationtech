@@ -106,8 +106,8 @@ const AdminServices = () => {
         const { error } = await supabase.from('services').update(updates).eq('id', id);
         if (error) throw error;
       } else {
-        const insertData = { ...updates, display_order: (services?.length || 0) };
-        const { error } = await supabase.from('services').insert(insertData as any);
+        const insertData = { ...updates, display_order: (services?.length || 0), slug: updates.slug || '', title_en: updates.title_en || '' };
+        const { error } = await supabase.from('services').insert(insertData);
         if (error) throw error;
       }
     },
