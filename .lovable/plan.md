@@ -1,35 +1,25 @@
 
 
-## Hero Section Redesign — Interactive Image Accordion
+## Footer Redesign — Light/Minimal Style (Demo-inspired)
 
 ### Overview
-Replace the right side of the hero section with an interactive image accordion component (hover-to-expand panels). Left side keeps existing branding (badge, rotating words, CTAs, trust badges). Right side accordion items will showcase Creation Tech's core services.
+Redesign the Footer to match the demo's clean, light-background aesthetic with dot-pattern decorations, while keeping all Creation Tech data, bilingual support, and dynamic business info from the database.
 
-### Accordion Items (Creation Tech themed)
-1. **Custom Software** — AI-generated image of custom software development
-2. **AI Solutions** — AI/ML visual
-3. **Mobile Apps** — Mobile app development visual
-4. **Cloud & DevOps** — Cloud infrastructure visual
-5. **UI/UX Design** — Product design visual
+### Design Changes
+- **Background**: Switch from dark (`bg-foreground`) to light (`bg-white`) with subtle dot-pattern SVG decorations and gradient blobs
+- **Layout**: 4-column grid — Brand+Social, Services, Company, Contact (matching demo structure)
+- **Social icons**: Inline row under brand description with circular hover effects (black bg on hover)
+- **Link style**: Gray text with black hover, small dot indicator on hover (like demo)
+- **Contact section**: Icons inline with text, clean minimal style
+- **Bottom bar**: Light gray border, centered copyright
+- **Remove newsletter section**: Demo doesn't have it (or keep it — will remove to match demo closely)
 
-### Plan
-
-**1. Create `src/components/ui/interactive-image-accordion.tsx`**
-- Adapted from the user-provided component
-- TypeScript-friendly with proper types
-- Tailwind classes matching Creation Tech's dark hero theme (teal accents, navy background)
-- Smooth CSS transitions for expand/collapse
-- Items display vertically-cropped images with title overlay at bottom
-- Active item expands to ~4x width of collapsed items
-
-**2. Update `src/components/home/HeroSection.tsx`**
-- Keep left side: badge, rotating headline, subheadline, CTAs, trust badges — unchanged
-- Replace right side (desktop): remove the image/stat card collage, replace with the interactive image accordion
-- Remove unused imports (heroOffice1/2/3, Brain, Cpu, Package, Award, CountUp for right side)
-- Keep mobile stats grid as-is (accordion is desktop-only, like current right side)
-- Use Unsplash images initially (can be replaced with AI-generated later or via admin)
+### Data Preserved
+- All existing `useBusinessInfoMap()`, `getInfo()`, `getSocialLink()` helpers
+- Bilingual support (`language === 'en'`)
+- All existing link arrays (company, services/products, legal)
+- Logo import and dynamic business info
 
 ### Files Changed
-- `src/components/ui/interactive-image-accordion.tsx` — **new file**
-- `src/components/home/HeroSection.tsx` — replace right-side content
+- `src/components/layout/Footer.tsx` — full redesign with light theme, dot-pattern background, demo-inspired layout
 
