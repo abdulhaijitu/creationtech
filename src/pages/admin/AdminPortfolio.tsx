@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, ArrowLeft, Save } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent } from '@/components/ui/card';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,14 +11,6 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import AdminStatusBadge from '@/components/admin/AdminStatusBadge';
 import ProductImageUpload from '@/components/admin/ProductImageUpload';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,31 +42,36 @@ interface PortfolioProject {
   is_active: boolean;
 }
 
+const emptyFormData = {
+  slug: '',
+  title_en: '',
+  title_bn: '',
+  client_en: '',
+  client_bn: '',
+  description_en: '',
+  description_bn: '',
+  category: '',
+  tags: '',
+  result_en: '',
+  result_bn: '',
+  image_url: '',
+  is_featured: false,
+  is_active: true,
+};
+
+const generateSlug = (title: string) =>
+  title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
 const AdminPortfolio = () => {
   const { toast } = useToast();
   const [projects, setProjects] = useState<PortfolioProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<PortfolioProject | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  const [formData, setFormData] = useState({
-    slug: '',
-    title_en: '',
-    title_bn: '',
-    client_en: '',
-    client_bn: '',
-    description_en: '',
-    description_bn: '',
-    category: '',
-    tags: '',
-    result_en: '',
-    result_bn: '',
-    image_url: '',
-    is_featured: false,
-    is_active: true,
-  });
+  const [formData, setFormData] = useState(emptyFormData);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   const fetchProjects = async () => {
     try {
@@ -82,7 +79,6 @@ const AdminPortfolio = () => {
         .from('portfolio_projects')
         .select('*')
         .order('display_order', { ascending: true });
-
       if (error) throw error;
       setProjects((data || []).map(p => ({ ...p, tags: Array.isArray(p.tags) ? p.tags : [] })));
     } catch (error) {
@@ -93,14 +89,7 @@ const AdminPortfolio = () => {
     }
   };
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const generateSlug = (title: string) =>
-    title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  useEffect(() => { fetchProjects(); }, []);
 
   const handleTitleEnChange = useCallback((value: string) => {
     setFormData(prev => ({
@@ -110,20 +99,16 @@ const AdminPortfolio = () => {
     }));
   }, [slugManuallyEdited]);
 
-  const openCreateDialog = () => {
+  const openCreate = () => {
     setSelectedProject(null);
     setSlugManuallyEdited(false);
-    setFormData({
-      slug: '', title_en: '', title_bn: '', client_en: '', client_bn: '',
-      description_en: '', description_bn: '', category: '', tags: '',
-      result_en: '', result_bn: '', image_url: '', is_featured: false, is_active: true,
-    });
-    setIsDialogOpen(true);
+    setFormData(emptyFormData);
+    setViewMode('create');
   };
 
-  const openEditDialog = (project: PortfolioProject) => {
+  const openEdit = (project: PortfolioProject) => {
     setSelectedProject(project);
-    setSlugManuallyEdited(true); // existing project, don't auto-generate
+    setSlugManuallyEdited(true);
     setFormData({
       slug: project.slug,
       title_en: project.title_en,
@@ -140,7 +125,12 @@ const AdminPortfolio = () => {
       is_featured: project.is_featured,
       is_active: project.is_active,
     });
-    setIsDialogOpen(true);
+    setViewMode('edit');
+  };
+
+  const goBack = () => {
+    setViewMode('list');
+    setSelectedProject(null);
   };
 
   const handleSave = async () => {
@@ -148,9 +138,7 @@ const AdminPortfolio = () => {
       toast({ title: 'Validation Error', description: 'Please fill in required fields', variant: 'destructive' });
       return;
     }
-
     setIsSaving(true);
-
     try {
       const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
       const projectData = {
@@ -179,8 +167,7 @@ const AdminPortfolio = () => {
         if (error) throw error;
         toast({ title: 'Success', description: 'Project created successfully' });
       }
-
-      setIsDialogOpen(false);
+      goBack();
       fetchProjects();
     } catch (error: any) {
       console.error('Error saving project:', error);
@@ -197,11 +184,13 @@ const AdminPortfolio = () => {
       if (error) throw error;
       toast({ title: 'Success', description: 'Project deleted successfully' });
       setIsDeleteDialogOpen(false);
+      goBack();
       fetchProjects();
     } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Failed to delete project', variant: 'destructive' });
     }
   };
+
   const handleToggleActive = async (project: PortfolioProject) => {
     try {
       const { error } = await supabase
@@ -216,6 +205,156 @@ const AdminPortfolio = () => {
     }
   };
 
+  // ─── FORM VIEW ───
+  if (viewMode !== 'list') {
+    return (
+      <AdminLayout>
+        <div className="mb-4">
+          <Button variant="ghost" size="sm" onClick={goBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />Back to Portfolio
+          </Button>
+        </div>
+
+        <AdminPageHeader
+          title={viewMode === 'edit' ? formData.title_en || 'Edit Project' : 'Add New Project'}
+          description={viewMode === 'edit' ? 'Update project details' : 'Fill in the project details below'}
+          action={
+            viewMode === 'edit' && selectedProject ? (
+              <Button variant="destructive" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
+                <Trash2 className="h-4 w-4 mr-2" />Delete
+              </Button>
+            ) : undefined
+          }
+        />
+
+        <div className="grid gap-6">
+          {/* Card 1: Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Basic Information
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="is_featured_toggle" className="text-sm font-normal">Featured</Label>
+                    <Switch id="is_featured_toggle" checked={formData.is_featured} onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="is_active_toggle" className="text-sm font-normal">Active</Label>
+                    <Switch id="is_active_toggle" checked={formData.is_active} onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })} />
+                  </div>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Title (English) <span className="text-destructive">*</span></Label>
+                  <Input value={formData.title_en} onChange={(e) => handleTitleEnChange(e.target.value)} placeholder="Project title" />
+                </div>
+                <div>
+                  <Label>Title (Bangla)</Label>
+                  <Input value={formData.title_bn} onChange={(e) => setFormData({ ...formData, title_bn: e.target.value })} className="font-bangla" placeholder="প্রজেক্ট টাইটেল" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Slug <span className="text-destructive">*</span></Label>
+                  <Input value={formData.slug} onChange={(e) => { setSlugManuallyEdited(true); setFormData({ ...formData, slug: e.target.value }); }} placeholder="auto-generated-from-title" className="font-mono text-xs" />
+                  <p className="text-[11px] text-muted-foreground mt-1">Auto-generated from title. Edit to customize.</p>
+                </div>
+                <div>
+                  <Label>Category</Label>
+                  <Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="e.g. Web App, Mobile" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Client & Description */}
+          <Card>
+            <CardHeader><CardTitle>Client & Description</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Client (English)</Label>
+                  <Input value={formData.client_en} onChange={(e) => setFormData({ ...formData, client_en: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Client (Bangla)</Label>
+                  <Input value={formData.client_bn} onChange={(e) => setFormData({ ...formData, client_bn: e.target.value })} className="font-bangla" />
+                </div>
+              </div>
+              <div>
+                <Label>Description (English)</Label>
+                <Textarea value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={4} />
+              </div>
+              <div>
+                <Label>Description (Bangla)</Label>
+                <Textarea value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={4} className="font-bangla" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Tags & Results */}
+          <Card>
+            <CardHeader><CardTitle>Tags & Results</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Tags (comma separated)</Label>
+                <Input value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="React, Node.js, AWS" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Result (English)</Label>
+                  <Input value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
+                </div>
+                <div>
+                  <Label>Result (Bangla)</Label>
+                  <Input value={formData.result_bn} onChange={(e) => setFormData({ ...formData, result_bn: e.target.value })} placeholder="বিক্রয়ে ২০০% বৃদ্ধি" className="font-bangla" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 4: Project Image */}
+          <Card>
+            <CardHeader><CardTitle>Project Image</CardTitle></CardHeader>
+            <CardContent>
+              <ProductImageUpload
+                productId={selectedProject?.id || 'new-portfolio'}
+                currentImageUrl={formData.image_url || null}
+                onImageUploaded={(url) => setFormData({ ...formData, image_url: url })}
+                onImageRemoved={() => setFormData({ ...formData, image_url: '' })}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={isSaving}>
+              <Save className="h-4 w-4 mr-2" />{isSaving ? 'Saving...' : viewMode === 'edit' ? 'Save Changes' : 'Create Project'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Delete Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Project</AlertDialogTitle>
+              <AlertDialogDescription>Are you sure you want to delete "{selectedProject?.title_en}"?</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </AdminLayout>
+    );
+  }
+
+  // ─── LIST VIEW ───
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -224,7 +363,7 @@ const AdminPortfolio = () => {
             <h1 className="text-2xl font-bold">Portfolio</h1>
             <p className="text-muted-foreground">Manage your portfolio projects</p>
           </div>
-          <Button onClick={openCreateDialog}>
+          <Button onClick={openCreate}>
             <Plus className="mr-2 h-4 w-4" />
             Add Project
           </Button>
@@ -239,7 +378,6 @@ const AdminPortfolio = () => {
             projects.map((project) => (
               <Card key={project.id} className="overflow-hidden">
                 <CardContent className="flex items-center gap-4 py-4">
-                  {/* Thumbnail */}
                   {project.image_url ? (
                     <img src={project.image_url} alt={project.title_en} className="h-16 w-24 rounded-md object-cover flex-shrink-0 bg-muted" />
                   ) : (
@@ -268,7 +406,7 @@ const AdminPortfolio = () => {
                     <Button variant="ghost" size="icon" onClick={() => handleToggleActive(project)} title={project.is_active ? 'Deactivate' : 'Activate'}>
                       {project.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(project)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(project)}><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" onClick={() => { setSelectedProject(project); setIsDeleteDialogOpen(true); }} className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                   </div>
                 </CardContent>
@@ -277,125 +415,6 @@ const AdminPortfolio = () => {
           )}
         </div>
       </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            <DialogHeader className="flex-shrink-0">
-              <DialogTitle>{selectedProject ? 'Edit Project' : 'Add New Project'}</DialogTitle>
-              <DialogDescription>Fill in the project details below</DialogDescription>
-            </DialogHeader>
-
-            <div className="flex-1 overflow-y-auto px-1 -mx-1 space-y-6 py-4">
-              {/* Section 1: Basic Info */}
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Basic Info</h4>
-                  <Separator className="mt-2" />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="title_en">Title (English) <span className="text-destructive">*</span></Label>
-                    <Input id="title_en" value={formData.title_en} onChange={(e) => handleTitleEnChange(e.target.value)} placeholder="Project title" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="title_bn">Title (Bangla)</Label>
-                    <Input id="title_bn" value={formData.title_bn} onChange={(e) => setFormData({ ...formData, title_bn: e.target.value })} className="font-bangla" placeholder="প্রজেক্ট টাইটেল" />
-                  </div>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="slug">Slug <span className="text-destructive">*</span></Label>
-                    <Input id="slug" value={formData.slug} onChange={(e) => { setSlugManuallyEdited(true); setFormData({ ...formData, slug: e.target.value }); }} placeholder="auto-generated-from-title" className="font-mono text-xs" />
-                    <p className="text-[11px] text-muted-foreground">Auto-generated from title. Edit to customize.</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
-                    <Input id="category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="e.g. Web App, Mobile" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 2: Client & Description */}
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Client & Description</h4>
-                  <Separator className="mt-2" />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="client_en">Client (English)</Label>
-                    <Input id="client_en" value={formData.client_en} onChange={(e) => setFormData({ ...formData, client_en: e.target.value })} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="client_bn">Client (Bangla)</Label>
-                    <Input id="client_bn" value={formData.client_bn} onChange={(e) => setFormData({ ...formData, client_bn: e.target.value })} className="font-bangla" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description_en">Description (English)</Label>
-                  <Textarea id="description_en" value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={3} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description_bn">Description (Bangla)</Label>
-                  <Textarea id="description_bn" value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={3} className="font-bangla" />
-                </div>
-              </div>
-
-              {/* Section 3: Tags & Results */}
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tags & Results</h4>
-                  <Separator className="mt-2" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tags">Tags (comma separated)</Label>
-                  <Input id="tags" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="React, Node.js, AWS" />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="result_en">Result (English)</Label>
-                    <Input id="result_en" value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="result_bn">Result (Bangla)</Label>
-                    <Input id="result_bn" value={formData.result_bn} onChange={(e) => setFormData({ ...formData, result_bn: e.target.value })} placeholder="বিক্রয়ে ২০০% বৃদ্ধি" className="font-bangla" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 4: Media & Settings */}
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Media & Settings</h4>
-                  <Separator className="mt-2" />
-                </div>
-                <div className="rounded-lg border border-dashed border-border p-4 bg-muted/30">
-                  <ProductImageUpload
-                    productId={selectedProject?.id || 'new-portfolio'}
-                    currentImageUrl={formData.image_url || null}
-                    onImageUploaded={(url) => setFormData({ ...formData, image_url: url })}
-                    onImageRemoved={() => setFormData({ ...formData, image_url: '' })}
-                  />
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <Switch id="is_featured" checked={formData.is_featured} onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })} />
-                    <Label htmlFor="is_featured">Featured</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })} />
-                    <Label htmlFor="is_active">Active</Label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="flex-shrink-0 border-t pt-4">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving...' : selectedProject ? 'Update' : 'Create'}</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
