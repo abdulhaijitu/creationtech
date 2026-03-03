@@ -206,7 +206,7 @@ function addNewPage(doc: jsPDF, company: CompanyInfo, logoData: string | null): 
 
 // ── Main generator ──
 
-export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo): Promise<void> => {
+export const buildPDFDoc = async (data: DocumentData, companyInfo?: CompanyInfo): Promise<jsPDF> => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -309,7 +309,6 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   const hasBillingTypes = data.items.some(i => i.billing_type && i.billing_type !== 'one_time');
 
   if (hasBillingTypes) {
-    // Include Type column
     autoTable(doc, {
       startY: y,
       head: [['#', 'Type', 'Description', 'Qty', 'Unit Price', 'Amount']],
@@ -336,7 +335,6 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
       margin: { left: MARGIN, right: MARGIN },
     });
   } else {
-    // Original table without Type column
     autoTable(doc, {
       startY: y,
       head: [['#', 'Description', 'Qty', 'Unit Price', 'Amount']],
@@ -372,7 +370,6 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(55, 55, 55);
 
-  // Show separate subtotals if mixed billing types
   if (hasBillingTypes) {
     const recurringTotal = data.items.filter(i => i.billing_type === 'recurring').reduce((s, i) => s + i.amount, 0);
     const oneTimeTotal = data.items.filter(i => i.billing_type !== 'recurring').reduce((s, i) => s + i.amount, 0);
@@ -500,8 +497,34 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   // ── Page footers + watermarks ──
   addPageFooters(doc, watermarkData);
 
-  // ── Output ──
+  return doc;
+};
+
+/** Backward-compatible: generates and saves PDF */
+export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo): Promise<void> => {
+  const doc = await buildPDFDoc(data, companyInfo);
   doc.save(`${data.documentType.toLowerCase()}-${data.documentNumber}.pdf`);
+};
+
+/** Download PDF (alias for generatePDF) */
+export const downloadPDF = generatePDF;
+
+/** Open PDF in new tab and trigger print dialog */
+export const printPDF = async (data: DocumentData, companyInfo?: CompanyInfo): Promise<void> => {
+  const doc = await buildPDFDoc(data, companyInfo);
+  const blobUrl = doc.output('bloburl');
+  const printWindow = window.open(blobUrl as unknown as string, '_blank');
+  if (printWindow) {
+    printWindow.addEventListener('load', () => {
+      printWindow.print();
+    });
+  }
+};
+
+/** Get PDF as Blob (for email attachment etc.) */
+export const getInvoicePDFBlob = async (data: DocumentData, companyInfo?: CompanyInfo): Promise<Blob> => {
+  const doc = await buildPDFDoc(data, companyInfo);
+  return doc.output('blob');
 };
 
 export type { DocumentData, LineItem, CompanyInfo };
