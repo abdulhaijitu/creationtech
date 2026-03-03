@@ -310,7 +310,7 @@ const AdminProposals = () => {
   }, [emailToClient, getCompanyInfo, toast]);
 
   const renderDropdownActions = useCallback((proposal: Proposal) => (
-    <DropdownMenuContent align="end">
+    <DropdownMenuContent align="end" className="max-h-[70vh] overflow-y-auto">
       <DropdownMenuItem onClick={() => statusMutation.mutate({ id: proposal.id, status: 'draft' })}>
         <FileEdit className="h-4 w-4 mr-2" /> Mark as Draft
       </DropdownMenuItem>
