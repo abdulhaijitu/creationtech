@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, ExternalLink, FileEdit, Send, XCircle, LayoutList, Table2, DollarSign, Clock, FileCheck, Copy } from 'lucide-react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, ExternalLink, FileEdit, Send, XCircle, LayoutList, Table2, DollarSign, Clock, FileCheck, Copy, Trash2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
@@ -22,6 +22,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Table,
   TableBody,
@@ -102,6 +112,8 @@ const AdminProposals = () => {
     queryKey: ['proposals'],
     queryFn: fetchProposals,
   });
+
+  const [deleteTarget, setDeleteTarget] = useState<Proposal | null>(null);
 
   const getCompanyInfo = useCallback((): CompanyInfo => ({
     name: businessInfo?.company_name?.value_en || 'Creation Tech',
@@ -238,6 +250,23 @@ const AdminProposals = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error: itemsError } = await supabase.from('proposal_items').delete().eq('proposal_id', id);
+      if (itemsError) throw itemsError;
+      const { error } = await supabase.from('proposals').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Success', description: 'Proposal deleted successfully' });
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      setDeleteTarget(null);
+    },
+    onError: (error: any) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
   const filteredProposals = useMemo(() => {
     return proposals.filter((p) => {
       const q = searchQuery.toLowerCase();
@@ -348,6 +377,10 @@ const AdminProposals = () => {
       </DropdownMenuItem>
       <DropdownMenuItem onClick={() => cloneMutation.mutate(proposal)}>
         <Copy className="h-4 w-4 mr-2" /> Clone Proposal
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem onClick={() => setDeleteTarget(proposal)} className="text-red-600 focus:text-red-600">
+        <Trash2 className="h-4 w-4 mr-2" /> Delete Proposal
       </DropdownMenuItem>
     </DropdownMenuContent>
   ), [statusMutation, versionMutation, cloneMutation, handlePdfAction]);
@@ -608,6 +641,26 @@ const AdminProposals = () => {
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>আপনি কি নিশ্চিত?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{deleteTarget?.proposal_number} - {deleteTarget?.title}" প্রপোজালটি স্থায়ীভাবে মুছে ফেলা হবে। এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              ডিলিট করুন
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };
