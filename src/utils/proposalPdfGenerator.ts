@@ -508,21 +508,8 @@ function addWatermark(doc: jsPDF, watermarkData: ImageLoadResult | null) {
   doc.restoreGraphicsState();
 }
 
-// ── Right-side accent strip ──
 
-function addAccentStrip(doc: jsPDF) {
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  for (let i = 0; i < 3; i++) {
-    const opacity = 0.08 - i * 0.025;
-    const gState = new (doc as any).GState({ opacity });
-    doc.saveGraphicsState();
-    doc.setGState(gState);
-    doc.setFillColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
-    doc.rect(pageWidth - 4 + i, 3, 1.5, pageHeight - 3, 'F');
-    doc.restoreGraphicsState();
-  }
-}
+
 
 // ── Page footers + watermark ──
 
@@ -534,7 +521,7 @@ function addPageFooters(doc: jsPDF, watermarkData: ImageLoadResult | null) {
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     addWatermark(doc, watermarkData);
-    addAccentStrip(doc);
+    
 
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.2);
