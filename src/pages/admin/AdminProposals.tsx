@@ -350,7 +350,7 @@ const AdminProposals = () => {
         <Copy className="h-4 w-4 mr-2" /> Clone Proposal
       </DropdownMenuItem>
     </DropdownMenuContent>
-  ), [statusMutation, versionMutation, handlePdfAction]);
+  ), [statusMutation, versionMutation, cloneMutation, handlePdfAction]);
 
   // Form View
   if (viewMode === 'form') {
