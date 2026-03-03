@@ -944,11 +944,13 @@ export type Database = {
           is_featured: boolean | null
           result_bn: string | null
           result_en: string | null
+          short_description_en: string | null
           slug: string
           tags: string[] | null
           title_bn: string | null
           title_en: string
           updated_at: string
+          website_url: string | null
         }
         Insert: {
           category?: string | null
@@ -964,11 +966,13 @@ export type Database = {
           is_featured?: boolean | null
           result_bn?: string | null
           result_en?: string | null
+          short_description_en?: string | null
           slug: string
           tags?: string[] | null
           title_bn?: string | null
           title_en: string
           updated_at?: string
+          website_url?: string | null
         }
         Update: {
           category?: string | null
@@ -984,11 +988,13 @@ export type Database = {
           is_featured?: boolean | null
           result_bn?: string | null
           result_en?: string | null
+          short_description_en?: string | null
           slug?: string
           tags?: string[] | null
           title_bn?: string | null
           title_en?: string
           updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }

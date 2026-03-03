@@ -56,16 +56,18 @@ interface PortfolioCategory {
 const emptyFormData = {
   slug: '',
   title_en: '',
-  title_bn: '',
   client_en: '',
   client_bn: '',
   description_en: '',
   description_bn: '',
+  short_description_en: '',
   category: '',
   tags: '',
   result_en: '',
   result_bn: '',
   image_url: '',
+  website_url: '',
+  display_order: 0,
   is_featured: false,
   is_active: true,
 };
@@ -144,16 +146,18 @@ const AdminPortfolio = () => {
     setFormData({
       slug: project.slug,
       title_en: project.title_en,
-      title_bn: project.title_bn || '',
       client_en: project.client_en || '',
       client_bn: project.client_bn || '',
       description_en: project.description_en || '',
       description_bn: project.description_bn || '',
+      short_description_en: (project as any).short_description_en || '',
       category: project.category || '',
       tags: project.tags.join(', '),
       result_en: project.result_en || '',
       result_bn: project.result_bn || '',
       image_url: project.image_url || '',
+      website_url: (project as any).website_url || '',
+      display_order: (project as any).display_order ?? 0,
       is_featured: project.is_featured,
       is_active: project.is_active,
     });
@@ -176,16 +180,19 @@ const AdminPortfolio = () => {
       const projectData = {
         slug: formData.slug,
         title_en: formData.title_en,
-        title_bn: formData.title_bn || null,
+        title_bn: null,
         client_en: formData.client_en || null,
         client_bn: formData.client_bn || null,
         description_en: formData.description_en || null,
         description_bn: formData.description_bn || null,
+        short_description_en: formData.short_description_en || null,
         category: formData.category || null,
         tags: tagsArray,
         result_en: formData.result_en || null,
         result_bn: formData.result_bn || null,
         image_url: formData.image_url || null,
+        website_url: formData.website_url || null,
+        display_order: formData.display_order,
         is_featured: formData.is_featured,
         is_active: formData.is_active,
       };
@@ -352,17 +359,6 @@ const AdminPortfolio = () => {
                   <Input value={formData.title_en} onChange={(e) => handleTitleEnChange(e.target.value)} placeholder="Project title" />
                 </div>
                 <div>
-                  <Label>Title (Bangla)</Label>
-                  <Input value={formData.title_bn} onChange={(e) => setFormData({ ...formData, title_bn: e.target.value })} className="font-bangla" placeholder="প্রজেক্ট টাইটেল" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Slug <span className="text-destructive">*</span></Label>
-                  <Input value={formData.slug} onChange={(e) => { setSlugManuallyEdited(true); setFormData({ ...formData, slug: e.target.value }); }} placeholder="auto-generated-from-title" className="font-mono text-xs" />
-                  <p className="text-[11px] text-muted-foreground mt-1">Auto-generated from title. Edit to customize.</p>
-                </div>
-                <div>
                   <Label>Category</Label>
                   <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value === '__none__' ? '' : value })}>
                     <SelectTrigger>
@@ -377,51 +373,24 @@ const AdminPortfolio = () => {
                   </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Card 2: Client & Description */}
-          <Card>
-            <CardHeader><CardTitle>Client & Description</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label>Client (English)</Label>
-                  <Input value={formData.client_en} onChange={(e) => setFormData({ ...formData, client_en: e.target.value })} />
+                  <Label>Slug <span className="text-destructive">*</span></Label>
+                  <Input value={formData.slug} onChange={(e) => { setSlugManuallyEdited(true); setFormData({ ...formData, slug: e.target.value }); }} placeholder="auto-generated-from-title" className="font-mono text-xs" />
+                  <p className="text-[11px] text-muted-foreground mt-1">Auto-generated from title</p>
                 </div>
                 <div>
-                  <Label>Client (Bangla)</Label>
-                  <Input value={formData.client_bn} onChange={(e) => setFormData({ ...formData, client_bn: e.target.value })} className="font-bangla" />
+                  <Label>Website URL</Label>
+                  <Input value={formData.website_url} onChange={(e) => setFormData({ ...formData, website_url: e.target.value })} placeholder="https://example.com" type="url" />
+                </div>
+                <div>
+                  <Label>Display Order</Label>
+                  <Input type="number" value={formData.display_order} onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
               <div>
-                <Label>Description (English)</Label>
-                <Textarea value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={4} />
-              </div>
-              <div>
-                <Label>Description (Bangla)</Label>
-                <Textarea value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={4} className="font-bangla" />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Card 3: Tags & Results */}
-          <Card>
-            <CardHeader><CardTitle>Tags & Results</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Tags (comma separated)</Label>
-                <Input value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="React, Node.js, AWS" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Result (English)</Label>
-                  <Input value={formData.result_en} onChange={(e) => setFormData({ ...formData, result_en: e.target.value })} placeholder="200% increase in sales" />
-                </div>
-                <div>
-                  <Label>Result (Bangla)</Label>
-                  <Input value={formData.result_bn} onChange={(e) => setFormData({ ...formData, result_bn: e.target.value })} placeholder="বিক্রয়ে ২০০% বৃদ্ধি" className="font-bangla" />
-                </div>
+                <Label>Short Description</Label>
+                <Textarea value={formData.short_description_en} onChange={(e) => setFormData({ ...formData, short_description_en: e.target.value })} rows={3} placeholder="Brief project summary" />
               </div>
             </CardContent>
           </Card>
