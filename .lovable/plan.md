@@ -1,48 +1,49 @@
 
 
-## AdminProposals পেইজ হার্ড পলিশ ও অপটিমাইজেশন
+## ProposalForm ডিজাইন এনহ্যান্সমেন্ট ও কম্প্যাক্ট পলিশ
 
-### ফাইল: `src/pages/admin/AdminProposals.tsx`
+### ফাইল: `src/components/admin/ProposalForm.tsx`
 
-**১. TanStack Query দিয়ে ডেটা ফেচিং রিফ্যাক্টর (Speed Optimize)**
-- `useState` + `useEffect` + manual `fetchProposals` প্যাটার্ন সরিয়ে `useQuery` ব্যবহার করব
-- এতে automatic caching, background refetch, এবং stale-while-revalidate সুবিধা পাওয়া যাবে
-- `useMutation` দিয়ে `updateStatus` ও `createNewVersion` হ্যান্ডেল করব, যাতে `queryClient.invalidateQueries` দিয়ে অটো-রিফ্রেশ হয়
+**১. কম্প্যাক্ট সেকশন হেডার**
+- CardHeader padding `pb-4` → `pb-3` সব জায়গায়
+- CardTitle-এ আইকনের রং `text-primary` করা (সব সেকশনে consistent)
+- সেকশন হেডারে হালকা `border-b` separator যোগ
 
-**২. `useMemo` দিয়ে ফিল্টারিং ক্যাশ করা (Speed Optimize)**
-- `filteredProposals` কে `useMemo` এ wrap করব যেন প্রতিটি রি-রেন্ডারে ফিল্টারিং পুনরায় না চলে
+**২. Client Information সেকশন কম্প্যাক্ট করা**
+- ৪টি ফিল্ড (Name, Email, Mobile, Select Client) একটি `sm:grid-cols-2 lg:grid-cols-4` গ্রিডে রাখব — ডেস্কটপে এক রো-তে দেখাবে
+- Company ফিল্ড বাদ (client_company ইতিমধ্যে client_name দিয়ে কভার হয়) অথবা 5th ফিল্ড হিসেবে রাখা
 
-**৩. `useCallback` দিয়ে ইভেন্ট হ্যান্ডলার মেমোয়াইজ (Speed Optimize)**
-- `formatDate`, `formatCurrency`, `getCompanyInfo` কে কম্পোনেন্টের বাইরে বা `useCallback`/`useMemo` এ নিয়ে আসব
+**৩. Proposal Details সেকশন রি-অর্গানাইজ**
+- Subject + Valid Until একই রো-তে (`grid-cols-[1fr_auto]`) — Valid Until ছোট width
+- RichTextEditor গুলোতে consistent compact styling
+- Timeline ও Key Deliverables পাশাপাশি রাখা (এটা ইতিমধ্যে আছে — শুধু gap কমানো)
 
-**৪. AdminLoadingSkeleton ও AdminEmptyState ব্যবহার (Shadcn Standard)**
-- ইনলাইন `Loading proposals...` টেক্সট সরিয়ে প্রজেক্টের existing `AdminLoadingSkeleton` কম্পোনেন্ট ব্যবহার করব
-- `No proposals found.` সরিয়ে `AdminEmptyState` ব্যবহার করব — icon, title, description এবং "New Proposal" action বাটন সহ
+**৪. Budget Details টেবিল পলিশ**
+- হেডার row-তে `bg-muted/50` ব্যাকগ্রাউন্ড ও `py-2` padding
+- আইটেম রো-তে `border` সরিয়ে `divide-y` ব্যবহার — ক্লিনার লুক
+- "Add Item" বাটনে `variant="ghost"` + dashed border style
 
-**৫. Summary Stats Bar যোগ করা (Design Upgrade)**
-- লিস্টের আগে ৪টি সামারি কার্ড: Total, Draft, Sent/Accepted, Total Value
-- ছোট, কমপ্যাক্ট কার্ডে কাউন্ট দেখাবে
+**৫. Budget Summary কার্ড এনহ্যান্স**
+- `bg-muted/30` → `bg-primary/5 border-primary/20` — প্রাইমারি টিন্ট
+- Total রো-তে `bg-primary/10 rounded-lg p-3` ব্যাকগ্রাউন্ড
 
-**৬. Card Layout Polish (Responsive Hard Polish)**
-- মোবাইলে (< sm): View বাটন ও DropdownMenu একই রো-তে না রেখে, প্রোপোজাল ইনফো ফুল-উইথ, অ্যাকশন বাটনগুলো নিচে
-- ড্রপডাউন মেনু আইটেমে সব আইকন consistent করা (কিছুতে আইকন আছে, কিছুতে নেই)
-- `capitalize` ক্লাস Badge এ যোগ করা স্ট্যাটাস টেক্সটে
-- কোম্পানি নাম থাকলে ক্লায়েন্ট নামের পাশে দেখানো
+**৬. অ্যাকশন বার Sticky করা**
+- নিচের Save/Cancel বাটনগুলো `sticky bottom-0 bg-background border-t py-4 z-10` করব
+- মোবাইলে full-width বাটন
 
-**৭. Table View অপশন (Design Upgrade)**
-- ডেস্কটপে লিস্ট/টেবিল ভিউ টগল বাটন যোগ করব
-- ডেস্কটপে Table কম্পোনেন্ট দিয়ে কলামার ভিউ দেখাবে
+**৭. Offer Letter End + Notes + Terms কম্প্যাক্ট করা**
+- Offer Letter End ও Notes পাশাপাশি (lg:grid-cols-2) রাখব
+- Terms & Conditions আলাদা কার্ডে রাখব (যেমন আছে)
 
 ### পরিবর্তনের সারাংশ:
 
 | বিষয় | পরিবর্তন |
 |---|---|
-| Data fetching | `useState/useEffect` → `useQuery/useMutation` |
-| Loading state | ইনলাইন টেক্সট → `AdminLoadingSkeleton` |
-| Empty state | ইনলাইন টেক্সট → `AdminEmptyState` |
-| Filtering | raw → `useMemo` |
-| Summary stats | নতুন ৪টি মিনি কার্ড |
-| Mobile layout | অ্যাকশন বাটন নিচে, ফুল-উইথ কন্টেন্ট |
-| Table view | ডেস্কটপে টেবিল ভিউ অপশন |
-| Dropdown icons | সব আইটেমে consistent আইকন |
+| Section headers | Compact padding, consistent icon color, separator |
+| Client info | 4-col grid on desktop |
+| Subject + Date | Same row |
+| Budget items | Cleaner divider style, ghost add button |
+| Budget summary | Primary-tinted card, highlighted total |
+| Action bar | Sticky bottom, full-width on mobile |
+| Layout grouping | Offer Letter End + Notes side by side |
 
