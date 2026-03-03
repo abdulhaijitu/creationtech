@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { Calendar, User, ArrowRight, Sparkles } from 'lucide-react';
@@ -95,6 +96,7 @@ const categories = ['All', 'Cloud', 'Security', 'Development', 'Strategy', 'Anal
 
 const Blog = () => {
   const { t, language } = useLanguage();
+  const [activeCategory, setActiveCategory] = useState('All');
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -179,9 +181,10 @@ const Blog = () => {
               {categories.map((category) => (
                 <Button
                   key={category}
-                  variant={category === 'All' ? 'default' : 'outline'}
+                  variant={activeCategory === category ? 'default' : 'outline'}
                   size="sm"
                   className="rounded-full"
+                  onClick={() => setActiveCategory(category)}
                 >
                   {category}
                 </Button>
@@ -194,7 +197,7 @@ const Blog = () => {
         <section className="section-padding">
           <div className="container-custom">
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {blogPosts.map((post) => (
+              {blogPosts.filter(p => activeCategory === 'All' || p.category === activeCategory).map((post) => (
                 <Card key={post.id} className="group overflow-hidden card-interactive border-border/40">
                   <div className="aspect-video overflow-hidden bg-muted">
                     <img
@@ -249,7 +252,7 @@ const Blog = () => {
         {/* Newsletter */}
         <section className="section-padding bg-section-alt">
           <div className="container-narrow text-center">
-            <h2 className="mb-5 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="mb-5 text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               {language === 'en' ? 'Subscribe to Our Newsletter' : 'আমাদের নিউজলেটারে সাবস্ক্রাইব করুন'}
             </h2>
             <p className="mx-auto mb-10 max-w-xl text-lg text-muted-foreground leading-relaxed">

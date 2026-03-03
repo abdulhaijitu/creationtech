@@ -66,8 +66,8 @@ const FloatingButtons = () => {
       >
         <WhatsAppIcon className="h-6 w-6 transition-transform duration-200 group-hover:rotate-12" />
         
-        {/* Pulse Animation */}
-        <span className="absolute h-14 w-14 animate-ping rounded-full bg-[#25D366]/30" />
+        {/* Subtle pulse ring */}
+        <span className="absolute h-14 w-14 rounded-full bg-[#25D366]/20 animate-pulse" />
       </a>
     </div>
   );

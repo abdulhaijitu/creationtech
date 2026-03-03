@@ -46,7 +46,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="relative bg-white pt-20 pb-8 overflow-hidden">
+    <footer className="relative bg-white pt-12 lg:pt-20 pb-8 overflow-hidden">
       {/* Dot pattern background */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.03]"

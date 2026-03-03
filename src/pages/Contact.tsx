@@ -67,7 +67,7 @@ const Contact = () => {
                   {language === 'en' ? 'Get in Touch' : 'যোগাযোগ করুন'}
                 </div>
 
-                <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl hero-animate hero-animate-delay-1" style={{ letterSpacing: '-0.025em' }}>
+                <h1 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl hero-animate hero-animate-delay-1" style={{ letterSpacing: '-0.025em' }}>
                   <span className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent">
                     {language === 'en' ? 'Hire Software Dev' : 'সফটওয়্যার ডেভেলপমেন্ট'}
                   </span>
