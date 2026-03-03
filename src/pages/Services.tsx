@@ -174,7 +174,7 @@ const Services = () => {
         </section>
 
         {/* Services Grid */}
-        <section className="py-12 lg:py-16">
+        <section id="services-grid" className="py-12 lg:py-16">
           <div className="container-custom">
             {isLoading ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -195,12 +195,12 @@ const Services = () => {
                   const Icon = getIcon(service.icon);
                   const features = Array.isArray(service.features) ? service.features as string[] : [];
                   const shortDesc = language === 'en'
-                    ? (service as any).short_description_en || service.description_en
-                    : (service as any).short_description_bn || service.description_bn || (service as any).short_description_en || service.description_en;
+                    ? service.short_description_en || service.description_en
+                    : service.short_description_bn || service.description_bn || service.short_description_en || service.description_en;
                   const ctaText = language === 'en'
-                    ? ((service as any).cta_text_en || 'Get Quote')
-                    : ((service as any).cta_text_bn || 'কোটেশন নিন');
-                  const ctaLink = (service as any).cta_link || `/contact?service=${service.slug}`;
+                    ? (service.cta_text_en || 'Get Quote')
+                    : (service.cta_text_bn || 'কোটেশন নিন');
+                  const ctaLink = service.cta_link || `/contact?service=${service.slug}`;
 
                   return (
                     <ScrollReveal key={service.id} animation="fade-up" delay={index * 50}>
@@ -210,12 +210,12 @@ const Services = () => {
                           "group h-full border-border/50 bg-card",
                           "hover:border-primary/30 hover:shadow-xl hover:-translate-y-1",
                           "transition-all duration-300",
-                          (service as any).is_featured && "ring-2 ring-primary/20 border-primary/30"
+                          service.is_featured && "ring-2 ring-primary/20 border-primary/30"
                         )}
                       >
-                        <CardContent className="p-6">
+                        <CardContent className="flex flex-col h-full p-6">
                           {/* Featured badge */}
-                          {(service as any).is_featured && (
+                          {service.is_featured && (
                             <div className="mb-3 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                               <Sparkles className="h-3 w-3" /> Featured
                             </div>
@@ -233,7 +233,7 @@ const Services = () => {
 
                           {/* Short Description */}
                           {shortDesc && (
-                            <p className="mb-4 text-sm text-muted-foreground leading-relaxed line-clamp-3">
+                            <p className="mb-4 text-base text-muted-foreground leading-relaxed line-clamp-3">
                               {shortDesc}
                             </p>
                           )}
@@ -258,7 +258,7 @@ const Services = () => {
                           {/* CTA */}
                           <Link
                             to={ctaLink}
-                            className="inline-flex items-center text-sm font-medium text-primary hover:underline group/link"
+                            className="mt-auto inline-flex items-center text-sm font-medium text-primary hover:underline group/link"
                           >
                             {ctaText}
                             <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-200 group-hover/link:translate-x-0.5" />
@@ -287,7 +287,7 @@ const Services = () => {
         />
 
         {/* Why Choose Us */}
-        <section className="py-12 lg:py-16 bg-muted/30">
+        <section className="py-12 lg:py-16">
           <div className="container-custom">
             <ScrollReveal animation="fade-up">
               <div className="text-center mb-10">
