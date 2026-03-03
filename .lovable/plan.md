@@ -1,78 +1,29 @@
 
 
-## Invoice Enhancement Plan — Recurring ও One-time Billing Support
+## সমস্যা বিশ্লেষণ
 
-### বর্তমান অবস্থা
-- Invoice items এ শুধু `description`, `quantity`, `unit_price`, `amount` আছে
-- Proposal items এ ইতিমধ্যে `billing_type` (`one_time` / `recurring`) কলাম আছে — Invoice items এ নেই
-- Billing period বা recurring frequency ট্র্যাক করার কোনো ফিল্ড নেই
+`InvoiceForm.tsx` এ দুটি সমস্যা:
 
-### প্রস্তাবিত পরিবর্তন
+1. **Client details hidden**: Line 147 এ `{formData.client_id && (...)}` — যদি invoice এ `client_id` null থাকে (কিন্তু `client_name` আছে), তাহলে email/phone/address ফিল্ডগুলো দেখায় না।
 
-#### 1. Database Migration
-`invoice_items` টেবিলে নতুন কলাম যোগ:
-- **`billing_type`** (`text`, default `'one_time'`) — `one_time` বা `recurring`
-- **`billing_period`** (`text`, nullable) — যেমন "March 2026", "Q1 2026"
+2. **ClientCombobox fallback নেই**: Combobox শুধু `clients.find(c => c.id === value)` দিয়ে match করে। যদি client_id null হয় বা clients list এ না থাকে, তাহলে placeholder দেখায় — existing client name দেখায় না।
 
-`invoices` টেবিলে নতুন কলাম:
-- **`billing_period_start`** (`date`, nullable) — বিলিং পিরিয়ডের শুরু
-- **`billing_period_end`** (`date`, nullable) — বিলিং পিরিয়ডের শেষ
-- **`is_recurring`** (`boolean`, default `false`) — রিকারিং ইনভয়েস কিনা
+## সমাধান
 
-#### 2. InvoiceForm UI পরিবর্তন (`src/components/admin/InvoiceForm.tsx`)
-- Invoice Details সেকশনে **Billing Period** (start/end date) ফিল্ড যোগ
-- **Is Recurring** toggle/checkbox যোগ
-- প্রতিটি Line Item এ **Billing Type** dropdown যোগ (`One-time` / `Monthly Recurring`)
-- Recurring item এ **Billing Period** লেবেল ফিল্ড যোগ (যেমন "March 2026")
+**File: `src/components/admin/InvoiceForm.tsx`**
 
-#### 3. AdminInvoices.tsx পরিবর্তন
-- Form data তে নতুন ফিল্ডগুলো যোগ
-- Create/Update mutation এ নতুন কলাম handle করা
-- Invoice items insert/fetch এ `billing_type` ও `billing_period` অন্তর্ভুক্ত করা
-- List view তে Billing Period কলাম দেখানো (যদি থাকে)
+1. Line 147: Client details দেখানোর condition পরিবর্তন — `client_id` অথবা `client_name` থাকলেই দেখাবে:
+   ```tsx
+   {(formData.client_id || formData.client_name) && (
+   ```
 
-#### 4. PDF Generator Update (`src/utils/pdfGenerator.ts`)
-- Items table এ **Type** কলাম যোগ (One-time / Monthly)
-- Billing period তথ্য PDF header area তে দেখানো
-- Summary তে one-time ও recurring আলাদা subtotal দেখানো
+2. `ClientCombobox` এ একটি নতুন `displayName` prop পাঠানো যাতে client_id ছাড়াও client name দেখাতে পারে।
 
-### ফলাফল
-```text
-Invoice Form:
-  ┌─ Invoice Details ─────────────────────┐
-  │ Issue Date | Due Date | Status        │
-  │ ☑ Recurring Invoice                   │
-  │ Billing Period: [Start] → [End]       │
-  └───────────────────────────────────────┘
-  
-  ┌─ Line Items ──────────────────────────┐
-  │ Type     | Description | Qty | Price  │
-  │ Monthly  | Hosting     |  1  | 5000   │
-  │ Monthly  | Domain Mgmt |  1  | 1000   │
-  │ One-time | Bug Fix     |  3  | 2000   │
-  └────────────────────────────────────────┘
-  
-  ┌─ Summary ─────────────────────────────┐
-  │ Recurring Subtotal:     ৳6,000/month  │
-  │ One-time Subtotal:      ৳6,000        │
-  │ Total:                  ৳12,000       │
-  └───────────────────────────────────────┘
-```
+**File: `src/components/admin/ClientCombobox.tsx`**
 
-### Technical Details
+3. নতুন optional `displayName` prop যোগ — যখন `selectedClient` পাওয়া যায় না কিন্তু `displayName` আছে, তখন সেটা দেখাবে।
 
-**Migration SQL:**
-```sql
-ALTER TABLE invoice_items ADD COLUMN billing_type text NOT NULL DEFAULT 'one_time';
-ALTER TABLE invoice_items ADD COLUMN billing_period text;
-ALTER TABLE invoices ADD COLUMN billing_period_start date;
-ALTER TABLE invoices ADD COLUMN billing_period_end date;
-ALTER TABLE invoices ADD COLUMN is_recurring boolean DEFAULT false;
-```
-
-**Files to modify:**
-1. Database migration (new columns)
-2. `src/components/admin/InvoiceForm.tsx` — UI ফিল্ড যোগ
-3. `src/pages/admin/AdminInvoices.tsx` — formData, mutations, list view update
-4. `src/utils/pdfGenerator.ts` — PDF এ billing type ও period দেখানো
+### পরিবর্তিত ফাইল:
+- `src/components/admin/InvoiceForm.tsx` (2 লাইন)
+- `src/components/admin/ClientCombobox.tsx` (interface + render logic)
 
