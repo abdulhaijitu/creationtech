@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Star, Quote } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ export interface Testimonial {
 interface TestimonialSliderProps {
   testimonials: Testimonial[];
   className?: string;
+  autoplayDelay?: number;
 }
 
 const StarRating = ({ rating, className }: { rating: number; className?: string }) => {
@@ -32,9 +33,10 @@ const StarRating = ({ rating, className }: { rating: number; className?: string 
   );
 };
 
-export const TestimonialSlider = ({ testimonials, className }: TestimonialSliderProps) => {
+export const TestimonialSlider = ({ testimonials, className, autoplayDelay = 5000 }: TestimonialSliderProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const isPaused = useRef(false);
 
   const handleNext = useCallback(() => {
     setDirection(1);
@@ -45,6 +47,15 @@ export const TestimonialSlider = ({ testimonials, className }: TestimonialSlider
     setDirection(-1);
     setCurrentIndex((prevIndex) => (prevIndex - 1 + testimonials.length) % testimonials.length);
   }, [testimonials.length]);
+
+  // Autoplay
+  useEffect(() => {
+    if (autoplayDelay <= 0) return;
+    const interval = setInterval(() => {
+      if (!isPaused.current) handleNext();
+    }, autoplayDelay);
+    return () => clearInterval(interval);
+  }, [handleNext, autoplayDelay]);
 
   const currentTestimonial = testimonials[currentIndex];
 
@@ -67,7 +78,11 @@ export const TestimonialSlider = ({ testimonials, className }: TestimonialSlider
 
   return (
     <div className={cn("w-full", className)}>
-      <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-xl">
+      <div
+        className="relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-xl"
+        onMouseEnter={() => { isPaused.current = true; }}
+        onMouseLeave={() => { isPaused.current = false; }}
+      >
         <AnimatePresence initial={false} custom={direction} mode="wait">
           <motion.div
             key={currentIndex}
