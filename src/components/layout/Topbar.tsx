@@ -1,8 +1,6 @@
 import { Mail, Phone, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/LanguageContext';
-import LanguageToggle from './LanguageToggle';
 import { cn } from '@/lib/utils';
 
 interface TopbarProps {
@@ -10,7 +8,6 @@ interface TopbarProps {
 }
 
 const Topbar = ({ isVisible }: TopbarProps) => {
-  const { t } = useLanguage();
 
   return (
     <div
@@ -42,8 +39,6 @@ const Topbar = ({ isVisible }: TopbarProps) => {
 
           {/* Right Side - Language & Login */}
           <div className="flex items-center gap-3">
-            <LanguageToggle variant="minimal" />
-            <div className="h-4 w-px bg-border/60" />
             <Button
               variant="ghost"
               size="sm"
