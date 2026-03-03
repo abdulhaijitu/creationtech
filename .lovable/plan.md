@@ -1,32 +1,40 @@
 
 
-## Portfolio Category Management
+## Product Add/Edit অডিট ও ক্যাটাগরি ম্যানেজমেন্ট
 
-### সমস্যা
-বর্তমানে `portfolio_projects` টেবিলে `category` একটি ফ্রি-টেক্সট ফিল্ড — কোনো ক্যাটাগরি ম্যানেজমেন্ট নেই। একই ক্যাটাগরি ভিন্নভাবে লেখা হতে পারে।
+### সমস্যা চিহ্নিত
+
+1. **Add Product (AdminProducts.tsx)** এবং **Edit Product (AdminProductDetail.tsx)** এর মধ্যে অসঙ্গতি:
+   - Add-এ inline gallery code (70 লাইন), Edit-এ `ProductGalleryUpload` component — দুটো আলাদা কোড
+   - Edit-এ slug/display_order এডিট করা যায় না
+   - Edit-এ `formData` টাইপ `any` — টাইপ-সেফটি নেই
+   - Edit-এ delete অপশন নেই
+
+2. **Products টেবিলে `category` কলাম নেই** — ক্যাটাগরি ম্যানেজমেন্ট করতে হলে নতুন টেবিল ও কলাম দরকার
 
 ### সমাধান
 
-#### ১. নতুন `portfolio_categories` টেবিল তৈরি
-- `id`, `name_en`, `name_bn`, `slug`, `is_active`, `display_order`, `created_at`
+#### ১. Database Migration
+- **`product_categories` টেবিল তৈরি** — `portfolio_categories`-এর মতোই (`id`, `name_en`, `name_bn`, `slug`, `is_active`, `display_order`, `created_at`)
+- **`products` টেবিলে `category` কলাম যোগ** (text, nullable)
 - RLS: anyone can view active, admin can manage
 
-#### ২. Admin Portfolio পেজে Category Management UI
-- **List view-তে** "Manage Categories" বাটন যোগ (Portfolio heading-এর পাশে)
-- একটি **Dialog** দিয়ে ক্যাটাগরি CRUD:
-  - ক্যাটাগরি লিস্ট (name EN/BN, active toggle)
-  - Add/Edit/Delete অপশন
-  - Inline editing সাপোর্ট
+#### ২. AdminProductDetail.tsx ফিক্স
+- `formData` টাইপ `any` সরিয়ে proper interface ব্যবহার
+- **Slug ও Display Order** এডিটিং যোগ
+- **Category Select** ড্রপডাউন যোগ (`product_categories` থেকে)
+- **Delete বাটন** যোগ (AlertDialog সহ)
 
-#### ৩. Project Form-এ Category ফিল্ড পরিবর্তন
-- ফ্রি-টেক্সট `Input` এর বদলে `Select` ড্রপডাউন
-- ড্রপডাউনে `portfolio_categories` থেকে active ক্যাটাগরি দেখাবে
+#### ৩. AdminProducts.tsx (Add Product) ফিক্স
+- Inline gallery code সরিয়ে **`ProductGalleryUpload` component** ব্যবহার (Edit-এর মতো)
+- **Category Select** ড্রপডাউন যোগ
+- **Category Management Dialog** যোগ — "Manage Categories" বাটন (Portfolio-র মতো CRUD dialog)
 
-#### ৪. Public Portfolio পেজে আপডেট
-- ক্যাটাগরি ফিল্টার বাটনগুলো `portfolio_categories` থেকে আসবে (ordered)
+#### ৪. Public Products পেজে আপডেট
+- Products পেজে category-based filtering যোগ (যদি প্রয়োজন হয় ভবিষ্যতে)
 
 ### পরিবর্তিত ফাইল
-- **Database migration** — `portfolio_categories` টেবিল
-- **`src/pages/admin/AdminPortfolio.tsx`** — Category management dialog + Select dropdown
-- **`src/pages/Portfolio.tsx`** — Categories from DB instead of extracting from projects
+- **Database migration** — `product_categories` টেবিল + `products.category` কলাম
+- **`src/pages/admin/AdminProducts.tsx`** — Gallery simplification, category management dialog, category select
+- **`src/pages/admin/AdminProductDetail.tsx`** — Type fix, slug/order editing, category select, delete button
 
