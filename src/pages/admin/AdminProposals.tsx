@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, ExternalLink, FileEdit, Send, XCircle, LayoutList, Table2, DollarSign, Clock, FileCheck } from 'lucide-react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, ExternalLink, FileEdit, Send, XCircle, LayoutList, Table2, DollarSign, Clock, FileCheck, Copy } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
@@ -184,6 +184,60 @@ const AdminProposals = () => {
     },
   });
 
+  const cloneMutation = useMutation({
+    mutationFn: async (proposal: Proposal) => {
+      const { data: numData } = await supabase.rpc('generate_proposal_number');
+      const proposalNumber = numData || `PRO-${Date.now()}`;
+
+      const { data: newProposal, error } = await supabase.from('proposals').insert({
+        proposal_number: proposalNumber,
+        client_id: proposal.client_id,
+        client_name: proposal.client_name,
+        client_email: proposal.client_email,
+        client_phone: proposal.client_phone,
+        client_company: proposal.client_company,
+        title: `${proposal.title} (Clone)`,
+        scope_of_work: proposal.scope_of_work,
+        timeline: proposal.timeline,
+        deliverables: proposal.deliverables,
+        pricing_summary: proposal.pricing_summary,
+        total_amount: proposal.total_amount,
+        valid_until: proposal.valid_until,
+        notes: proposal.notes,
+        terms: proposal.terms,
+        offer_letter: proposal.offer_letter,
+        offer_letter_end: proposal.offer_letter_end,
+        expected_outcome: proposal.expected_outcome,
+        subtotal: proposal.subtotal,
+        tax_rate: proposal.tax_rate,
+        tax_amount: proposal.tax_amount,
+        discount_amount: proposal.discount_amount,
+        version: 1,
+        status: 'draft',
+      }).select('id').single();
+
+      if (error) throw error;
+
+      const { data: existingItems } = await supabase
+        .from('proposal_items')
+        .select('description, quantity, unit_price, amount, display_order, billing_type')
+        .eq('proposal_id', proposal.id);
+
+      if (existingItems && existingItems.length > 0 && newProposal) {
+        await supabase.from('proposal_items').insert(
+          existingItems.map(item => ({ ...item, proposal_id: newProposal.id }))
+        );
+      }
+    },
+    onSuccess: () => {
+      toast({ title: 'Success', description: 'Proposal cloned successfully' });
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+    },
+    onError: (error: any) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
   const filteredProposals = useMemo(() => {
     return proposals.filter((p) => {
       const q = searchQuery.toLowerCase();
@@ -291,6 +345,9 @@ const AdminProposals = () => {
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={() => versionMutation.mutate(proposal)}>
         <FileText className="h-4 w-4 mr-2" /> Create New Version
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => cloneMutation.mutate(proposal)}>
+        <Copy className="h-4 w-4 mr-2" /> Clone Proposal
       </DropdownMenuItem>
     </DropdownMenuContent>
   ), [statusMutation, versionMutation, handlePdfAction]);
