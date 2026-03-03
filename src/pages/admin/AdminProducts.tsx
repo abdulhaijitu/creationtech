@@ -230,27 +230,45 @@ const AdminProducts = () => {
       meta_description: '',
     });
     setGalleryImages([]);
+    setSlugManuallyEdited(false);
   };
 
   const generateSlug = (name: string) => {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
 
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+
   const handleNameChange = (value: string) => {
     setFormData({
       ...formData,
       name_en: value,
-      slug: formData.slug || generateSlug(value),
+      slug: slugManuallyEdited ? formData.slug : generateSlug(value),
     });
   };
 
-  const handleSubmit = () => {
+  const handleSlugChange = (value: string) => {
+    setSlugManuallyEdited(true);
+    setFormData({ ...formData, slug: value });
+  };
+
+  const handleSubmit = async () => {
     if (!formData.name_en.trim()) {
       toast.error('Product name is required');
       return;
     }
     if (!formData.slug.trim()) {
       toast.error('Slug is required');
+      return;
+    }
+    // Check slug uniqueness
+    const { data: existing } = await supabase
+      .from('products')
+      .select('id')
+      .eq('slug', formData.slug.trim())
+      .maybeSingle();
+    if (existing) {
+      toast.error('This slug already exists. Please use a different slug.');
       return;
     }
     createMutation.mutate(formData);
@@ -306,7 +324,7 @@ const AdminProducts = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label>Slug (URL path) *</Label>
-                  <Input value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} placeholder="product-slug" />
+                  <Input value={formData.slug} onChange={(e) => handleSlugChange(e.target.value)} placeholder="product-slug" />
                   <p className="text-xs text-muted-foreground mt-1">URL: /products/{formData.slug || 'slug'}</p>
                 </div>
                 <div>
