@@ -257,6 +257,29 @@ const Header = () => {
                   )}
                 </NavigationMenuItem>
 
+                {/* Portfolio Link */}
+                <NavigationMenuItem>
+                  <Link
+                    to="/portfolio"
+                    className={cn(
+                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
+                      isActive('/portfolio')
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    Portfolio
+                    <span
+                      className={cn(
+                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
+                        isActive('/portfolio')
+                          ? 'scale-x-100'
+                          : 'scale-x-0 group-hover:scale-x-100'
+                      )}
+                    />
+                  </Link>
+                </NavigationMenuItem>
+
                 {/* Companies Dropdown */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger
@@ -413,6 +436,23 @@ const Header = () => {
                             {item.label}
                           </Link>
                         ))}
+
+                        {/* Portfolio Link */}
+                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          Portfolio
+                        </div>
+                        <Link
+                          to="/portfolio"
+                          onClick={() => setIsSheetOpen(false)}
+                          className={cn(
+                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
+                            isActive('/portfolio')
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                          )}
+                        >
+                          Portfolio
+                        </Link>
 
                         {/* Companies Section */}
                         <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
