@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ScrollReveal from '@/components/common/ScrollReveal';
@@ -18,13 +19,17 @@ const fallbackImages: Record<string, string> = {
   'restaurant-app': restaurantAppImg,
 };
 
+const categoryLabels: Record<string, { en: string; bn: string }> = {
+  'isp-manager': { en: 'ISP Solution', bn: 'আইএসপি সমাধান' },
+  'somity-app': { en: 'Cooperative Management', bn: 'সমবায় ব্যবস্থাপনা' },
+  'restaurant-app': { en: 'Restaurant POS', bn: 'রেস্তোরাঁ পিওএস' },
+};
+
 const getProductImage = (product: Product): string => {
-  // Check if product has media with an image
   if (product.media && Array.isArray(product.media) && product.media.length > 0) {
     const imageMedia = product.media.find((m) => m.type === 'image' && m.url);
     if (imageMedia?.url) return imageMedia.url;
   }
-  // Use fallback image based on slug
   return fallbackImages[product.slug] || ispManagerImg;
 };
 
@@ -36,9 +41,9 @@ const getHighlights = (product: Product): string[] => {
 };
 
 const ProductCardSkeleton = () => (
-  <div className="h-full overflow-hidden rounded-2xl border border-border/50 bg-card">
+  <div className="flex flex-col h-full overflow-hidden rounded-2xl border border-border/50 bg-card">
     <Skeleton className="aspect-[16/10] w-full" />
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 flex-1">
       <Skeleton className="h-6 w-3/4" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-5/6" />
@@ -98,64 +103,74 @@ const ProductShowcase = () => {
               </p>
             </div>
           ) : (
-            products.map((product, index) => (
-            <ScrollReveal key={product.slug} delay={200 + index * 100} animation="fade-in">
-              <div className="group h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10">
-                {/* Product Image */}
-                <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-                  <OptimizedImage
-                    src={getProductImage(product)}
-                    alt={language === 'en' ? product.name_en : (product.name_bn || product.name_en)}
-                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                </div>
+            products.map((product, index) => {
+              const category = categoryLabels[product.slug];
+              return (
+                <ScrollReveal key={product.slug} delay={200 + index * 100} animation="fade-in">
+                  <div className="group flex flex-col h-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 ease-out hover:-translate-y-2 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/10">
+                    {/* Product Image */}
+                    <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                      <OptimizedImage
+                        src={getProductImage(product)}
+                        alt={language === 'en' ? product.name_en : (product.name_bn || product.name_en)}
+                        className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-foreground/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                      
+                      {/* Category Badge */}
+                      {category && (
+                        <Badge className="absolute top-3 left-3 z-10 bg-primary/90 text-primary-foreground backdrop-blur-sm border-0 text-xs font-medium shadow-lg">
+                          {language === 'en' ? category.en : category.bn}
+                        </Badge>
+                      )}
+                    </div>
 
-                {/* Card Content */}
-                <div className="flex flex-1 flex-col p-6">
-                  {/* Title */}
-                  <h3 className="mb-2 text-xl font-bold text-foreground">
-                    {language === 'en' ? product.name_en : (product.name_bn || product.name_en)}
-                  </h3>
+                    {/* Card Content */}
+                    <div className="flex flex-1 flex-col p-6">
+                      {/* Title */}
+                      <h3 className="mb-2 text-xl font-bold text-foreground">
+                        {language === 'en' ? product.name_en : (product.name_bn || product.name_en)}
+                      </h3>
 
-                  {/* Description */}
-                  <p className="mb-4 text-sm text-muted-foreground leading-relaxed">
-                    {language === 'en' 
-                      ? product.short_description_en 
-                      : (product.short_description_bn || product.short_description_en)}
-                  </p>
+                      {/* Description */}
+                      <p className="mb-4 text-base text-muted-foreground leading-relaxed">
+                        {language === 'en' 
+                          ? product.short_description_en 
+                          : (product.short_description_bn || product.short_description_en)}
+                      </p>
 
-                  {/* Highlights */}
-                  {getHighlights(product).length > 0 && (
-                    <ul className="mb-6 flex-1 space-y-2">
-                      {getHighlights(product).map((highlight, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <span>{highlight}</span>
-                      </li>
-                      ))}
-                    </ul>
-                  )}
+                      {/* Highlights */}
+                      {getHighlights(product).length > 0 && (
+                        <ul className="mb-6 flex-1 space-y-2">
+                          {getHighlights(product).map((highlight, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                              <span>{highlight}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
 
-                  {/* CTAs */}
-                  <div className="flex flex-col gap-3 lg:flex-row">
-                    <Button asChild className="group/btn w-full lg:flex-1 transition-all duration-200 active:scale-[0.96]">
-                      <Link to={`/products/${product.slug}`}>
-                        {language === 'en' ? 'View Details' : 'বিস্তারিত দেখুন'}
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
-                      </Link>
-                    </Button>
-                    <Button variant="outline" asChild className="w-full lg:flex-1 transition-all duration-200 active:scale-[0.96]">
-                      <Link to="/contact?type=meeting">
-                        <Play className="mr-2 h-4 w-4" />
-                        {language === 'en' ? 'Request Demo' : 'ডেমো রিকোয়েস্ট'}
-                      </Link>
-                    </Button>
+                      {/* CTAs — always at bottom */}
+                      <div className="mt-auto flex flex-row gap-3">
+                        <Button asChild className="group/btn flex-1 transition-all duration-200 active:scale-[0.96]">
+                          <Link to={`/products/${product.slug}`}>
+                            {language === 'en' ? 'View Details' : 'বিস্তারিত দেখুন'}
+                            <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
+                          </Link>
+                        </Button>
+                        <Button variant="outline" asChild className="flex-1 transition-all duration-200 active:scale-[0.96]">
+                          <Link to="/contact?type=meeting">
+                            <Play className="mr-2 h-4 w-4" />
+                            {language === 'en' ? 'Demo' : 'ডেমো'}
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </ScrollReveal>
-            ))
+                </ScrollReveal>
+              );
+            })
           )}
         </div>
       </div>

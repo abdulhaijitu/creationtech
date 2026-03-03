@@ -4,13 +4,15 @@ interface UseScrollRevealOptions {
   threshold?: number;
   rootMargin?: string;
   triggerOnce?: boolean;
+  fallbackDelay?: number;
 }
 
 export const useScrollReveal = (options: UseScrollRevealOptions = {}) => {
   const { 
     threshold = 0.1, 
     rootMargin = '0px 0px -50px 0px',
-    triggerOnce = true 
+    triggerOnce = true,
+    fallbackDelay = 1200,
   } = options;
   
   const ref = useRef<HTMLElement>(null);
@@ -27,10 +29,16 @@ export const useScrollReveal = (options: UseScrollRevealOptions = {}) => {
       return;
     }
 
+    // Safety net: if observer never triggers, force visible after delay
+    const fallbackTimer = setTimeout(() => {
+      setIsVisible(true);
+    }, fallbackDelay);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
+          clearTimeout(fallbackTimer);
           if (triggerOnce) {
             observer.unobserve(element);
           }
@@ -44,9 +52,10 @@ export const useScrollReveal = (options: UseScrollRevealOptions = {}) => {
     observer.observe(element);
 
     return () => {
+      clearTimeout(fallbackTimer);
       observer.disconnect();
     };
-  }, [threshold, rootMargin, triggerOnce]);
+  }, [threshold, rootMargin, triggerOnce, fallbackDelay]);
 
   return { ref, isVisible };
 };
