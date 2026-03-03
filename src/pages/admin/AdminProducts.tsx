@@ -75,17 +75,16 @@ const AdminProducts = () => {
 
   const [formData, setFormData] = useState({
     name_en: '',
-    name_bn: '',
     slug: '',
     short_description_en: '',
-    short_description_bn: '',
     description_en: '',
-    description_bn: '',
     status: 'active',
     category: '',
-    features: '[]',
-    highlights: '[]',
     display_order: 0,
+    price: '',
+    demo_url: '',
+    meta_title: '',
+    meta_description: '',
   });
 
   const { data: products, isLoading } = useQuery({
@@ -141,17 +140,16 @@ const AdminProducts = () => {
     mutationFn: async (data: typeof formData) => {
       const { error } = await supabase.from('products').insert([{
         name_en: data.name_en,
-        name_bn: data.name_bn || null,
         slug: data.slug,
         short_description_en: data.short_description_en || null,
-        short_description_bn: data.short_description_bn || null,
         description_en: data.description_en || null,
-        description_bn: data.description_bn || null,
         status: data.status,
         category: data.category || null,
-        features: JSON.parse(data.features || '[]'),
-        highlights: JSON.parse(data.highlights || '[]'),
         display_order: data.display_order,
+        price: data.price || null,
+        demo_url: data.demo_url || null,
+        meta_title: data.meta_title || null,
+        meta_description: data.meta_description || null,
         media: galleryImages as any,
       }]);
       if (error) throw error;
@@ -220,17 +218,16 @@ const AdminProducts = () => {
   const resetForm = () => {
     setFormData({
       name_en: '',
-      name_bn: '',
       slug: '',
       short_description_en: '',
-      short_description_bn: '',
       description_en: '',
-      description_bn: '',
       status: 'active',
       category: '',
-      features: '[]',
-      highlights: '[]',
       display_order: products?.length || 0,
+      price: '',
+      demo_url: '',
+      meta_title: '',
+      meta_description: '',
     });
     setGalleryImages([]);
   };
@@ -302,8 +299,8 @@ const AdminProducts = () => {
                   <Input value={formData.name_en} onChange={(e) => handleNameChange(e.target.value)} placeholder="Product name" />
                 </div>
                 <div>
-                  <Label>Name (Bangla)</Label>
-                  <Input value={formData.name_bn} onChange={(e) => setFormData({ ...formData, name_bn: e.target.value })} placeholder="পণ্যের নাম" />
+                  <Label>Price</Label>
+                  <Input value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} placeholder="e.g. ৳5,000/month or Contact us" />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -331,15 +328,13 @@ const AdminProducts = () => {
                   <Input type="number" value={formData.display_order} onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Short Description (English)</Label>
-                  <Textarea value={formData.short_description_en} onChange={(e) => setFormData({ ...formData, short_description_en: e.target.value })} rows={3} placeholder="Brief product description" />
-                </div>
-                <div>
-                  <Label>Short Description (Bangla)</Label>
-                  <Textarea value={formData.short_description_bn} onChange={(e) => setFormData({ ...formData, short_description_bn: e.target.value })} rows={3} placeholder="সংক্ষিপ্ত বর্ণনা" />
-                </div>
+              <div>
+                <Label>Short Description</Label>
+                <Textarea value={formData.short_description_en} onChange={(e) => setFormData({ ...formData, short_description_en: e.target.value })} rows={3} placeholder="Brief product description" />
+              </div>
+              <div>
+                <Label>Live Preview / Demo URL</Label>
+                <Input value={formData.demo_url} onChange={(e) => setFormData({ ...formData, demo_url: e.target.value })} placeholder="https://demo.example.com" />
               </div>
             </CardContent>
           </Card>
@@ -357,28 +352,23 @@ const AdminProducts = () => {
 
           <Card>
             <CardHeader><CardTitle>Full Description</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Description (English)</Label>
-                <Textarea value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={6} placeholder="Detailed product description" />
-              </div>
-              <div>
-                <Label>Description (Bangla)</Label>
-                <Textarea value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={6} placeholder="বিস্তারিত বর্ণনা" />
-              </div>
+            <CardContent>
+              <Textarea value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={6} placeholder="Detailed product description" />
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Features & Highlights (JSON)</CardTitle></CardHeader>
+            <CardHeader><CardTitle>SEO Settings</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Features (JSON Array)</Label>
-                <Textarea value={formData.features} onChange={(e) => setFormData({ ...formData, features: e.target.value })} rows={6} className="font-mono text-sm" placeholder='[{"title": "Feature 1", "description": "..."}]' />
+                <Label>Meta Title</Label>
+                <Input value={formData.meta_title} onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })} placeholder="SEO title (max 60 chars)" maxLength={60} />
+                <p className="text-xs text-muted-foreground mt-1">{formData.meta_title.length}/60</p>
               </div>
               <div>
-                <Label>Highlights (JSON Array)</Label>
-                <Textarea value={formData.highlights} onChange={(e) => setFormData({ ...formData, highlights: e.target.value })} rows={6} className="font-mono text-sm" placeholder='["Highlight 1", "Highlight 2"]' />
+                <Label>Meta Description</Label>
+                <Textarea value={formData.meta_description} onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })} rows={3} placeholder="SEO description (max 160 chars)" maxLength={160} />
+                <p className="text-xs text-muted-foreground mt-1">{formData.meta_description.length}/160</p>
               </div>
             </CardContent>
           </Card>

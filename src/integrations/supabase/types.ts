@@ -1032,6 +1032,7 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string
+          demo_url: string | null
           description_bn: string | null
           description_en: string | null
           display_order: number | null
@@ -1039,8 +1040,11 @@ export type Database = {
           highlights: Json | null
           id: string
           media: Json | null
+          meta_description: string | null
+          meta_title: string | null
           name_bn: string | null
           name_en: string
+          price: string | null
           short_description_bn: string | null
           short_description_en: string | null
           slug: string
@@ -1050,6 +1054,7 @@ export type Database = {
         Insert: {
           category?: string | null
           created_at?: string
+          demo_url?: string | null
           description_bn?: string | null
           description_en?: string | null
           display_order?: number | null
@@ -1057,8 +1062,11 @@ export type Database = {
           highlights?: Json | null
           id?: string
           media?: Json | null
+          meta_description?: string | null
+          meta_title?: string | null
           name_bn?: string | null
           name_en: string
+          price?: string | null
           short_description_bn?: string | null
           short_description_en?: string | null
           slug: string
@@ -1068,6 +1076,7 @@ export type Database = {
         Update: {
           category?: string | null
           created_at?: string
+          demo_url?: string | null
           description_bn?: string | null
           description_en?: string | null
           display_order?: number | null
@@ -1075,8 +1084,11 @@ export type Database = {
           highlights?: Json | null
           id?: string
           media?: Json | null
+          meta_description?: string | null
+          meta_title?: string | null
           name_bn?: string | null
           name_en?: string
+          price?: string | null
           short_description_bn?: string | null
           short_description_en?: string | null
           slug?: string

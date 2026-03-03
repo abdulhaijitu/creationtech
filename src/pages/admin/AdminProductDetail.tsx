@@ -34,17 +34,16 @@ interface MediaItem {
 
 interface ProductFormData {
   name_en: string;
-  name_bn: string;
   slug: string;
   short_description_en: string;
-  short_description_bn: string;
   description_en: string;
-  description_bn: string;
   status: string;
   category: string;
   display_order: number;
-  features: string;
-  highlights: string;
+  price: string;
+  demo_url: string;
+  meta_title: string;
+  meta_description: string;
   images: MediaItem[];
 }
 
@@ -90,17 +89,16 @@ const AdminProductDetail = () => {
     if (product) {
       setFormData({
         name_en: product.name_en,
-        name_bn: product.name_bn || '',
         slug: product.slug,
         short_description_en: product.short_description_en || '',
-        short_description_bn: product.short_description_bn || '',
         description_en: product.description_en || '',
-        description_bn: product.description_bn || '',
         status: product.status,
         category: product.category || '',
         display_order: product.display_order ?? 0,
-        features: JSON.stringify(product.features || [], null, 2),
-        highlights: JSON.stringify(product.highlights || [], null, 2),
+        price: (product as any).price || '',
+        demo_url: (product as any).demo_url || '',
+        meta_title: (product as any).meta_title || '',
+        meta_description: (product as any).meta_description || '',
         images: (Array.isArray(product.media) ? product.media : []).filter((m: any) => m?.url).map((m: any) => ({ type: m.type || 'image', url: m.url })) as MediaItem[],
       });
     }
@@ -112,19 +110,18 @@ const AdminProductDetail = () => {
         .from('products')
         .update({
           name_en: data.name_en,
-          name_bn: data.name_bn,
           slug: data.slug,
-          short_description_en: data.short_description_en,
-          short_description_bn: data.short_description_bn,
-          description_en: data.description_en,
-          description_bn: data.description_bn,
+          short_description_en: data.short_description_en || null,
+          description_en: data.description_en || null,
           status: data.status,
           category: data.category || null,
           display_order: data.display_order,
-          features: JSON.parse(data.features || '[]'),
-          highlights: JSON.parse(data.highlights || '[]'),
+          price: data.price || null,
+          demo_url: data.demo_url || null,
+          meta_title: data.meta_title || null,
+          meta_description: data.meta_description || null,
           media: (data.images || []) as any,
-        })
+        } as any)
         .eq('slug', slug);
       if (error) throw error;
     },
@@ -216,15 +213,15 @@ const AdminProductDetail = () => {
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Name (English)</Label>
                 <Input value={formData.name_en} onChange={(e) => setFormData({ ...formData, name_en: e.target.value })} />
               </div>
               <div>
-                <Label>Name (Bangla)</Label>
-                <Input value={formData.name_bn} onChange={(e) => setFormData({ ...formData, name_bn: e.target.value })} />
+                <Label>Price</Label>
+                <Input value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} placeholder="e.g. ৳5,000/month or Contact us" />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -256,15 +253,13 @@ const AdminProductDetail = () => {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Short Description (English)</Label>
-                <Textarea value={formData.short_description_en} onChange={(e) => setFormData({ ...formData, short_description_en: e.target.value })} rows={3} />
-              </div>
-              <div>
-                <Label>Short Description (Bangla)</Label>
-                <Textarea value={formData.short_description_bn} onChange={(e) => setFormData({ ...formData, short_description_bn: e.target.value })} rows={3} />
-              </div>
+            <div>
+              <Label>Short Description</Label>
+              <Textarea value={formData.short_description_en} onChange={(e) => setFormData({ ...formData, short_description_en: e.target.value })} rows={3} />
+            </div>
+            <div>
+              <Label>Live Preview / Demo URL</Label>
+              <Input value={formData.demo_url} onChange={(e) => setFormData({ ...formData, demo_url: e.target.value })} placeholder="https://demo.example.com" />
             </div>
           </CardContent>
         </Card>
@@ -282,28 +277,23 @@ const AdminProductDetail = () => {
 
         <Card>
           <CardHeader><CardTitle>Full Description</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Description (English)</Label>
-              <Textarea value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={6} />
-            </div>
-            <div>
-              <Label>Description (Bangla)</Label>
-              <Textarea value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={6} />
-            </div>
+          <CardContent>
+            <Textarea value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={6} />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Features & Highlights (JSON)</CardTitle></CardHeader>
+          <CardHeader><CardTitle>SEO Settings</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Features (JSON Array)</Label>
-              <Textarea value={formData.features} onChange={(e) => setFormData({ ...formData, features: e.target.value })} rows={6} className="font-mono text-sm" placeholder='[{"title": "Feature 1", "description": "..."}]' />
+              <Label>Meta Title</Label>
+              <Input value={formData.meta_title} onChange={(e) => setFormData({ ...formData, meta_title: e.target.value })} placeholder="SEO title (max 60 chars)" maxLength={60} />
+              <p className="text-xs text-muted-foreground mt-1">{formData.meta_title.length}/60</p>
             </div>
             <div>
-              <Label>Highlights (JSON Array)</Label>
-              <Textarea value={formData.highlights} onChange={(e) => setFormData({ ...formData, highlights: e.target.value })} rows={6} className="font-mono text-sm" placeholder='["Highlight 1", "Highlight 2"]' />
+              <Label>Meta Description</Label>
+              <Textarea value={formData.meta_description} onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })} rows={3} placeholder="SEO description (max 160 chars)" maxLength={160} />
+              <p className="text-xs text-muted-foreground mt-1">{formData.meta_description.length}/160</p>
             </div>
           </CardContent>
         </Card>
