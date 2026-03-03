@@ -26,7 +26,7 @@ const navItems = [
   { href: '/services', label: 'Services', labelBn: 'সেবাসমূহ', icon: Briefcase },
   { href: '/portfolio', label: 'Portfolio', labelBn: 'পোর্টফোলিও', icon: LayoutGrid },
   { href: '/about', label: 'About', labelBn: 'সম্পর্কে', icon: Building2 },
-  { href: '/blog', label: 'Resources', labelBn: 'রিসোর্স', icon: BookOpen },
+  { href: '/blog', label: 'Blog', labelBn: 'ব্লগ', icon: BookOpen },
 ];
 
 const Header = () => {
