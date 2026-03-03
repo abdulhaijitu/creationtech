@@ -48,21 +48,6 @@ const Header = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch active products for mega menu
-  const { data: dynamicProducts } = useQuery({
-    queryKey: ['nav-products'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, slug, name_en, name_bn, short_description_en, short_description_bn')
-        .eq('status', 'active')
-        .order('display_order', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
   // Fetch active portfolio projects for mega menu
   const { data: dynamicPortfolio } = useQuery({
     queryKey: ['nav-portfolio'],
@@ -93,15 +78,6 @@ const Header = () => {
   const simpleNavItems = [
     { href: '/', label: 'Home' },
   ];
-
-  // Build dynamic products menu items
-  const productsItems = (dynamicProducts || []).map(p => ({
-    href: `/products/${p.slug}`,
-    label: language === 'en' ? p.name_en : (p.name_bn || p.name_en),
-    description: language === 'en'
-      ? (p.short_description_en || '')
-      : (p.short_description_bn || p.short_description_en || ''),
-  }));
 
   // Build dynamic services menu items
   const servicesMenuItems = (dynamicServices || []).map(s => ({
@@ -204,54 +180,27 @@ const Header = () => {
                   </NavigationMenuItem>
                 ))}
 
-                {/* Products Dropdown */}
+                {/* Products Link */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger
+                  <Link
+                    to="/products"
                     className={cn(
-                      'bg-transparent px-4 py-2 text-sm font-medium',
-                      isDropdownActive(productsItems) || location.pathname === '/products'
+                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
+                      isActive('/products')
                         ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    <Link to="/products" onClick={(e) => e.stopPropagation()}>
-                      Products
-                    </Link>
-                  </NavigationMenuTrigger>
-                  {productsItems.length > 0 && (
-                    <NavigationMenuContent>
-                      <div className="w-[400px] p-4">
-                        <div className="grid gap-2 grid-cols-1">
-                          {productsItems.map((item) => (
-                            <NavigationMenuLink key={item.href} asChild>
-                              <Link
-                                to={item.href}
-                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                              >
-                                <div className="text-sm font-medium leading-none">{item.label}</div>
-                                {item.description && (
-                                  <p className="line-clamp-2 text-xs leading-snug text-muted-foreground mt-1">
-                                    {item.description}
-                                  </p>
-                                )}
-                              </Link>
-                            </NavigationMenuLink>
-                          ))}
-                        </div>
-                        <div className="mt-3 border-t border-border/50 pt-3">
-                          <NavigationMenuLink asChild>
-                            <Link
-                              to="/products"
-                              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline px-3"
-                            >
-                              {language === 'en' ? 'View All Products' : 'সকল প্রোডাক্ট দেখুন'}
-                              <ArrowRight className="h-3.5 w-3.5" />
-                            </Link>
-                          </NavigationMenuLink>
-                        </div>
-                      </div>
-                    </NavigationMenuContent>
-                  )}
+                    Products
+                    <span
+                      className={cn(
+                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
+                        isActive('/products')
+                          ? 'scale-x-100'
+                          : 'scale-x-0 group-hover:scale-x-100'
+                      )}
+                    />
+                  </Link>
                 </NavigationMenuItem>
 
                 {/* Services Mega Menu */}
@@ -481,28 +430,19 @@ const Header = () => {
                           </Link>
                         ))}
 
-                        {/* Products Section */}
-                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          {language === 'en' ? 'Products' : 'প্রোডাক্ট'}
-                        </div>
+                        {/* Products Link */}
                         <Link
                           to="/products"
                           onClick={() => setIsSheetOpen(false)}
-                          className="rounded-lg px-4 py-2 text-sm font-medium text-primary hover:bg-secondary flex items-center gap-1"
+                          className={cn(
+                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
+                            isActive('/products')
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                          )}
                         >
-                          {language === 'en' ? 'View All Products' : 'সকল প্রোডাক্ট দেখুন'}
-                          <ArrowRight className="h-3.5 w-3.5" />
+                          {language === 'en' ? 'Products' : 'প্রোডাক্ট'}
                         </Link>
-                        {productsItems.map((item) => (
-                          <Link
-                            key={item.href}
-                            to={item.href}
-                            onClick={() => setIsSheetOpen(false)}
-                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
 
                         {/* Services Section */}
                         <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
