@@ -1,16 +1,11 @@
 
 
-## টপবার সবসময় দৃশ্যমান রাখা
+## টপবার ব্যাকগ্রাউন্ড অপাসিটি বাড়ানো
 
-### পরিবর্তন
+**ফাইল: `src/components/layout/Topbar.tsx`**
 
-**`src/components/layout/Header.tsx`**:
-- `isTopbarVisible` state এবং scroll handler থেকে topbar hide/show লজিক সরিয়ে দেওয়া
-- Topbar-এ সবসময় `isVisible={true}` পাঠানো
+বর্তমান: `bg-gradient-to-r from-primary/5 via-background to-primary/5`
 
-**`src/components/layout/Topbar.tsx`**:
-- `isVisible` prop এবং transform/opacity transition লজিক সরিয়ে সরাসরি দেখানো
-- `overflow-hidden` wrapper সরিয়ে ফেলা
+পরিবর্তন: `bg-background border-b border-border/30` — solid background দিয়ে gradient replace করা যাতে scroll-এ content-এর উপরে পরিষ্কার দেখায়।
 
-এতে টপবার মেনুবারের মতোই সবসময় sticky থাকবে।
-
+**১টি ফাইল, ১ লাইন পরিবর্তন।**
