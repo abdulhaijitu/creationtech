@@ -1,19 +1,34 @@
 
 
-## Quotation পেজে Download PDF / Print / Send DropdownMenu যোগ
+## Invoice WhatsApp Send — wa.me Link
 
-### পরিবর্তন: `src/pages/admin/AdminQuotations.tsx`
+### পরিবর্তন: `src/pages/admin/AdminInvoices.tsx`
 
-বর্তমানে Quotation কার্ডে আলাদা "PDF" বাটন (line 445-485) এবং DropdownMenu তে শুধু status change / convert / delete আছে। Invoice পেজের প্যাটার্ন অনুসরণ করে:
+DropdownMenu তে "Send via WhatsApp" অপশন যোগ করা হবে। ক্লিক করলে:
 
-1. **আলাদা PDF বাটন সরানো** — line 445-485 এর standalone Download PDF বাটন রিমুভ
-2. **DropdownMenu তে তিনটি অপশন যোগ** (separator সহ, status items এর আগে):
-   - **Download PDF** — বর্তমান PDF download logic
-   - **Print** — `printPDF()` ব্যবহার করে ব্রাউজারে print dialog খোলা
-   - **Send Quotation** — PDF download + status `sent` এ আপডেট (draft/pending হলে)
-3. **Helper function extract** — `buildQuotationPDFData(quotation)` ফাংশন তৈরি (Invoice পেজের `buildInvoicePDFData` এর মতো) যাতে Download, Print, Send সবাই reuse করতে পারে
-4. **Import যোগ** — `printPDF` import, `Printer` ও `Send` icon import, `DropdownMenuSeparator` import
+1. ক্লায়েন্টের ফোন নম্বর থেকে `wa.me` URL তৈরি হবে
+2. Pre-filled message এ Invoice নম্বর, total amount (BDT), due date এবং কোম্পানির নাম থাকবে
+3. নতুন ট্যাবে WhatsApp খুলবে
+4. ফোন নম্বর না থাকলে toast warning দেখাবে
+
+### Implementation
+
+- `handleWhatsAppSend(invoice)` ফাংশন তৈরি — ফোন নম্বর sanitize করে (শুধু digits রাখবে, +88 prefix handle করবে), message format করে, `window.open()` দিয়ে `https://wa.me/{phone}?text={encodedMessage}` খুলবে
+- DropdownMenu তে "Send" এর পাশে "Send via WhatsApp" আইটেম যোগ (MessageCircle icon সহ)
+- ফোন নম্বর ছাড়া warning toast: "Client phone number not available"
+
+### Message Format:
+```
+Dear {client_name},
+
+Invoice #{invoice_number}
+Amount: ৳{total}
+Due Date: {due_date}
+
+Thank you for your business.
+- {company_name}
+```
 
 ### পরিবর্তিত ফাইল:
-- `src/pages/admin/AdminQuotations.tsx`
+- `src/pages/admin/AdminInvoices.tsx`
 
