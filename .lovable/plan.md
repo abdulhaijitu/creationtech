@@ -1,12 +1,10 @@
 
 
-## Add Portfolio Menu Item After Services
+## Portfolio Page: 3-Column Grid
 
 ### Change
-Add "Portfolio" as a direct navigation link in the desktop nav bar, positioned between the Services dropdown and the Companies dropdown. Also add it to the mobile sidebar menu.
+In `src/pages/Portfolio.tsx`, change the projects grid from `md:grid-cols-2` to `sm:grid-cols-2 lg:grid-cols-3` to display portfolio cards in a 3-column layout on larger screens.
 
-### Files Changed
-- `src/components/layout/Header.tsx`
-  - **Desktop nav (after Services mega menu, ~line 258)**: Insert a new `NavigationMenuItem` with a direct `Link` to `/portfolio` (same pattern as the Home item), with active state styling
-  - **Mobile sidebar (~line 380 area)**: Add a Portfolio link in the mobile nav section, positioned after the Services section
+### File
+- `src/pages/Portfolio.tsx` — Update the grid class on both the loading skeleton and the projects grid (two places).
 
