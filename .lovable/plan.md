@@ -1,35 +1,47 @@
 
 
-## Redesign ProductHero with hero-section-9 Pattern
+## Products হিরো সেকশন ফিক্স
 
-Replace the current single-image hero with a framer-motion animated hero featuring a 3-image collage layout.
+### সমস্যা
+বর্তমান ProductHero হালকা ব্যাকগ্রাউন্ডে আছে (`bg-gradient-to-br from-[hsl(var(--primary)/0.08)]`) যেটা সাইটের বাকি ডার্ক হিরো সেকশনগুলোর সাথে মেলে না। ইমেজ কোলাজ ওভারফ্লো করছে, ফ্লোটিং ব্যাজ বাইরে চলে যাচ্ছে, আর মোবাইলে কোনো ভিজুয়াল কনটেন্ট নেই।
 
-### Design
+### সমাধান
 
-**Left column** (unchanged content, new animations):
-- Badge, title, subtitle, CTA buttons, stats — all wrapped in framer-motion `containerVariants` with staggered `itemVariants` (opacity + translateY)
+Home পেইজের HeroSection এর ডার্ক থিম প্যাটার্ন হুবহু ফলো করে ProductHero সম্পূর্ণ রিডিজাইন করা হবে।
 
-**Right column** (new — replaces single image):
-- 3-image creative collage using the 3 product images (`isp-manager.jpg`, `somity-app.jpg`, `restaurant-app.jpg`)
-- Large image top-left, medium image top-right (offset down), small image bottom-center
-- Decorative gradient circles behind images (primary/accent colors)
-- Floating animation on decorative elements via `floatingVariants`
-- Each image uses `imageVariants` (scale + opacity entrance)
+### পরিবর্তন — `src/components/products/ProductHero.tsx`
 
-**Animations**: framer-motion `motion.div` with:
-- Container: stagger children 0.2s
-- Items: fade-in + translateY 20px → 0
-- Images: scale 0.8 → 1 with opacity
-- Decorative shapes: infinite y-axis float
+**ব্যাকগ্রাউন্ড:**
+- `bg-hero-background` ক্লাস ব্যবহার (Home হিরোর মতো)
+- Teal গ্রেডিয়েন্ট অর্ব + গ্রিড প্যাটার্ন + SVG নেটওয়ার্ক লাইন যোগ
+- Bottom fade: `from-[#0a1628]`
 
-### File Change
+**টেক্সট কালার:**
+- সব টেক্সট `text-white`, `text-white/60` এ পরিবর্তন
+- Badge: `border-teal-500/30 bg-teal-500/10 text-teal-400`
+- Title: প্রথম লাইন `text-white`, দ্বিতীয় লাইন `text-teal-400`
 
-**`src/components/products/ProductHero.tsx`** — full rewrite:
-- Import `motion` from `framer-motion`, product images from assets
-- Keep existing content (badge, title, subtitle, CTAs, stats, language support)
-- Replace right column single image with 3-image collage + decorative circles
-- Keep background grid pattern and gradient orbs
-- Remove `hero-animate` CSS classes, use framer-motion instead
+**CTA বাটন:**
+- Primary: `bg-gradient-to-r from-teal-500 to-teal-400` + shadow
+- Outline: `border-white/20 bg-white/5 text-white`
 
-No new files needed — the hero-section-9 pattern is adapted directly into ProductHero rather than creating a separate reusable component, since ProductHero has bilingual content and routing-specific logic.
+**ইমেজ কোলাজ ফিক্স:**
+- কন্টেইনারের মধ্যে ইমেজ রাখা — `overflow-hidden` যোগ
+- ইমেজ সাইজ ও পজিশন সঠিকভাবে সেট করা যাতে ওভারল্যাপ না হয়
+- ফ্লোটিং ব্যাজ কন্টেইনারের ভেতরে রাখা
+- ইমেজ বর্ডার: `border-teal-500/20`
+- Decorative circles: teal কালার (`bg-teal-500/15`)
+
+**Stats কার্ড:**
+- ডার্ক থিম: `border-teal-500/20 bg-gradient-to-br from-teal-900/40 to-teal-900/20`
+- আইকন: `text-teal-400/70`
+- টেক্সট: `text-white`, লেবেল: `text-white/50`
+
+**মোবাইল:**
+- Stats গ্রিড `grid-cols-3` বজায় রাখা, তবে ছোট স্ক্রিনে সুন্দরভাবে দেখানোর জন্য প্যাডিং এডজাস্ট
+- ইমেজ কোলাজ `lg:block` হিসেবে রাখা (ডেস্কটপে দেখাবে)
+
+**Bottom fade:** `from-[#0a1628]` — Home হিরোর সাথে মিল
+
+শুধু একটি ফাইল পরিবর্তন হবে: `src/components/products/ProductHero.tsx`
 
