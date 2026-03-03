@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import ScrollReveal from '@/components/common/ScrollReveal';
+import { FinancialHero } from '@/components/ui/hero-section';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -68,26 +69,24 @@ const Portfolio = () => {
       </Helmet>
       <Layout>
         {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 lg:py-24">
-          <div className="absolute inset-0">
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary-foreground/5 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-accent/10 blur-3xl" />
-          </div>
-          <div className="container-custom relative text-center">
-            <ScrollReveal animation="fade-up">
-              <h1 className="mb-4 text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl" style={{ letterSpacing: '-0.02em' }}>
-                {language === 'en' ? 'Our Portfolio' : 'আমাদের পোর্টফোলিও'}
-              </h1>
-            </ScrollReveal>
-            <ScrollReveal animation="fade-up" delay={100}>
-              <p className="mx-auto max-w-2xl text-base text-primary-foreground/70 leading-relaxed sm:text-lg">
-                {language === 'en'
-                  ? 'Real solutions we\'ve built for real businesses — explore our case studies and project highlights.'
-                  : 'বাস্তব ব্যবসার জন্য আমাদের তৈরি সমাধান — আমাদের কেস স্টাডি ও প্রজেক্ট হাইলাইট দেখুন।'}
-              </p>
-            </ScrollReveal>
-          </div>
-        </section>
+        <FinancialHero
+          title={
+            <>
+              {language === 'en' ? (
+                <>Explore Our <span className="text-primary">Portfolio</span> & Case Studies</>
+              ) : (
+                <>আমাদের <span className="text-primary">পোর্টফোলিও</span> ও কেস স্টাডি দেখুন</>
+              )}
+            </>
+          }
+          description={language === 'en'
+            ? "Real solutions we've built for real businesses — explore our case studies and project highlights."
+            : 'বাস্তব ব্যবসার জন্য আমাদের তৈরি সমাধান — আমাদের কেস স্টাডি ও প্রজেক্ট হাইলাইট দেখুন।'}
+          buttonText={language === 'en' ? 'Get a Quote' : 'কোটেশন নিন'}
+          buttonLink="/contact"
+          imageUrl1={ispImg}
+          imageUrl2={restaurantImg}
+        />
 
         {/* Category Filter */}
         <section className="border-b border-border/50 py-5 bg-background sticky top-0 z-10">
