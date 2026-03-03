@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,23 +86,25 @@ const AdminProductDetail = () => {
   const [formData, setFormData] = useState<ProductFormData | null>(null);
 
   // Initialize form data when product loads
-  if (product && !formData) {
-    setFormData({
-      name_en: product.name_en,
-      name_bn: product.name_bn || '',
-      slug: product.slug,
-      short_description_en: product.short_description_en || '',
-      short_description_bn: product.short_description_bn || '',
-      description_en: product.description_en || '',
-      description_bn: product.description_bn || '',
-      status: product.status,
-      category: (product as any).category || '',
-      display_order: product.display_order ?? 0,
-      features: JSON.stringify(product.features || [], null, 2),
-      highlights: JSON.stringify(product.highlights || [], null, 2),
-      images: (Array.isArray(product.media) ? product.media : []).filter((m: any) => m?.url).map((m: any) => ({ type: m.type || 'image', url: m.url })) as MediaItem[],
-    });
-  }
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name_en: product.name_en,
+        name_bn: product.name_bn || '',
+        slug: product.slug,
+        short_description_en: product.short_description_en || '',
+        short_description_bn: product.short_description_bn || '',
+        description_en: product.description_en || '',
+        description_bn: product.description_bn || '',
+        status: product.status,
+        category: product.category || '',
+        display_order: product.display_order ?? 0,
+        features: JSON.stringify(product.features || [], null, 2),
+        highlights: JSON.stringify(product.highlights || [], null, 2),
+        images: (Array.isArray(product.media) ? product.media : []).filter((m: any) => m?.url).map((m: any) => ({ type: m.type || 'image', url: m.url })) as MediaItem[],
+      });
+    }
+  }, [product]);
 
   const updateMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
@@ -126,9 +128,15 @@ const AdminProductDetail = () => {
         .eq('slug', slug);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-product', slug] });
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       toast.success('Product updated successfully');
+      // If slug changed, navigate to new URL
+      if (variables.slug !== slug) {
+        navigate(`/admin/products/${variables.slug}`, { replace: true });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['admin-product', slug] });
+      }
     },
     onError: (error) => {
       console.error(error);

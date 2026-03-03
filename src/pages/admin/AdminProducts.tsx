@@ -518,8 +518,10 @@ const AdminProducts = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Product Name</TableHead>
+                <TableHead>Slug</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-center">Order</TableHead>
                 <TableHead className="text-center">Active</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -528,8 +530,10 @@ const AdminProducts = () => {
               {products.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name_en}</TableCell>
-                  <TableCell className="max-w-[300px] truncate">{product.short_description_en || '-'}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground font-mono">{product.slug}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{product.short_description_en || '-'}</TableCell>
                   <TableCell><AdminStatusBadge status={product.status} /></TableCell>
+                  <TableCell className="text-center text-muted-foreground">{product.display_order}</TableCell>
                   <TableCell className="text-center">
                     <Switch
                       checked={product.status === 'active'}
