@@ -992,8 +992,39 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          name_bn: string | null
+          name_en: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name_bn?: string | null
+          name_en: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name_bn?: string | null
+          name_en?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
+          category: string | null
           created_at: string
           description_bn: string | null
           description_en: string | null
@@ -1011,6 +1042,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description_bn?: string | null
           description_en?: string | null
@@ -1028,6 +1060,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           description_bn?: string | null
           description_en?: string | null

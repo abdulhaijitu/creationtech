@@ -1,18 +1,28 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
- import { supabase } from '@/integrations/supabase/client';
- import AdminLayout from '@/components/admin/AdminLayout';
- import AdminPageHeader from '@/components/admin/AdminPageHeader';
- import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
- import AdminEmptyState from '@/components/admin/AdminEmptyState';
- import AdminStatusBadge from '@/components/admin/AdminStatusBadge';
- import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
- import { Button } from '@/components/ui/button';
- import { Switch } from '@/components/ui/switch';
+import { supabase } from '@/integrations/supabase/client';
+import AdminLayout from '@/components/admin/AdminLayout';
+import AdminPageHeader from '@/components/admin/AdminPageHeader';
+import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
+import AdminStatusBadge from '@/components/admin/AdminStatusBadge';
+import ProductGalleryUpload from '@/components/admin/ProductGalleryUpload';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,35 +34,45 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
- import { toast } from 'sonner';
-import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save, Trash2, Upload, X, ImageIcon, Loader2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
- 
+import { toast } from 'sonner';
+import { Package, Edit, ExternalLink, Plus, ArrowLeft, Save, Trash2, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
 interface MediaItem {
   type: string;
   url: string;
 }
 
- interface Product {
-   id: string;
-   slug: string;
-   name_en: string;
-   name_bn: string | null;
-   short_description_en: string | null;
-   status: string;
-   display_order: number;
- }
- 
+interface Product {
+  id: string;
+  slug: string;
+  name_en: string;
+  name_bn: string | null;
+  short_description_en: string | null;
+  status: string;
+  display_order: number;
+}
+
+interface ProductCategory {
+  id: string;
+  name_en: string;
+  name_bn: string | null;
+  slug: string;
+  is_active: boolean;
+  display_order: number;
+}
+
 type ViewMode = 'list' | 'create';
 
- const AdminProducts = () => {
-   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+const AdminProducts = () => {
+  const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [galleryImages, setGalleryImages] = useState<MediaItem[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
+  const [newCategory, setNewCategory] = useState({ name_en: '', name_bn: '', slug: '' });
+
   const [formData, setFormData] = useState({
     name_en: '',
     name_bn: '',
@@ -62,113 +82,45 @@ type ViewMode = 'list' | 'create';
     description_en: '',
     description_bn: '',
     status: 'active',
+    category: '',
     features: '[]',
     highlights: '[]',
     display_order: 0,
   });
- 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
 
-    const validFiles: File[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image file`);
-        continue;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name} is larger than 5MB`);
-        continue;
-      }
-      validFiles.push(file);
-    }
+  const { data: products, isLoading } = useQuery({
+    queryKey: ['admin-products'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('products').select('*').order('display_order');
+      if (error) throw error;
+      return data as Product[];
+    },
+  });
 
-    if (validFiles.length === 0) return;
+  const { data: categories = [] } = useQuery({
+    queryKey: ['product-categories-admin'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('product_categories')
+        .select('*')
+        .order('display_order');
+      if (error) throw error;
+      return data as ProductCategory[];
+    },
+  });
 
-    setIsUploading(true);
-    const newImages: MediaItem[] = [];
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase.from('products').update({ status }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+      toast.success('Product status updated');
+    },
+    onError: () => toast.error('Failed to update status'),
+  });
 
-    try {
-      for (const file of validFiles) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `new-product-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(fileName, file, { upsert: true });
-
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          toast.error(`Failed to upload ${file.name}`);
-          continue;
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(fileName);
-
-        newImages.push({ type: 'image', url: publicUrl });
-      }
-
-      if (newImages.length > 0) {
-        setGalleryImages((prev) => [...prev, ...newImages]);
-        toast.success(`${newImages.length} image(s) uploaded successfully`);
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload images');
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const handleRemoveImage = async (index: number) => {
-    const imageToRemove = galleryImages[index];
-    try {
-      const urlParts = imageToRemove.url.split('/');
-      const fileName = urlParts[urlParts.length - 1];
-      await supabase.storage.from('product-images').remove([fileName]);
-    } catch (error) {
-      console.error('Delete error:', error);
-    }
-    setGalleryImages((prev) => prev.filter((_, i) => i !== index));
-    toast.success('Image removed');
-  };
-
-  const moveImage = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= galleryImages.length) return;
-    const newImages = [...galleryImages];
-    const [movedImage] = newImages.splice(fromIndex, 1);
-    newImages.splice(toIndex, 0, movedImage);
-    setGalleryImages(newImages);
-  };
-
-   const { data: products, isLoading } = useQuery({
-     queryKey: ['admin-products'],
-     queryFn: async () => {
-       const { data, error } = await supabase.from('products').select('*').order('display_order');
-       if (error) throw error;
-       return data as Product[];
-     },
-   });
- 
-   const toggleStatusMutation = useMutation({
-     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-       const { error } = await supabase.from('products').update({ status }).eq('id', id);
-       if (error) throw error;
-     },
-     onSuccess: () => {
-       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-       toast.success('Product status updated');
-     },
-     onError: () => toast.error('Failed to update status'),
-   });
- 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('products').delete().eq('id', id);
@@ -196,6 +148,7 @@ type ViewMode = 'list' | 'create';
         description_en: data.description_en || null,
         description_bn: data.description_bn || null,
         status: data.status,
+        category: data.category || null,
         features: JSON.parse(data.features || '[]'),
         highlights: JSON.parse(data.highlights || '[]'),
         display_order: data.display_order,
@@ -208,12 +161,60 @@ type ViewMode = 'list' | 'create';
       toast.success('Product created successfully');
       setViewMode('list');
       resetForm();
-      setGalleryImages([]);
     },
     onError: (error) => {
       console.error(error);
       toast.error('Failed to create product. Check JSON format and slug uniqueness.');
     },
+  });
+
+  // Category CRUD mutations
+  const createCategoryMutation = useMutation({
+    mutationFn: async (cat: { name_en: string; name_bn: string; slug: string }) => {
+      const { error } = await supabase.from('product_categories').insert([{
+        name_en: cat.name_en,
+        name_bn: cat.name_bn || null,
+        slug: cat.slug,
+        display_order: categories.length,
+      }]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-categories-admin'] });
+      setNewCategory({ name_en: '', name_bn: '', slug: '' });
+      toast.success('Category created');
+    },
+    onError: () => toast.error('Failed to create category'),
+  });
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: async (cat: ProductCategory) => {
+      const { error } = await supabase.from('product_categories').update({
+        name_en: cat.name_en,
+        name_bn: cat.name_bn,
+        slug: cat.slug,
+        is_active: cat.is_active,
+      }).eq('id', cat.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-categories-admin'] });
+      setEditingCategory(null);
+      toast.success('Category updated');
+    },
+    onError: () => toast.error('Failed to update category'),
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('product_categories').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-categories-admin'] });
+      toast.success('Category deleted');
+    },
+    onError: () => toast.error('Failed to delete category'),
   });
 
   const resetForm = () => {
@@ -226,6 +227,7 @@ type ViewMode = 'list' | 'create';
       description_en: '',
       description_bn: '',
       status: 'active',
+      category: '',
       features: '[]',
       highlights: '[]',
       display_order: products?.length || 0,
@@ -238,10 +240,10 @@ type ViewMode = 'list' | 'create';
   };
 
   const handleNameChange = (value: string) => {
-    setFormData({ 
-      ...formData, 
+    setFormData({
+      ...formData,
       name_en: value,
-      slug: formData.slug || generateSlug(value)
+      slug: formData.slug || generateSlug(value),
     });
   };
 
@@ -256,6 +258,17 @@ type ViewMode = 'list' | 'create';
     }
     createMutation.mutate(formData);
   };
+
+  const handleAddCategory = () => {
+    if (!newCategory.name_en.trim()) {
+      toast.error('Category name is required');
+      return;
+    }
+    const slug = newCategory.slug || generateSlug(newCategory.name_en);
+    createCategoryMutation.mutate({ ...newCategory, slug });
+  };
+
+  const activeCategories = categories.filter((c) => c.is_active);
 
   if (viewMode === 'create') {
     return (
@@ -286,60 +299,59 @@ type ViewMode = 'list' | 'create';
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Name (English) *</Label>
-                  <Input 
-                    value={formData.name_en} 
-                    onChange={(e) => handleNameChange(e.target.value)} 
-                    placeholder="Product name"
-                  />
+                  <Input value={formData.name_en} onChange={(e) => handleNameChange(e.target.value)} placeholder="Product name" />
                 </div>
                 <div>
                   <Label>Name (Bangla)</Label>
-                  <Input 
-                    value={formData.name_bn} 
-                    onChange={(e) => setFormData({ ...formData, name_bn: e.target.value })} 
-                    placeholder="পণ্যের নাম"
-                  />
+                  <Input value={formData.name_bn} onChange={(e) => setFormData({ ...formData, name_bn: e.target.value })} placeholder="পণ্যের নাম" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label>Slug (URL path) *</Label>
-                  <Input 
-                    value={formData.slug} 
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })} 
-                    placeholder="product-slug"
-                  />
+                  <Input value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} placeholder="product-slug" />
                   <p className="text-xs text-muted-foreground mt-1">URL: /products/{formData.slug || 'slug'}</p>
                 </div>
                 <div>
+                  <Label>Category</Label>
+                  <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value === '_none' ? '' : value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_none">No Category</SelectItem>
+                      {activeCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.slug}>{cat.name_en}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label>Display Order</Label>
-                  <Input 
-                    type="number" 
-                    value={formData.display_order} 
-                    onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })} 
-                  />
+                  <Input type="number" value={formData.display_order} onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Short Description (English)</Label>
-                  <Textarea 
-                    value={formData.short_description_en} 
-                    onChange={(e) => setFormData({ ...formData, short_description_en: e.target.value })} 
-                    rows={3} 
-                    placeholder="Brief product description"
-                  />
+                  <Textarea value={formData.short_description_en} onChange={(e) => setFormData({ ...formData, short_description_en: e.target.value })} rows={3} placeholder="Brief product description" />
                 </div>
                 <div>
                   <Label>Short Description (Bangla)</Label>
-                  <Textarea 
-                    value={formData.short_description_bn} 
-                    onChange={(e) => setFormData({ ...formData, short_description_bn: e.target.value })} 
-                    rows={3} 
-                    placeholder="সংক্ষিপ্ত বর্ণনা"
-                  />
+                  <Textarea value={formData.short_description_bn} onChange={(e) => setFormData({ ...formData, short_description_bn: e.target.value })} rows={3} placeholder="সংক্ষিপ্ত বর্ণনা" />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Product Gallery ({galleryImages.length})</CardTitle></CardHeader>
+            <CardContent>
+              <ProductGalleryUpload
+                productId="new-product"
+                images={galleryImages}
+                onImagesChange={setGalleryImages}
+              />
             </CardContent>
           </Card>
 
@@ -348,108 +360,12 @@ type ViewMode = 'list' | 'create';
             <CardContent className="space-y-4">
               <div>
                 <Label>Description (English)</Label>
-                <Textarea 
-                  value={formData.description_en} 
-                  onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} 
-                  rows={6} 
-                  placeholder="Detailed product description"
-                />
+                <Textarea value={formData.description_en} onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} rows={6} placeholder="Detailed product description" />
               </div>
               <div>
                 <Label>Description (Bangla)</Label>
-                <Textarea 
-                  value={formData.description_bn} 
-                  onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} 
-                  rows={6} 
-                  placeholder="বিস্তারিত বর্ণনা"
-                />
+                <Textarea value={formData.description_bn} onChange={(e) => setFormData({ ...formData, description_bn: e.target.value })} rows={6} placeholder="বিস্তারিত বর্ণনা" />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                Product Gallery ({galleryImages.length})
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  <Upload className="h-4 w-4 mr-1" />
-                  Add Images
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {galleryImages.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {galleryImages.map((image, index) => (
-                    <div key={index} className="relative group aspect-square">
-                      <img
-                        src={image.url}
-                        alt={`Product image ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg border"
-                      />
-                      {index === 0 && (
-                        <span className="absolute top-1 left-1 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded">
-                          Primary
-                        </span>
-                      )}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex flex-col items-center justify-center gap-2">
-                        <div className="flex gap-1">
-                          {index > 0 && (
-                            <Button type="button" variant="secondary" size="sm" onClick={() => moveImage(index, index - 1)}>←</Button>
-                          )}
-                          {index < galleryImages.length - 1 && (
-                            <Button type="button" variant="secondary" size="sm" onClick={() => moveImage(index, index + 1)}>→</Button>
-                          )}
-                        </div>
-                        <Button type="button" variant="destructive" size="sm" onClick={() => handleRemoveImage(index)}>
-                          <X className="h-4 w-4 mr-1" />Remove
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div
-                  onClick={() => !isUploading && fileInputRef.current?.click()}
-                  className="w-full h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-muted/50 transition-colors"
-                >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Uploading...</span>
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Click to upload images</span>
-                      <span className="text-xs text-muted-foreground">PNG, JPG up to 5MB each. Multiple files allowed.</span>
-                    </>
-                  )}
-                </div>
-              )}
-              {isUploading && galleryImages.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-3">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Uploading...
-                </div>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              <p className="text-xs text-muted-foreground mt-3">
-                The first image will be used as the primary image on product cards.
-              </p>
             </CardContent>
           </Card>
 
@@ -458,23 +374,11 @@ type ViewMode = 'list' | 'create';
             <CardContent className="space-y-4">
               <div>
                 <Label>Features (JSON Array)</Label>
-                <Textarea 
-                  value={formData.features} 
-                  onChange={(e) => setFormData({ ...formData, features: e.target.value })} 
-                  rows={6} 
-                  className="font-mono text-sm" 
-                  placeholder='[{"title": "Feature 1", "description": "..."}]' 
-                />
+                <Textarea value={formData.features} onChange={(e) => setFormData({ ...formData, features: e.target.value })} rows={6} className="font-mono text-sm" placeholder='[{"title": "Feature 1", "description": "..."}]' />
               </div>
               <div>
                 <Label>Highlights (JSON Array)</Label>
-                <Textarea 
-                  value={formData.highlights} 
-                  onChange={(e) => setFormData({ ...formData, highlights: e.target.value })} 
-                  rows={6} 
-                  className="font-mono text-sm" 
-                  placeholder='["Highlight 1", "Highlight 2"]' 
-                />
+                <Textarea value={formData.highlights} onChange={(e) => setFormData({ ...formData, highlights: e.target.value })} rows={6} className="font-mono text-sm" placeholder='["Highlight 1", "Highlight 2"]' />
               </div>
             </CardContent>
           </Card>
@@ -490,86 +394,188 @@ type ViewMode = 'list' | 'create';
     );
   }
 
-   return (
-     <AdminLayout>
-      <AdminPageHeader 
-        title="All Products" 
+  return (
+    <AdminLayout>
+      <AdminPageHeader
+        title="All Products"
         description="Manage product catalog"
         action={
-          <Button onClick={() => { resetForm(); setViewMode('create'); }}>
-            <Plus className="h-4 w-4 mr-2" />Add Product
-          </Button>
+          <div className="flex gap-2">
+            <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Settings className="h-4 w-4 mr-2" />Manage Categories
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Product Categories</DialogTitle>
+                  <DialogDescription>Add, edit, or remove product categories.</DialogDescription>
+                </DialogHeader>
+
+                {/* Add new category */}
+                <div className="space-y-3 border-b pb-4">
+                  <Label className="font-medium">Add New Category</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="Name (English)"
+                      value={newCategory.name_en}
+                      onChange={(e) => setNewCategory({ ...newCategory, name_en: e.target.value, slug: generateSlug(e.target.value) })}
+                    />
+                    <Input
+                      placeholder="Name (Bangla)"
+                      value={newCategory.name_bn}
+                      onChange={(e) => setNewCategory({ ...newCategory, name_bn: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Slug"
+                      value={newCategory.slug}
+                      onChange={(e) => setNewCategory({ ...newCategory, slug: e.target.value })}
+                      className="flex-1"
+                    />
+                    <Button size="sm" onClick={handleAddCategory} disabled={createCategoryMutation.isPending}>
+                      <Plus className="h-4 w-4 mr-1" />Add
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Category list */}
+                <div className="space-y-2">
+                  {categories.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No categories yet</p>
+                  ) : (
+                    categories.map((cat) => (
+                      <div key={cat.id} className="flex items-center gap-2 p-2 border rounded-lg">
+                        {editingCategory?.id === cat.id ? (
+                          <>
+                            <div className="flex-1 space-y-1">
+                              <Input
+                                value={editingCategory.name_en}
+                                onChange={(e) => setEditingCategory({ ...editingCategory, name_en: e.target.value })}
+                                placeholder="Name EN"
+                              />
+                              <Input
+                                value={editingCategory.name_bn || ''}
+                                onChange={(e) => setEditingCategory({ ...editingCategory, name_bn: e.target.value })}
+                                placeholder="Name BN"
+                              />
+                            </div>
+                            <Button size="sm" onClick={() => updateCategoryMutation.mutate(editingCategory)}>Save</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setEditingCategory(null)}>Cancel</Button>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{cat.name_en}</p>
+                              {cat.name_bn && <p className="text-xs text-muted-foreground">{cat.name_bn}</p>}
+                            </div>
+                            <Switch
+                              checked={cat.is_active}
+                              onCheckedChange={(checked) => updateCategoryMutation.mutate({ ...cat, is_active: checked })}
+                            />
+                            <Button size="sm" variant="ghost" onClick={() => setEditingCategory({ ...cat })}>
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="ghost"><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                                  <AlertDialogDescription>Delete "{cat.name_en}"? Products using this category won't be affected.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteCategoryMutation.mutate(cat.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button onClick={() => { resetForm(); setViewMode('create'); }}>
+              <Plus className="h-4 w-4 mr-2" />Add Product
+            </Button>
+          </div>
         }
       />
- 
-       {isLoading ? (
-         <AdminLoadingSkeleton />
-       ) : !products?.length ? (
-         <AdminEmptyState icon={Package} title="No products found" description="Products will appear here" />
-       ) : (
-         <div className="border rounded-lg">
-           <Table>
-             <TableHeader>
-               <TableRow>
-                 <TableHead>Product Name</TableHead>
-                 <TableHead>Description</TableHead>
-                 <TableHead>Status</TableHead>
-                 <TableHead className="text-center">Active</TableHead>
-                 <TableHead className="text-right">Actions</TableHead>
-               </TableRow>
-             </TableHeader>
-             <TableBody>
-               {products.map((product) => (
-                 <TableRow key={product.id}>
-                   <TableCell className="font-medium">{product.name_en}</TableCell>
-                   <TableCell className="max-w-[300px] truncate">{product.short_description_en || '-'}</TableCell>
-                   <TableCell><AdminStatusBadge status={product.status} /></TableCell>
-                   <TableCell className="text-center">
-                     <Switch
-                       checked={product.status === 'active'}
-                       onCheckedChange={(checked) => toggleStatusMutation.mutate({ id: product.id, status: checked ? 'active' : 'inactive' })}
-                     />
-                   </TableCell>
-                   <TableCell className="text-right">
-                     <Button variant="ghost" size="sm" asChild>
-                       <Link to={`/admin/products/${product.slug}`}><Edit className="h-4 w-4" /></Link>
-                     </Button>
-                     <Button variant="ghost" size="sm" asChild>
-                       <a href={`/products/${product.slug}`} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
-                     </Button>
-                      <AlertDialog open={deletingId === product.id} onOpenChange={(open) => !open && setDeletingId(null)}>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" onClick={() => setDeletingId(product.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Product</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{product.name_en}"? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deleteMutation.mutate(product.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                   </TableCell>
-                 </TableRow>
-               ))}
-             </TableBody>
-           </Table>
-         </div>
-       )}
-     </AdminLayout>
-   );
- };
- 
- export default AdminProducts;
+
+      {isLoading ? (
+        <AdminLoadingSkeleton />
+      ) : !products?.length ? (
+        <AdminEmptyState icon={Package} title="No products found" description="Products will appear here" />
+      ) : (
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-center">Active</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium">{product.name_en}</TableCell>
+                  <TableCell className="max-w-[300px] truncate">{product.short_description_en || '-'}</TableCell>
+                  <TableCell><AdminStatusBadge status={product.status} /></TableCell>
+                  <TableCell className="text-center">
+                    <Switch
+                      checked={product.status === 'active'}
+                      onCheckedChange={(checked) => toggleStatusMutation.mutate({ id: product.id, status: checked ? 'active' : 'inactive' })}
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link to={`/admin/products/${product.slug}`}><Edit className="h-4 w-4" /></Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" asChild>
+                      <a href={`/products/${product.slug}`} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
+                    </Button>
+                    <AlertDialog open={deletingId === product.id} onOpenChange={(open) => !open && setDeletingId(null)}>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm" onClick={() => setDeletingId(product.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{product.name_en}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteMutation.mutate(product.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </AdminLayout>
+  );
+};
+
+export default AdminProducts;
