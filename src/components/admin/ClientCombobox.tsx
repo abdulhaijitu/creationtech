@@ -25,23 +25,25 @@
    company?: string | null;
  }
  
- interface ClientComboboxProps {
-   clients: Client[];
-   value: string;
-   onSelect: (client: Client) => void;
-   onAddNew?: () => void;
-   placeholder?: string;
-   disabled?: boolean;
- }
+interface ClientComboboxProps {
+  clients: Client[];
+  value: string;
+  onSelect: (client: Client) => void;
+  onAddNew?: () => void;
+  placeholder?: string;
+  disabled?: boolean;
+  displayName?: string;
+}
  
  const ClientCombobox = ({
    clients,
    value,
    onSelect,
-   onAddNew,
-   placeholder = "Select client...",
-   disabled = false,
- }: ClientComboboxProps) => {
+  onAddNew,
+  placeholder = "Select client...",
+  disabled = false,
+  displayName,
+}: ClientComboboxProps) => {
    const [open, setOpen] = useState(false);
  
    const selectedClient = clients.find((client) => client.id === value);
@@ -56,21 +58,28 @@
            className="w-full justify-between h-10 font-normal"
            disabled={disabled}
          >
-           {selectedClient ? (
-             <div className="flex items-center gap-2 truncate">
-               <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                 <User className="h-3 w-3 text-primary" />
-               </div>
-               <div className="flex flex-col items-start truncate">
-                 <span className="truncate">{selectedClient.name}</span>
-                 {selectedClient.email && (
-                   <span className="text-xs text-muted-foreground truncate">{selectedClient.email}</span>
-                 )}
-               </div>
-             </div>
-           ) : (
-             <span className="text-muted-foreground">{placeholder}</span>
-           )}
+            {selectedClient ? (
+              <div className="flex items-center gap-2 truncate">
+                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="h-3 w-3 text-primary" />
+                </div>
+                <div className="flex flex-col items-start truncate">
+                  <span className="truncate">{selectedClient.name}</span>
+                  {selectedClient.email && (
+                    <span className="text-xs text-muted-foreground truncate">{selectedClient.email}</span>
+                  )}
+                </div>
+              </div>
+            ) : displayName ? (
+              <div className="flex items-center gap-2 truncate">
+                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="h-3 w-3 text-primary" />
+                </div>
+                <span className="truncate">{displayName}</span>
+              </div>
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )}
            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
          </Button>
        </PopoverTrigger>

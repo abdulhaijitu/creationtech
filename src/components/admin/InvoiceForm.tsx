@@ -141,10 +141,11 @@ const InvoiceForm = ({
               onSelect={handleClientSelect}
               onAddNew={onAddNewClient}
               placeholder="Search and select a client..."
+              displayName={formData.client_name}
             />
           </div>
           
-          {formData.client_id && (
+          {(formData.client_id || formData.client_name) && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 animate-in slide-in-from-top-2 duration-200">
               <div className="space-y-1.5">
                 <Label className="text-xs text-muted-foreground">Email</Label>
