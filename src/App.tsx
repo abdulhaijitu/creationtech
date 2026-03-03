@@ -36,8 +36,6 @@ import AdminServices from "./pages/admin/AdminServices";
 import AdminPortfolio from "./pages/admin/AdminPortfolio";
 import AdminCareers from "./pages/admin/AdminCareers";
 import AdminLeads from "./pages/admin/AdminLeads";
-import AdminQuotes from "./pages/admin/AdminQuotes";
-import AdminMeetings from "./pages/admin/AdminMeetings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import AdminInvoices from "./pages/admin/AdminInvoices";
@@ -97,8 +95,6 @@ const App = () => (
                 <Route path="/admin/portfolio" element={<ProtectedRoute><AdminPortfolio /></ProtectedRoute>} />
                 <Route path="/admin/careers" element={<ProtectedRoute><AdminCareers /></ProtectedRoute>} />
                 <Route path="/admin/leads" element={<ProtectedRoute><AdminLeads /></ProtectedRoute>} />
-                <Route path="/admin/leads/quotes" element={<ProtectedRoute><AdminQuotes /></ProtectedRoute>} />
-                <Route path="/admin/leads/meetings" element={<ProtectedRoute><AdminMeetings /></ProtectedRoute>} />
                 <Route path="/admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
                 <Route path="/admin/testimonials" element={<ProtectedRoute><AdminTestimonials /></ProtectedRoute>} />
                 <Route path="/admin/invoices" element={<ProtectedRoute><AdminInvoices /></ProtectedRoute>} />

@@ -187,7 +187,7 @@ const AdminDashboard = () => {
       total: stats.contacts,
       new: stats.newContacts,
       icon: MessageSquare,
-      href: '/admin/leads/contacts',
+      href: '/admin/leads',
       color: 'text-info',
       bgColor: 'bg-info-muted',
     },
@@ -196,7 +196,7 @@ const AdminDashboard = () => {
       total: stats.quotes,
       new: stats.newQuotes,
       icon: FileQuestion,
-      href: '/admin/leads/quotes',
+      href: '/admin/leads',
       color: 'text-success',
       bgColor: 'bg-success-muted',
     },
@@ -205,7 +205,7 @@ const AdminDashboard = () => {
       total: stats.meetings,
       new: stats.newMeetings,
       icon: Calendar,
-      href: '/admin/leads/meetings',
+      href: '/admin/leads',
       color: 'text-accent',
       bgColor: 'bg-accent/10',
     },
@@ -222,7 +222,7 @@ const AdminDashboard = () => {
 
   const quickActions = [
     { label: 'Create Invoice', href: '/admin/invoices', icon: Receipt },
-    { label: 'Write Blog Post', href: '/admin/blog', icon: FileText },
+    { label: 'Write Blog Post', href: '/admin/leads', icon: FileText },
     { label: 'Manage Services', href: '/admin/services', icon: Briefcase },
   ];
 
