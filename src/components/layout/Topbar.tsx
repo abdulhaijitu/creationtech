@@ -18,10 +18,8 @@ const socialLinks = [
 const Topbar = ({ isVisible }: TopbarProps) => {
   const { data: businessInfo } = useBusinessInfoMap();
 
-  const getSocialLink = (key: string) => {
-    const info = businessInfo[key];
-    return info?.value_en || '#';
-  };
+  const getInfo = (key: string, fallback: string) => businessInfo[key]?.value_en || fallback;
+  const getSocialLink = (key: string) => getInfo(key, '#');
 
   return (
     <div
@@ -35,19 +33,19 @@ const Topbar = ({ isVisible }: TopbarProps) => {
           {/* Left Side - Contact Info */}
           <div className="flex items-center gap-2 text-muted-foreground">
             <a
-              href="mailto:info@creationtechbd.com"
+              href={`mailto:${getInfo('email', 'info@creationtechbd.com')}`}
               className="flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:text-foreground hover:bg-accent/50"
             >
               <Mail className="h-3.5 w-3.5 text-primary/70" />
-              <span>info@creationtechbd.com</span>
+              <span>{getInfo('email', 'info@creationtechbd.com')}</span>
             </a>
             <span className="text-border">•</span>
             <a
-              href="tel:+8801833876434"
+              href={`tel:${getInfo('phone', '+8801833876434')}`}
               className="flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:text-foreground hover:bg-accent/50"
             >
               <Phone className="h-3.5 w-3.5 text-primary/70" />
-              <span>+880 1833-876434</span>
+              <span>{getInfo('phone', '+880 1833-876434')}</span>
             </a>
           </div>
 
