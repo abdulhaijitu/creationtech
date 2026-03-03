@@ -85,9 +85,9 @@ const ProductHero = () => {
             </div>
 
             {/* Stats */}
-            <div className="mt-12 grid grid-cols-3 gap-3 sm:gap-6 max-w-md mx-auto lg:mx-0 hero-animate hero-animate-delay-4">
+            <div className="mt-12 grid grid-cols-3 gap-4 sm:gap-6 max-w-md mx-auto lg:mx-0 hero-animate hero-animate-delay-4">
               {stats.map((stat, index) => (
-                <div key={index} className="relative group">
+                <div key={index} className="relative group min-w-0">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="relative flex flex-col items-center p-3 sm:p-5 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50 hover:border-primary/20 transition-colors duration-300">
                     <stat.icon className="h-5 w-5 text-primary mb-2" />
