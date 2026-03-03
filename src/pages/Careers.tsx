@@ -139,7 +139,7 @@ const Careers = () => {
                 {language === 'en' ? "We're Hiring!" : 'আমরা নিয়োগ করছি!'}
               </Badge>
               
-              <h1 className="mb-6 text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl">
+              <h1 className="mb-6 text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl lg:text-5xl">
                 {language === 'en' ? 'Software Developer Jobs in Bangladesh' : 'বাংলাদেশে সফটওয়্যার ডেভেলপার চাকরি'}
               </h1>
               

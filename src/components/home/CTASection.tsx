@@ -83,7 +83,7 @@ const CTASection = () => {
           </ScrollReveal>
 
           {/* Action Cards */}
-          <div className="grid gap-5 sm:grid-cols-3 sm:gap-6 mb-10">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 sm:gap-6 mb-10">
             {actions.map((action, index) => {
               const Icon = action.icon;
               return (

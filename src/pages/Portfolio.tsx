@@ -101,7 +101,7 @@ const Portfolio = () => {
         />
 
         {/* Category Filter */}
-        <section className="border-b border-border/50 py-5 bg-background sticky top-0 z-10">
+        <section className="border-b border-border/50 py-5 bg-background/95 backdrop-blur-sm sticky top-16 z-10">
           <div className="container-custom">
             <div className="flex flex-wrap gap-2 justify-center">
               {categories.map((cat) => (
