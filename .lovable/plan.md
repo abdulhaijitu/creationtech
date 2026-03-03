@@ -1,25 +1,13 @@
 
 
-## Plan: Portfolio হিরো সেকশন FinancialHero কম্পোনেন্ট দিয়ে রিপ্লেস
+## সমস্যা
 
-### সমস্যা
-ব্যবহারকারী একটি `FinancialHero` কম্পোনেন্ট দিয়েছেন কিন্তু JSX কন্টেন্ট স্ট্রিপড হয়ে গেছে। Animation variants ও props থেকে JSX পুনর্গঠন করে কম্পোনেন্ট তৈরি করতে হবে এবং Portfolio পেইজে ব্যবহার করতে হবে।
+`NavigationMenuList` কম্পোনেন্টে Tailwind `group` ক্লাস আছে (`navigation-menu.tsx` এ)। Header-এর প্রতিটি nav Link-এও `group` ক্লাস আছে। যখন কোনো আইটেমে হোভার করা হয়, তখন parent `NavigationMenuList`-এর `group` ট্রিগার হয় এবং সব চাইল্ড `group-hover:scale-x-100` একসাথে সক্রিয় হয়ে যায়।
 
-### পরিবর্তন
+## সমাধান
 
-#### 1. নতুন ফাইল: `src/components/ui/hero-section.tsx`
-- `FinancialHero` কম্পোনেন্ট তৈরি — framer-motion অ্যানিমেশন সহ
-- বাম দিকে: টাইটেল, ডেসক্রিপশন, CTA বাটন (staggered fade-up)
-- ডান দিকে: দুটি ওভারল্যাপিং কার্ড ইমেজ (slide-in-right)
-- গ্রিড ব্যাকগ্রাউন্ড প্যাটার্ন + গ্র্যাডিয়েন্ট ওভারলে
-- প্রজেক্টের বিদ্যমান `Button` কম্পোনেন্ট ব্যবহার করবে (রিপ্লেস করবে না)
+`src/components/layout/Header.tsx`-এ Link-এর `group` ক্লাসকে named group `group/navitem` করতে হবে এবং underline span-এর `group-hover:scale-x-100` কে `group-hover/navitem:scale-x-100` করতে হবে। এতে শুধু সেই নির্দিষ্ট Link-এ হোভার করলেই তার আন্ডারলাইন দেখাবে।
 
-#### 2. `src/pages/Portfolio.tsx` — হিরো সেকশন রিপ্লেস
-- বর্তমান সাধারণ gradient hero সরিয়ে `FinancialHero` ব্যবহার
-- Portfolio-র দুটি ফলব্যাক ইমেজ (e.g. `ispImg`, `restaurantImg`) কার্ড হিসেবে ব্যবহার
-- টাইটেল ও ডেসক্রিপশন বাংলা/ইংরেজি সাপোর্ট সহ
-
-### নোট
-- সব NPM ডিপেন্ডেন্সি (`framer-motion`, `lucide-react` ইত্যাদি) ইতিমধ্যে ইনস্টল আছে
-- বিদ্যমান `Button` কম্পোনেন্ট অপরিবর্তিত থাকবে
+### পরিবর্তিত ফাইল
+- `src/components/layout/Header.tsx` — ২টি লাইনে `group` → `group/navitem` এবং `group-hover:` → `group-hover/navitem:` পরিবর্তন
 
