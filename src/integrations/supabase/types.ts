@@ -1429,6 +1429,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sister_concerns: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name_bn: string | null
+          name_en: string
+          tagline_bn: string | null
+          tagline_en: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name_bn?: string | null
+          name_en: string
+          tagline_bn?: string | null
+          tagline_en?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name_bn?: string | null
+          name_en?: string
+          tagline_bn?: string | null
+          tagline_en?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       site_content: {
         Row: {
           content_bn: string | null
