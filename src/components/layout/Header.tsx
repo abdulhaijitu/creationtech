@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Home, Package, Briefcase, LayoutGrid, Building2, BookOpen } from 'lucide-react';
+import { Menu, Home, Package, Briefcase, LayoutGrid, Building2, BookOpen, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
@@ -27,6 +27,7 @@ const navItems = [
   { href: '/portfolio', label: 'Portfolio', labelBn: 'পোর্টফোলিও', icon: LayoutGrid },
   { href: '/about', label: 'About', labelBn: 'সম্পর্কে', icon: Building2 },
   { href: '/blog', label: 'Blog', labelBn: 'ব্লগ', icon: BookOpen },
+  { href: '/contact', label: 'Contact', labelBn: 'যোগাযোগ', icon: Phone },
 ];
 
 const Header = () => {
