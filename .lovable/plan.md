@@ -1,47 +1,30 @@
 
 
-## সমস্যা বিশ্লেষণ
+## সমস্যা
 
-### ১. লাইন স্পেস বেশি (Project Overview, Key Deliverables, Expected Outcome)
-PDF-এ `renderStyledContent` ফাংশনে প্রতিটি empty paragraph (HTML `<p></p>` ট্যাগ থেকে আসে) `PARAGRAPH_GAP = 3` যোগ করে। RichTextEditor প্রায়ই consecutive empty `<p>` ট্যাগ তৈরি করে, ফলে দ্বিগুণ/তিগুণ gap হয়। এছাড়া `LINE_HEIGHT = 5.5` কিছুটা বেশি।
+স্ক্রিনশটে দেখা যাচ্ছে **Budget Details** এর totals সেকশনে label ও currency value ওভারল্যাপ করছে। কারণ:
+- `totalsX = pageWidth - 70` — এটি label শুরুর x-position, কিন্তু "One-time Subtotal:", "Yearly Recurring:" এই label গুলো যথেষ্ট লম্বা, এবং ডানদিকে right-aligned amount-ও আছে — ফলে দুটো একে অপরের উপর পড়ছে।
+- "Total (One-time):" label-ও `totalsX - 10` থেকে শুরু হয়ে amount-এর সাথে clash করছে।
 
-### ২. Terms & Conditions সুন্দর লাগছে না
-Terms সেকশনটি অন্যান্য content সেকশনের মতোই `addSection` দিয়ে রেন্ডার হচ্ছে — বড় ফন্ট, সাধারণ paragraph স্টাইল। Terms এর জন্য ছোট ফন্ট ও কম্প্যাক্ট, numbered/bulleted লেআউট বেশি উপযুক্ত।
+## সমাধান — `src/utils/proposalPdfGenerator.ts`
 
----
+**totals সেকশনের layout ঠিক করা:**
 
-## পরিবর্তন পরিকল্পনা
+1. `totalsX` কে আরো বামে নিয়ে আসা: `pageWidth - 70` → `pageWidth - 90` — এতে label-এর জন্য বেশি জায়গা পাবে
+2. Label গুলো `right` align না করে `left` aligned রাখা (যেমন আছে), কিন্তু amount column শুরু হবে নির্দিষ্ট position থেকে যাতে overlap না হয়
+3. "Total (One-time):" label-এ `totalsX - 10` → `totalsX` ব্যবহার করা
 
-### ফাইল: `src/utils/proposalPdfGenerator.ts`
+### পরিবর্তন (Line 972, 1014):
+```
+// Line 972
+totalsX = pageWidth - 90;  // was pageWidth - 70
 
-**১. Line spacing কমানো:**
-- `LINE_HEIGHT`: `5.5` → `5.0`
-- `PARAGRAPH_GAP`: `3` → `2`
-- `renderStyledContent`-এ consecutive empty paragraphs collapse করা (2+ empty para = max 1 gap)
-- `addSection` return-এ extra gap কমানো: `y + PARAGRAPH_GAP + 1` → `y + PARAGRAPH_GAP`
-
-**২. Terms & Conditions সেকশন আলাদাভাবে রেন্ডার:**
-- নতুন `addTermsSection` ফাংশন তৈরি — ছোট ফন্ট (10pt body, 12pt heading), কম line height (4.5), compact padding
-- Terms heading-এর নিচে হালকা accent-colored background box বা left-border accent strip
-- Line 987 এ `addSection` এর বদলে `addTermsSection` কল করা
-
-```text
-┌──────────────────────────────────────┐
-│ ▎ Terms & Conditions                │
-│ ▎                                    │
-│ ▎ 1. Payment must be made...         │  ← 10pt, tighter spacing
-│ ▎ 2. Project timeline starts...      │
-│ ▎ 3. Any changes to scope...         │
-└──────────────────────────────────────┘
+// Line 1014  
+doc.text('Total (One-time):', totalsX, y);  // was totalsX - 10
 ```
 
-### সারাংশ
-
-| পরিবর্তন | বিবরণ |
-|---|---|
-| Line spacing | `LINE_HEIGHT` ও `PARAGRAPH_GAP` কমানো, consecutive empty para collapse |
-| Terms section | আলাদা compact রেন্ডারার — ছোট ফন্ট, left accent border, tighter spacing |
+এতে label ও value-এর মধ্যে পর্যাপ্ত gap থাকবে এবং ওভারল্যাপ হবে না।
 
 ### ফাইল পরিবর্তন
-- `src/utils/proposalPdfGenerator.ts` — constants, `renderStyledContent`, নতুন `addTermsSection`
+- `src/utils/proposalPdfGenerator.ts` — lines 972, 1014
 
