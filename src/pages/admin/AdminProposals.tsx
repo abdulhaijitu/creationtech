@@ -238,11 +238,11 @@ const AdminProposals = () => {
     try {
       const { data: items } = await supabase
         .from('proposal_items')
-        .select('description, quantity, unit_price, amount')
+        .select('description, quantity, unit_price, amount, billing_type')
         .eq('proposal_id', proposal.id)
         .order('display_order');
 
-      const pdfData = { ...proposal, items: items || [] };
+      const pdfData = { ...proposal, items: (items || []).map(i => ({ ...i, billing_type: (i.billing_type || 'one_time') as 'one_time' | 'monthly' | 'yearly' })) };
 
       if (action === 'email') {
         emailToClient(proposal);
