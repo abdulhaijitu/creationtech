@@ -539,42 +539,41 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         </CardContent>
       </Card>
 
-      {/* Offer Letter End + Notes side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <Card>
-          <CardHeader className="pb-3 border-b">
-            <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="h-4 w-4 text-primary" />
-              Offer Letter End
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <RichTextEditor
-              content={formData.offer_letter_end}
-              onChange={(value) => setFormData(prev => ({ ...prev, offer_letter_end: value }))}
-              placeholder="Write closing remarks for the offer letter..."
-              className={richEditorCompact}
-            />
-          </CardContent>
-        </Card>
+      {/* Offer Letter End */}
+      <Card>
+        <CardHeader className="pb-3 border-b">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary" />
+            Offer Letter End
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <RichTextEditor
+            content={formData.offer_letter_end}
+            onChange={(value) => setFormData(prev => ({ ...prev, offer_letter_end: value }))}
+            placeholder="Write closing remarks for the offer letter..."
+            className={richEditorCompact}
+          />
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader className="pb-3 border-b">
-            <CardTitle className="text-base flex items-center gap-2">
-              <NotepadText className="h-4 w-4 text-primary" />
-              Notes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <RichTextEditor
-              content={formData.notes}
-              onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
-              placeholder="Internal notes..."
-              className={richEditorCompact}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      {/* Notes */}
+      <Card>
+        <CardHeader className="pb-3 border-b">
+          <CardTitle className="text-base flex items-center gap-2">
+            <NotepadText className="h-4 w-4 text-primary" />
+            Notes
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <RichTextEditor
+            content={formData.notes}
+            onChange={(value) => setFormData(prev => ({ ...prev, notes: value }))}
+            placeholder="Internal notes..."
+            className={richEditorCompact}
+          />
+        </CardContent>
+      </Card>
 
       {/* Budget Summary */}
       <Card className="bg-primary/5 border-primary/20">
