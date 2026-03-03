@@ -1,28 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-export interface PageContent {
-  id: string;
-  page_slug: string;
-  section_key: string;
-  title_en: string | null;
-  title_bn: string | null;
-  content_en: string | null;
-  content_bn: string | null;
-  meta_title_en: string | null;
-  meta_title_bn: string | null;
-  meta_description_en: string | null;
-  meta_description_bn: string | null;
-  display_order: number;
-  is_active: boolean;
-  updated_at: string;
-}
+export type PageContent = Tables<'page_content'>;
 
 export const usePageContent = (pageSlug?: string) => {
   return useQuery({
     queryKey: ['page-content', pageSlug],
     queryFn: async () => {
-      let query = (supabase.from('page_content') as any)
+      let query = supabase
+        .from('page_content')
         .select('*')
         .order('display_order');
 
@@ -32,7 +19,7 @@ export const usePageContent = (pageSlug?: string) => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as PageContent[];
+      return data;
     },
   });
 };
@@ -47,13 +34,14 @@ export const useAllPageContent = () => {
   return useQuery({
     queryKey: ['page-content-all'],
     queryFn: async () => {
-      const { data, error } = await (supabase.from('page_content') as any)
+      const { data, error } = await supabase
+        .from('page_content')
         .select('*')
         .order('page_slug')
         .order('display_order');
 
       if (error) throw error;
-      return data as PageContent[];
+      return data;
     },
   });
 };
@@ -65,8 +53,9 @@ export const useUpdatePageContent = () => {
     mutationFn: async ({
       id,
       ...updates
-    }: Partial<PageContent> & { id: string }) => {
-      const { data, error } = await (supabase.from('page_content') as any)
+    }: TablesUpdate<'page_content'> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('page_content')
         .update(updates)
         .eq('id', id)
         .select()
@@ -86,8 +75,9 @@ export const useCreatePageContent = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (content: Omit<PageContent, 'id' | 'updated_at'>) => {
-      const { data, error } = await (supabase.from('page_content') as any)
+    mutationFn: async (content: TablesInsert<'page_content'>) => {
+      const { data, error } = await supabase
+        .from('page_content')
         .insert(content)
         .select()
         .single();
@@ -107,7 +97,8 @@ export const useDeletePageContent = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase.from('page_content') as any)
+      const { error } = await supabase
+        .from('page_content')
         .delete()
         .eq('id', id);
 
