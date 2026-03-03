@@ -1,41 +1,19 @@
 
 
-## Invoice PDF আউটপুট — UI/UX Audit ও ফিক্স
+## Quotation পেজে Download PDF / Print / Send DropdownMenu যোগ
 
-### চিহ্নিত সমস্যাগুলো
+### পরিবর্তন: `src/pages/admin/AdminQuotations.tsx`
 
-**ইউজার রিপোর্টেড:**
-1. **লোগোর পাশে কোম্পানির নাম টেক্সট** — শুধু লোগো থাকবে, নাম/ট্যাগলাইন সরাতে হবে
-2. **হেডারের নিচে সেপারেটর লাইন** — দুটি হরিজন্টাল লাইন (accent + light) সরাতে হবে
-3. **"Monthly Recurring" টেক্সট ওভারল্যাপ** — `totalsX = pageWidth - 70` অনেক ছোট, লেবেল ও ভ্যালু ওভারল্যাপ করে
+বর্তমানে Quotation কার্ডে আলাদা "PDF" বাটন (line 445-485) এবং DropdownMenu তে শুধু status change / convert / delete আছে। Invoice পেজের প্যাটার্ন অনুসরণ করে:
 
-**Audit এ পাওয়া অতিরিক্ত সমস্যা:**
-4. **লোগোর aspect ratio ভুল** — হার্ডকোডেড `12x12` (স্কোয়ার), আসল অনুপাত রক্ষা হচ্ছে না। Proposal PDF এ এটা ঠিক আছে
-5. **`loadImageAsDataUrl` শুধু string রিটার্ন করে** — width/height রিটার্ন করে না, তাই aspect ratio ক্যালকুলেট করা যাচ্ছে না
-6. **হেডারের contact info Y position** — লোগো ছাড়া `infoY=8` থেকে শুরু, লোগো সহ ভিজুয়ালি মিসঅ্যালাইনড
-7. **Totals সেকশনে কলাম width অপর্যাপ্ত** — বড় BDT amounts ক্লিপ হতে পারে
-
-### সমাধান পরিকল্পনা
-
-**ফাইল: `src/utils/pdfGenerator.ts`**
-
-#### 1. `loadImageAsDataUrl` আপডেট
-Proposal PDF এর মতো `{ dataUrl, width, height }` অবজেক্ট রিটার্ন করবে, `string | null` এর বদলে। সব কলার আপডেট।
-
-#### 2. `addHeader` রিফ্যাক্টর
-- **লোগো**: Aspect ratio সংরক্ষণ করে render (height 12mm ফিক্স, width proportional)
-- **কোম্পানির নাম ও ট্যাগলাইন সরানো** — শুধু লোগো থাকবে বাম পাশে
-- **সেপারেটর লাইন দুটি সরানো** — Proposal PDF এর মতো শুধু gap রাখা
-- **Contact info Y position** ঠিক করা — লোগোর সাথে aligned
-
-#### 3. Totals সেকশন ফিক্স
-- `totalsX` কে `pageWidth - 85` করা (বা আরো বড়) যাতে "Monthly Recurring:" ও BDT ভ্যালু ওভারল্যাপ না করে
-- Label ও value এর মধ্যে যথেষ্ট gap নিশ্চিত করা
-
-#### 4. ছোট UI উন্নতি
-- Signature section এ company name bold করা
-- Amount in Words লাইনে max-width যোগ করা যাতে লম্বা text wrap হয়
+1. **আলাদা PDF বাটন সরানো** — line 445-485 এর standalone Download PDF বাটন রিমুভ
+2. **DropdownMenu তে তিনটি অপশন যোগ** (separator সহ, status items এর আগে):
+   - **Download PDF** — বর্তমান PDF download logic
+   - **Print** — `printPDF()` ব্যবহার করে ব্রাউজারে print dialog খোলা
+   - **Send Quotation** — PDF download + status `sent` এ আপডেট (draft/pending হলে)
+3. **Helper function extract** — `buildQuotationPDFData(quotation)` ফাংশন তৈরি (Invoice পেজের `buildInvoicePDFData` এর মতো) যাতে Download, Print, Send সবাই reuse করতে পারে
+4. **Import যোগ** — `printPDF` import, `Printer` ও `Send` icon import, `DropdownMenuSeparator` import
 
 ### পরিবর্তিত ফাইল:
-- `src/utils/pdfGenerator.ts` — header, image loader, totals section
+- `src/pages/admin/AdminQuotations.tsx`
 
