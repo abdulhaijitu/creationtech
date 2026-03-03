@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, ExternalLink, FileEdit, Send, XCircle, LayoutList, Table2, DollarSign, Clock, FileCheck, Copy, Trash2 } from 'lucide-react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowLeft, Mail, CheckCircle, Download, Printer, MessageSquare, MessageCircle, ExternalLink, FileEdit, Send, XCircle, LayoutList, Table2, DollarSign, Clock, FileCheck, Copy, Trash2 } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminPageHeader from '@/components/admin/AdminPageHeader';
 import AdminLoadingSkeleton from '@/components/admin/AdminLoadingSkeleton';
@@ -317,6 +317,20 @@ const AdminProposals = () => {
     window.open(`mailto:${proposal.client_email}?subject=${subject}&body=${body}`, '_self');
   }, [toast]);
 
+  const handleWhatsAppSend = useCallback((proposal: Proposal) => {
+    if (!proposal.client_phone) {
+      toast({ title: 'No Phone', description: 'This client has no phone number set.', variant: 'destructive' });
+      return;
+    }
+    let phone = proposal.client_phone.replace(/[^0-9]/g, '');
+    if (phone.startsWith('0')) phone = '88' + phone;
+    if (!phone.startsWith('88')) phone = '88' + phone;
+
+    const companyName = businessInfo?.company_name?.value_en || 'Creation Tech';
+    const message = `Dear ${proposal.client_name},\n\nProposal #${proposal.proposal_number} - ${proposal.title}\nAmount: ৳${Number(proposal.total_amount || 0).toLocaleString('en-BD')}\n\nThank you for your business.\n- ${companyName}`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+  }, [toast, businessInfo]);
+
   const handlePdfAction = useCallback(async (proposal: Proposal, action: 'download' | 'print' | 'email' | 'preview') => {
     try {
       const { data: items } = await supabase
@@ -371,6 +385,9 @@ const AdminProposals = () => {
       <DropdownMenuItem onClick={() => handlePdfAction(proposal, 'email')}>
         <Mail className="h-4 w-4 mr-2" /> Email to Client
       </DropdownMenuItem>
+      <DropdownMenuItem onClick={() => handleWhatsAppSend(proposal)}>
+        <MessageCircle className="h-4 w-4 mr-2" /> Send via WhatsApp
+      </DropdownMenuItem>
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={() => versionMutation.mutate(proposal)}>
         <FileText className="h-4 w-4 mr-2" /> Create New Version
@@ -383,7 +400,7 @@ const AdminProposals = () => {
         <Trash2 className="h-4 w-4 mr-2" /> Delete Proposal
       </DropdownMenuItem>
     </DropdownMenuContent>
-  ), [statusMutation, versionMutation, cloneMutation, handlePdfAction]);
+  ), [statusMutation, versionMutation, cloneMutation, handlePdfAction, handleWhatsAppSend]);
 
   // Form View
   if (viewMode === 'form') {
