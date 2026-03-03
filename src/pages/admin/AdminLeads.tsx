@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Mail, Phone, Calendar, MoreHorizontal, Search, MessageSquare, FileQuestion, CalendarDays, Plus, UserPlus } from 'lucide-react';
+import { Eye, Mail, Phone, Calendar, MoreHorizontal, Search, MessageSquare, FileQuestion, CalendarDays, Plus, UserPlus, Pencil, Trash2 } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
  import AdminPageHeader from '@/components/admin/AdminPageHeader';
  import { Card, CardContent } from '@/components/ui/card';
@@ -27,8 +27,19 @@ import {
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
+   DropdownMenuSeparator,
    DropdownMenuTrigger,
  } from '@/components/ui/dropdown-menu';
+ import {
+   AlertDialog,
+   AlertDialogAction,
+   AlertDialogCancel,
+   AlertDialogContent,
+   AlertDialogDescription,
+   AlertDialogFooter,
+   AlertDialogHeader,
+   AlertDialogTitle,
+ } from '@/components/ui/alert-dialog';
  import { Textarea } from '@/components/ui/textarea';
  import { Label } from '@/components/ui/label';
  import { useToast } from '@/hooks/use-toast';
@@ -98,6 +109,9 @@ import { getStatusColor } from '@/lib/status-colors';
   const [addForm, setAddForm] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<Record<string, string>>({});
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'contact' | 'quote' | 'meeting' } | null>(null);
 
   const resetAddForm = () => {
     setAddForm({});
@@ -316,6 +330,90 @@ import { getStatusColor } from '@/lib/status-colors';
    const newQuotesCount = quotes.filter(q => q.status === 'new').length;
    const newMeetingsCount = meetings.filter(m => m.status === 'new').length;
  
+   const getTableName = (type: 'contact' | 'quote' | 'meeting') =>
+     type === 'contact' ? 'contact_submissions' as const : type === 'quote' ? 'quote_requests' as const : 'meeting_requests' as const;
+
+   const openEdit = (item: any, type: 'contact' | 'quote' | 'meeting') => {
+     setSelectedItem(item);
+     setSelectedType(type);
+     setIsEditing(true);
+     setEditForm({
+       full_name: item.full_name || '',
+       email: item.email || '',
+       phone: item.phone || '',
+       subject: item.subject || '',
+       message: item.message || '',
+       company: item.company || '',
+       service_interest: item.service_interest || '',
+       budget: item.budget || '',
+       project_details: item.project_details || '',
+       meeting_topic: item.meeting_topic || '',
+       preferred_date: item.preferred_date || '',
+       preferred_time: item.preferred_time || '',
+       additional_notes: item.additional_notes || '',
+     });
+     setNotes(item.notes || '');
+     setIsDetailOpen(true);
+   };
+
+   const handleEditSubmit = async () => {
+     if (!selectedItem) return;
+     const table = getTableName(selectedType);
+     setIsSubmitting(true);
+     try {
+       let updateData: Record<string, any> = {
+         full_name: editForm.full_name?.trim(),
+         email: editForm.email?.trim(),
+         phone: editForm.phone?.trim() || null,
+       };
+       if (selectedType === 'contact') {
+         updateData.subject = editForm.subject?.trim() || null;
+         updateData.message = editForm.message?.trim();
+       } else if (selectedType === 'quote') {
+         updateData.company = editForm.company?.trim() || null;
+         updateData.service_interest = editForm.service_interest?.trim() || null;
+         updateData.budget = editForm.budget?.trim() || null;
+         updateData.project_details = editForm.project_details?.trim();
+       } else {
+         updateData.company = editForm.company?.trim() || null;
+         updateData.meeting_topic = editForm.meeting_topic?.trim();
+         updateData.preferred_date = editForm.preferred_date || null;
+         updateData.preferred_time = editForm.preferred_time || null;
+         updateData.additional_notes = editForm.additional_notes?.trim() || null;
+       }
+
+       const { error } = await supabase.from(table).update(updateData).eq('id', selectedItem.id);
+       if (error) throw error;
+       toast({ title: 'Success', description: 'Lead updated successfully' });
+       setIsEditing(false);
+       setIsDetailOpen(false);
+       fetchData();
+     } catch (error: any) {
+       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+     } finally {
+       setIsSubmitting(false);
+     }
+   };
+
+   const handleDelete = async () => {
+     if (!deleteTarget) return;
+     const table = getTableName(deleteTarget.type);
+     try {
+       const { error } = await supabase.from(table).delete().eq('id', deleteTarget.id);
+       if (error) throw error;
+       toast({ title: 'Deleted', description: 'Lead has been deleted' });
+       if (selectedItem?.id === deleteTarget.id) setIsDetailOpen(false);
+       setDeleteTarget(null);
+       fetchData();
+     } catch (error: any) {
+       toast({ title: 'Error', description: error.message, variant: 'destructive' });
+     }
+   };
+
+   const updateEditField = (field: string, value: string) => {
+     setEditForm(prev => ({ ...prev, [field]: value }));
+   };
+
    const renderCard = (item: any, type: 'contact' | 'quote' | 'meeting') => (
      <Card key={item.id} className="hover:shadow-md transition-shadow">
        <CardContent className="py-4">
@@ -351,13 +449,21 @@ import { getStatusColor } from '@/lib/status-colors';
                <DropdownMenuTrigger asChild>
                  <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'new', type)}>Mark New</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'contacted', type)}>Mark Contacted</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'in_progress', type)}>Mark In Progress</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'converted', type)}>Mark Converted</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => updateStatus(item.id, 'closed', type)}>Mark Closed</DropdownMenuItem>
-                </DropdownMenuContent>
+                 <DropdownMenuContent align="end">
+                   <DropdownMenuItem onClick={() => openEdit(item, type)}>
+                     <Pencil className="h-4 w-4 mr-2" /> Edit
+                   </DropdownMenuItem>
+                   <DropdownMenuSeparator />
+                   <DropdownMenuItem onClick={() => updateStatus(item.id, 'new', type)}>Mark New</DropdownMenuItem>
+                   <DropdownMenuItem onClick={() => updateStatus(item.id, 'contacted', type)}>Mark Contacted</DropdownMenuItem>
+                   <DropdownMenuItem onClick={() => updateStatus(item.id, 'in_progress', type)}>Mark In Progress</DropdownMenuItem>
+                   <DropdownMenuItem onClick={() => updateStatus(item.id, 'converted', type)}>Mark Converted</DropdownMenuItem>
+                   <DropdownMenuItem onClick={() => updateStatus(item.id, 'closed', type)}>Mark Closed</DropdownMenuItem>
+                   <DropdownMenuSeparator />
+                   <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteTarget({ id: item.id, type })}>
+                     <Trash2 className="h-4 w-4 mr-2" /> Delete
+                   </DropdownMenuItem>
+                 </DropdownMenuContent>
              </DropdownMenu>
            </div>
          </div>
@@ -505,148 +611,250 @@ import { getStatusColor } from '@/lib/status-colors';
          </Tabs>
        </div>
  
-       {/* Detail Dialog */}
-       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-              <DialogTitle>
-                {selectedType === 'contact' ? 'Contact' : selectedType === 'quote' ? 'Quote Request' : 'Meeting Request'} Details
-              </DialogTitle>
-             <DialogDescription>
-               Submitted on {selectedItem && formatDate(selectedItem.created_at)}
-             </DialogDescription>
-           </DialogHeader>
- 
-           {selectedItem && (
-             <div className="space-y-4">
-               <div className="grid gap-4 sm:grid-cols-2">
-                 <div>
-                   <Label className="text-muted-foreground">Name</Label>
-                   <p className="font-medium">{selectedItem.full_name}</p>
-                 </div>
-                 <div>
-                   <Label className="text-muted-foreground">Status</Label>
-                   <Select
-                     value={selectedItem.status}
-                     onValueChange={(value) => updateStatus(selectedItem.id, value, selectedType)}
-                   >
-                     <SelectTrigger className="w-full mt-1">
-                       <SelectValue />
-                     </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="contacted">Contacted</SelectItem>
-                        <SelectItem value="in_progress">In Progress</SelectItem>
-                        <SelectItem value="converted">Converted</SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
-                      </SelectContent>
-                   </Select>
-                 </div>
-               </div>
- 
-               <div>
-                 <Label className="text-muted-foreground">Email</Label>
-                 <p><a href={`mailto:${selectedItem.email}`} className="text-primary hover:underline">{selectedItem.email}</a></p>
-               </div>
- 
-               {selectedItem.phone && (
-                 <div>
-                   <Label className="text-muted-foreground">Phone</Label>
-                   <p><a href={`tel:${selectedItem.phone}`} className="text-primary hover:underline">{selectedItem.phone}</a></p>
-                 </div>
-               )}
- 
-               {selectedType === 'contact' && selectedItem.message && (
-                 <div>
-                   <Label className="text-muted-foreground">Message</Label>
-                   <p className="whitespace-pre-wrap bg-muted p-3 rounded-lg text-sm mt-1">{selectedItem.message}</p>
-                 </div>
-               )}
- 
-               {selectedType === 'quote' && (
-                 <>
-                   {selectedItem.service_interest && (
-                     <div>
-                       <Label className="text-muted-foreground">Service Interest</Label>
-                       <p className="font-medium">{selectedItem.service_interest}</p>
-                     </div>
-                   )}
-                   {selectedItem.budget && (
-                     <div>
-                       <Label className="text-muted-foreground">Budget</Label>
-                       <p className="font-medium">{selectedItem.budget}</p>
-                     </div>
-                   )}
-                   <div>
-                     <Label className="text-muted-foreground">Project Details</Label>
-                     <p className="whitespace-pre-wrap bg-muted p-3 rounded-lg text-sm mt-1">{selectedItem.project_details}</p>
+        {/* Detail Dialog */}
+        <Dialog open={isDetailOpen} onOpenChange={(open) => { setIsDetailOpen(open); if (!open) setIsEditing(false); }}>
+       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+           <DialogHeader>
+               <div className="flex items-center justify-between">
+                 <DialogTitle>
+                   {isEditing ? 'Edit' : ''} {selectedType === 'contact' ? 'Contact' : selectedType === 'quote' ? 'Quote Request' : 'Meeting Request'} {isEditing ? '' : 'Details'}
+                 </DialogTitle>
+                 {selectedItem && !isEditing && (
+                   <div className="flex items-center gap-1">
+                     <Button variant="ghost" size="icon" onClick={() => openEdit(selectedItem, selectedType)}>
+                       <Pencil className="h-4 w-4" />
+                     </Button>
+                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => { setDeleteTarget({ id: selectedItem.id, type: selectedType }); }}>
+                       <Trash2 className="h-4 w-4" />
+                     </Button>
                    </div>
-                 </>
-               )}
+                 )}
+               </div>
+              <DialogDescription>
+                {isEditing ? 'Update the lead information below' : `Submitted on ${selectedItem && formatDate(selectedItem.created_at)}`}
+              </DialogDescription>
+            </DialogHeader>
  
-               {selectedType === 'meeting' && (
-                 <>
-                   <div>
-                     <Label className="text-muted-foreground">Meeting Topic</Label>
-                     <p className="font-medium">{selectedItem.meeting_topic}</p>
+            {selectedItem && !isEditing && (
+              <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label className="text-muted-foreground">Name</Label>
+                    <p className="font-medium">{selectedItem.full_name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground">Status</Label>
+                    <Select
+                      value={selectedItem.status}
+                      onValueChange={(value) => updateStatus(selectedItem.id, value, selectedType)}
+                    >
+                      <SelectTrigger className="w-full mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="new">New</SelectItem>
+                         <SelectItem value="contacted">Contacted</SelectItem>
+                         <SelectItem value="in_progress">In Progress</SelectItem>
+                         <SelectItem value="converted">Converted</SelectItem>
+                         <SelectItem value="closed">Closed</SelectItem>
+                       </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+ 
+                <div>
+                  <Label className="text-muted-foreground">Email</Label>
+                  <p><a href={`mailto:${selectedItem.email}`} className="text-primary hover:underline">{selectedItem.email}</a></p>
+                </div>
+ 
+                {selectedItem.phone && (
+                  <div>
+                    <Label className="text-muted-foreground">Phone</Label>
+                    <p><a href={`tel:${selectedItem.phone}`} className="text-primary hover:underline">{selectedItem.phone}</a></p>
+                  </div>
+                )}
+ 
+                {selectedType === 'contact' && selectedItem.message && (
+                  <div>
+                    <Label className="text-muted-foreground">Message</Label>
+                    <p className="whitespace-pre-wrap bg-muted p-3 rounded-lg text-sm mt-1">{selectedItem.message}</p>
+                  </div>
+                )}
+ 
+                {selectedType === 'quote' && (
+                  <>
+                    {selectedItem.service_interest && (
+                      <div>
+                        <Label className="text-muted-foreground">Service Interest</Label>
+                        <p className="font-medium">{selectedItem.service_interest}</p>
+                      </div>
+                    )}
+                    {selectedItem.budget && (
+                      <div>
+                        <Label className="text-muted-foreground">Budget</Label>
+                        <p className="font-medium">{selectedItem.budget}</p>
+                      </div>
+                    )}
+                    <div>
+                      <Label className="text-muted-foreground">Project Details</Label>
+                      <p className="whitespace-pre-wrap bg-muted p-3 rounded-lg text-sm mt-1">{selectedItem.project_details}</p>
+                    </div>
+                  </>
+                )}
+ 
+                {selectedType === 'meeting' && (
+                  <>
+                    <div>
+                      <Label className="text-muted-foreground">Meeting Topic</Label>
+                      <p className="font-medium">{selectedItem.meeting_topic}</p>
+                    </div>
+                    {selectedItem.preferred_date && (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <Label className="text-muted-foreground">Preferred Date</Label>
+                          <p className="font-medium">{new Date(selectedItem.preferred_date).toLocaleDateString()}</p>
+                        </div>
+                        {selectedItem.preferred_time && (
+                          <div>
+                            <Label className="text-muted-foreground">Preferred Time</Label>
+                            <p className="font-medium">{selectedItem.preferred_time}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+ 
+                 <div className="space-y-2">
+                   <Label htmlFor="notes">Internal Notes</Label>
+                   <Textarea
+                     id="notes"
+                     placeholder="Add notes..."
+                     value={notes}
+                     onChange={(e) => setNotes(e.target.value)}
+                     rows={3}
+                   />
+                   <Button onClick={saveNotes} size="sm">Save Notes</Button>
+                 </div>
+
+                 {/* Convert to Client */}
+                 {selectedItem.status !== 'converted' && (
+                   <div className="border-t pt-4">
+                     <Button
+                       onClick={convertToClient}
+                       disabled={isConverting}
+                       variant="outline"
+                       className="w-full gap-2"
+                     >
+                       <UserPlus className="h-4 w-4" />
+                       {isConverting ? 'Converting...' : 'Convert to Client'}
+                     </Button>
+                     <p className="text-xs text-muted-foreground mt-1 text-center">
+                       A new client will be created from this lead's info
+                     </p>
                    </div>
-                   {selectedItem.preferred_date && (
-                     <div className="grid gap-4 sm:grid-cols-2">
-                       <div>
-                         <Label className="text-muted-foreground">Preferred Date</Label>
-                         <p className="font-medium">{new Date(selectedItem.preferred_date).toLocaleDateString()}</p>
-                       </div>
-                       {selectedItem.preferred_time && (
-                         <div>
-                           <Label className="text-muted-foreground">Preferred Time</Label>
-                           <p className="font-medium">{selectedItem.preferred_time}</p>
-                         </div>
-                       )}
-                     </div>
-                   )}
-                 </>
-               )}
- 
+                 )}
+                 {selectedItem.status === 'converted' && (
+                   <div className="border-t pt-4">
+                     <Badge className="bg-success-muted text-success w-full justify-center py-1.5">
+                       ✓ Converted to Client
+                     </Badge>
+                   </div>
+                 )}
+              </div>
+            )}
+
+            {/* Edit Mode */}
+            {selectedItem && isEditing && (
+              <div className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Name *</Label>
+                    <Input value={editForm.full_name || ''} onChange={(e) => updateEditField('full_name', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email *</Label>
+                    <Input type="email" value={editForm.email || ''} onChange={(e) => updateEditField('email', e.target.value)} />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Internal Notes</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Add notes..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    rows={3}
-                  />
-                  <Button onClick={saveNotes} size="sm">Save Notes</Button>
+                  <Label>Phone</Label>
+                  <Input value={editForm.phone || ''} onChange={(e) => updateEditField('phone', e.target.value)} />
                 </div>
 
-                {/* Convert to Client */}
-                {selectedItem.status !== 'converted' && (
-                  <div className="border-t pt-4">
-                    <Button
-                      onClick={convertToClient}
-                      disabled={isConverting}
-                      variant="outline"
-                      className="w-full gap-2"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                      {isConverting ? 'Converting...' : 'Convert to Client'}
-                    </Button>
-                    <p className="text-xs text-muted-foreground mt-1 text-center">
-                      A new client will be created from this lead's info
-                    </p>
-                  </div>
+                {selectedType === 'contact' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Subject</Label>
+                      <Input value={editForm.subject || ''} onChange={(e) => updateEditField('subject', e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Message *</Label>
+                      <Textarea value={editForm.message || ''} onChange={(e) => updateEditField('message', e.target.value)} rows={3} />
+                    </div>
+                  </>
                 )}
-                {selectedItem.status === 'converted' && (
-                  <div className="border-t pt-4">
-                    <Badge className="bg-success-muted text-success w-full justify-center py-1.5">
-                      ✓ Converted to Client
-                    </Badge>
-                  </div>
+
+                {selectedType === 'quote' && (
+                  <>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Company</Label>
+                        <Input value={editForm.company || ''} onChange={(e) => updateEditField('company', e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Service</Label>
+                        <Input value={editForm.service_interest || ''} onChange={(e) => updateEditField('service_interest', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Budget</Label>
+                      <Input value={editForm.budget || ''} onChange={(e) => updateEditField('budget', e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Project Details *</Label>
+                      <Textarea value={editForm.project_details || ''} onChange={(e) => updateEditField('project_details', e.target.value)} rows={3} />
+                    </div>
+                  </>
                 )}
-             </div>
-           )}
-         </DialogContent>
-        </Dialog>
+
+                {selectedType === 'meeting' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Company</Label>
+                      <Input value={editForm.company || ''} onChange={(e) => updateEditField('company', e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Meeting Topic *</Label>
+                      <Input value={editForm.meeting_topic || ''} onChange={(e) => updateEditField('meeting_topic', e.target.value)} />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Preferred Date</Label>
+                        <Input type="date" value={editForm.preferred_date || ''} onChange={(e) => updateEditField('preferred_date', e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Preferred Time</Label>
+                        <Input type="time" value={editForm.preferred_time || ''} onChange={(e) => updateEditField('preferred_time', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Additional Notes</Label>
+                      <Textarea value={editForm.additional_notes || ''} onChange={(e) => updateEditField('additional_notes', e.target.value)} rows={3} />
+                    </div>
+                  </>
+                )}
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                  <Button onClick={handleEditSubmit} disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+         </Dialog>
 
         {/* Add Lead Dialog */}
         <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) resetAddForm(); }}>
@@ -761,8 +969,26 @@ import { getStatusColor } from '@/lib/status-colors';
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
-      </AdminLayout>
+         </Dialog>
+
+         {/* Delete Confirmation */}
+         <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+           <AlertDialogContent>
+             <AlertDialogHeader>
+               <AlertDialogTitle>Delete Lead</AlertDialogTitle>
+               <AlertDialogDescription>
+                 Are you sure you want to delete this lead? This action cannot be undone.
+               </AlertDialogDescription>
+             </AlertDialogHeader>
+             <AlertDialogFooter>
+               <AlertDialogCancel>Cancel</AlertDialogCancel>
+               <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                 Delete
+               </AlertDialogAction>
+             </AlertDialogFooter>
+           </AlertDialogContent>
+         </AlertDialog>
+       </AdminLayout>
    );
  };
  
