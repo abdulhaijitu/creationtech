@@ -1,20 +1,18 @@
 
 
-## Clone Proposal Feature
+## সমস্যা
 
-### পরিবর্তন
-**`src/pages/admin/AdminProposals.tsx`:**
+`renderDropdownActions` এর `useCallback` dependency array তে `cloneMutation` নেই (line 353)। এটি Clone button দেখানো আটকাবে না, তবে ক্লিক করলে কাজ নাও করতে পারে।
 
-1. **`cloneMutation` তৈরি** (Line ~131 এর কাছে, `versionMutation` এর পরে):
-   - `versionMutation` এর মতোই কাজ করবে, কিন্তু পার্থক্য:
-     - `version: 1` (নতুন proposal হিসেবে, version increment নয়)
-     - `title` এ "(Clone)" suffix যোগ হবে
-     - Original proposal-এর status পরিবর্তন হবে না (versionMutation এ original কে 'revised' করা হয়)
-   - Items কপি করবে `proposal_items` থেকে
+তবে আসল সমস্যা হতে পারে — dropdown menu scroll করলে Clone অপশন দেখা যাচ্ছে না কারণ এটি অনেক নিচে। অথবা UI তে সত্যিই রেন্ডার হচ্ছে না।
 
-2. **Dropdown menu তে Clone অপশন** (Line ~291-294):
-   - "Create New Version" এর পরে `<DropdownMenuItem>` যোগ — `Copy` icon সহ "Clone Proposal"
-   - `cloneMutation.mutate(proposal)` কল করবে
+## সমাধান
 
-3. **Import**: `lucide-react` থেকে `Copy` icon import করা
+**`src/pages/admin/AdminProposals.tsx` (Line 353):**
+- `useCallback` dependency array তে `cloneMutation` যোগ করা:
+  ```
+  [statusMutation, versionMutation, cloneMutation, handlePdfAction]
+  ```
+
+এটাই একমাত্র পরিবর্তন। কোডে Clone MenuItem ঠিকভাবে আছে (line 349-351)। Dependency fix করলে সমস্যা সমাধান হওয়া উচিত।
 
