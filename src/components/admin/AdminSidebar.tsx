@@ -231,21 +231,6 @@ const AdminSidebar = () => {
 
           {/* Footer */}
           <div className="border-t border-border px-2 py-2">
-            <Link
-              to="/admin/settings"
-              className={cn(
-                'flex items-center gap-3 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors',
-                isActive('/admin/settings') && 'bg-accent text-accent-foreground font-medium'
-              )}
-            >
-              <Cog className="h-4 w-4 shrink-0" />
-              {!isCollapsed && (
-                <motion.span variants={variants} className="truncate">
-                  Settings
-                </motion.span>
-              )}
-            </Link>
-            <Separator className="my-2" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="flex w-full cursor-pointer items-center gap-2 rounded-md p-1.5 hover:bg-accent">
