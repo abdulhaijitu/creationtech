@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, Package, Award, Clock, Brain, Cpu, Sparkles, Play } from 'lucide-react';
+import { ArrowRight, Users, Package, Award, Clock, Sparkles, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import CountUp from '@/components/common/CountUp';
+import { InteractiveImageAccordion } from '@/components/ui/interactive-image-accordion';
 import { useState, useEffect } from 'react';
-import heroOffice1 from '@/assets/hero-office-1.jpg';
-import heroOffice2 from '@/assets/hero-office-2.jpg';
-import heroOffice3 from '@/assets/hero-office-3.jpg';
 import client1 from '@/assets/clients/client-1.jpg';
 import client2 from '@/assets/clients/client-2.jpg';
 import client3 from '@/assets/clients/client-3.jpg';
@@ -235,111 +233,12 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right: AI Visual Collage */}
-          <div className="relative hidden lg:block">
-            <div className="relative w-full max-w-[560px] mx-auto hero-animate hero-animate-delay-2">
-              {/* Glow effect behind cards */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-teal-500/20 rounded-full blur-[100px] animate-pulse-slow" />
-              
-              {/* Stat Card - Top Left */}
-              <div className="absolute -left-4 top-8 z-20 hero-card hero-card-delay-0">
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-900/50 to-teal-900/30 p-5 backdrop-blur-md shadow-xl shadow-teal-900/20 hover:border-teal-500/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-float-slow min-w-[120px]">
-                  <Brain className="h-5 w-5 text-teal-400/70 mb-2" />
-                  <span className="text-2xl font-bold text-white">
-                    <CountUp end={stats[0].value} duration={2000} />{stats[0].suffix}
-                  </span>
-                  <span className="text-xs text-white/50 uppercase tracking-wider mt-1">
-                    {language === 'en' ? stats[0].label : stats[0].labelBn}
-                  </span>
-                </div>
-              </div>
-
-              {/* Main Image Card - Top Right */}
-              <div className="ml-auto w-[280px] hero-card hero-card-delay-1">
-                <div className="overflow-hidden rounded-3xl border border-white/10 shadow-2xl hover:border-teal-500/30 hover:-translate-y-1 transition-all duration-300 animate-float-medium" style={{ animationDelay: '0.5s' }}>
-                  <img 
-                    src={heroOffice1} 
-                    alt="AI-powered tech workspace" 
-                    className="w-full h-[180px] object-cover"
-                    loading="lazy"
-                  />
-                  {/* Overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/40 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                </div>
-              </div>
-
-              {/* Middle Row */}
-              <div className="flex items-center gap-4 mt-4">
-                {/* Second Image */}
-                <div className="w-[200px] hero-card hero-card-delay-2">
-                  <div className="overflow-hidden rounded-2xl border border-white/10 shadow-xl hover:border-teal-500/30 hover:-translate-y-1 transition-all duration-300 animate-float-slow" style={{ animationDelay: '1s' }}>
-                    <img 
-                      src={heroOffice2} 
-                      alt="Team collaboration" 
-                      className="w-full h-[200px] object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-
-                {/* Stat Cards Column */}
-                <div className="flex flex-col gap-4 flex-1">
-                  {/* Products Stat */}
-                  <div className="hero-card hero-card-delay-3">
-                    <div className="flex flex-col items-center justify-center rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-900/50 to-teal-900/30 p-4 backdrop-blur-md shadow-xl shadow-teal-900/20 hover:border-teal-500/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-float-medium" style={{ animationDelay: '0.3s' }}>
-                      <Package className="h-4 w-4 text-teal-400/70 mb-1" />
-                      <span className="text-xl font-bold text-white">
-                        <CountUp end={stats[1].value} duration={2000} />{stats[1].suffix}
-                      </span>
-                      <span className="text-[10px] text-white/50 uppercase tracking-wider">
-                        {language === 'en' ? stats[1].label : stats[1].labelBn}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Talents Stat */}
-                  <div className="hero-card hero-card-delay-4">
-                    <div className="flex flex-col items-center justify-center rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-900/50 to-teal-900/30 p-4 backdrop-blur-md shadow-xl shadow-teal-900/20 hover:border-teal-500/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-float-slow" style={{ animationDelay: '0.8s' }}>
-                      <Award className="h-4 w-4 text-teal-400/70 mb-1" />
-                      <span className="text-xl font-bold text-white">
-                        <CountUp end={stats[2].value} duration={2500} />{stats[2].suffix}
-                      </span>
-                      <span className="text-[10px] text-white/50 uppercase tracking-wider">
-                        {language === 'en' ? stats[2].label : stats[2].labelBn}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Row */}
-              <div className="flex items-end gap-4 mt-4">
-                {/* Third Image */}
-                <div className="w-[180px] hero-card hero-card-delay-5">
-                  <div className="overflow-hidden rounded-2xl border border-white/10 shadow-xl hover:border-teal-500/30 hover:-translate-y-1 transition-all duration-300 animate-float-medium" style={{ animationDelay: '1.5s' }}>
-                    <img 
-                      src={heroOffice3} 
-                      alt="Modern tech team" 
-                      className="w-full h-[120px] object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-
-                {/* Experience Stat - Bottom Right */}
-                <div className="flex-1 hero-card hero-card-delay-6">
-                  <div className="flex flex-col items-center justify-center rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-900/50 to-teal-900/30 p-5 backdrop-blur-md shadow-xl shadow-teal-900/20 hover:border-teal-500/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-float-slow" style={{ animationDelay: '2s' }}>
-                    <Cpu className="h-5 w-5 text-teal-400/70 mb-2" />
-                    <span className="text-2xl font-bold text-white">
-                      <CountUp end={stats[3].value} duration={2000} />{stats[3].suffix}
-                    </span>
-                    <span className="text-xs text-white/50 uppercase tracking-wider mt-1">
-                      {language === 'en' ? stats[3].label : stats[3].labelBn}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
+          {/* Right: Interactive Image Accordion */}
+          <div className="relative hidden lg:flex items-center">
+            <div className="relative w-full hero-animate hero-animate-delay-2">
+              {/* Glow effect */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-teal-500/15 rounded-full blur-[100px] animate-pulse-slow" />
+              <InteractiveImageAccordion className="relative z-10" />
             </div>
           </div>
 
