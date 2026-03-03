@@ -19,6 +19,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -308,6 +309,7 @@ const AdminCareers = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedJob ? 'Edit Job' : 'Add Job'}</DialogTitle>
+            <DialogDescription>জব পোস্টের তথ্য পূরণ করুন</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
@@ -358,9 +360,10 @@ const AdminCareers = () => {
 
       {/* Application Detail Dialog */}
       <Dialog open={isAppDialogOpen} onOpenChange={setIsAppDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Application Details</DialogTitle>
+            <DialogDescription>আবেদনকারীর বিস্তারিত তথ্য</DialogDescription>
           </DialogHeader>
           {selectedApp && (
             <div className="space-y-4">

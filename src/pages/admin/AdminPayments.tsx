@@ -10,7 +10,7 @@
  import { Button } from '@/components/ui/button';
  import { Input } from '@/components/ui/input';
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
- import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
  import { Label } from '@/components/ui/label';
  import { Textarea } from '@/components/ui/textarea';
  import { toast } from 'sonner';
@@ -286,9 +286,12 @@
          </div>
        )}
  
-       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
-         <DialogContent>
-           <DialogHeader><DialogTitle>Payment Details</DialogTitle></DialogHeader>
+      <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Payment Details</DialogTitle>
+            <DialogDescription>পেমেন্টের বিস্তারিত তথ্য</DialogDescription>
+          </DialogHeader>
            {selectedPayment && (
              <div className="space-y-3">
                <div className="grid grid-cols-2 gap-4">
@@ -305,16 +308,22 @@
          </DialogContent>
        </Dialog>
  
-       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-         <DialogContent>
-           <DialogHeader><DialogTitle>Update Payment</DialogTitle></DialogHeader>
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Update Payment</DialogTitle>
+            <DialogDescription>পেমেন্ট তথ্য আপডেট করুন</DialogDescription>
+          </DialogHeader>
            <PaymentForm payment={selectedPayment} onSubmit={(data) => updatePaymentMutation.mutate({ id: selectedPayment!.id, ...data })} />
          </DialogContent>
        </Dialog>
  
-       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-         <DialogContent>
-           <DialogHeader><DialogTitle>Add Payment</DialogTitle></DialogHeader>
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Payment</DialogTitle>
+            <DialogDescription>নতুন পেমেন্ট যোগ করুন</DialogDescription>
+          </DialogHeader>
            <PaymentForm isNew onSubmit={(data) => addPaymentMutation.mutate(data)} />
          </DialogContent>
        </Dialog>
