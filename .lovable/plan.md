@@ -1,53 +1,48 @@
 
 
-## Sidebar Pages Audit & Fix
+## মোডাল UI/UX অডিট ও ফিক্স
 
-### Audit Findings
+### অডিট ফলাফল
 
-**Sidebar-linked pages (all have matching routes - OK):**
-- `/admin` → AdminDashboard
-- `/admin/leads` → AdminLeads (has internal tabs: contacts, quotes, meetings)
-- `/admin/clients` → AdminClients, `/admin/clients/:id` → AdminClientProfile
-- `/admin/invoices` → AdminInvoices
-- `/admin/payments` → AdminPayments
-- `/admin/quotations` → AdminQuotations
-- `/admin/proposals` → AdminProposals
-- `/admin/products` → AdminProducts, `/admin/products/:slug` → AdminProductDetail
-- `/admin/services` → AdminServices
-- `/admin/portfolio` → AdminPortfolio
-- `/admin/testimonials` → AdminTestimonials
-- `/admin/settings` → AdminSettings
-- `/admin/settings/system` → AdminSystemPreferences
-- `/admin/settings/payment` → AdminPaymentGateway
-- `/admin/settings/sms` → AdminSMSSettings
-- `/admin/users` → AdminUsers
-- `/admin/roles` → AdminRoles
-- `/admin/careers` → AdminCareers
+সকল admin পেজের মোডাল পরীক্ষা করে নিম্নলিখিত সমস্যা পাওয়া গেছে:
 
-**Issues found:**
+**সমস্যা ১: Overflow/Scroll অনুপস্থিত** — কিছু মোডালে `max-h` ও `overflow-y-auto` নেই, ফলে ছোট স্ক্রিনে কন্টেন্ট কেটে যায় বা পেজের বাইরে চলে যায়।
 
-1. **Redundant pages**: `AdminQuotes.tsx` and `AdminMeetings.tsx` are separate pages with routes (`/admin/leads/quotes`, `/admin/leads/meetings`) but AdminLeads already has tabs for quotes and meetings built-in. These are unused from sidebar.
+| পেজ | মোডাল | সমস্যা |
+|------|--------|---------|
+| AdminLeads | Detail Dialog | `max-h` ও scroll নেই |
+| AdminClients | Add/Edit Client | `max-h` ও scroll নেই |
+| AdminPayments | View/Edit/Add (তিনটিই) | `max-h` ও scroll নেই |
+| AdminCareers | Application Detail | `max-h` ও scroll নেই |
 
-2. **Dashboard links broken**: Dashboard stat cards link to `/admin/leads/contacts`, `/admin/leads/quotes`, `/admin/leads/meetings` -- these either go to the redundant separate pages or a non-existent route (`/admin/leads/contacts`). Should all point to `/admin/leads` instead.
+**সমস্যা ২: DialogDescription অনুপস্থিত** — Accessibility warning দেয় (Radix UI)। নিম্নলিখিত মোডালগুলোতে `DialogDescription` নেই:
 
-3. **`isActive` bug**: The sidebar `isActive` function uses `startsWith`, so clicking `/admin/settings/system` also highlights the "Settings" footer link since it matches `/admin/settings`. Minor but worth noting.
+- AdminClients (Add/Edit)
+- AdminPayments (View/Edit/Add)
+- AdminCareers (Job Dialog)
 
-### Plan
+**সমস্যা ৩: মোবাইল UX** — Leads Detail মোডালে দীর্ঘ কন্টেন্ট (notes, convert section) থাকলে মোবাইলে scroll সমস্যা।
 
-1. **Delete redundant files**: Remove `AdminQuotes.tsx` and `AdminMeetings.tsx`
+### ফিক্স প্ল্যান
 
-2. **Clean App.tsx routes**: Remove the two routes for `/admin/leads/quotes` and `/admin/leads/meetings`, and remove their imports
+**১. AdminLeads.tsx**
+- Detail Dialog: `max-w-lg` → `max-w-lg max-h-[90vh] overflow-y-auto` যোগ
 
-3. **Fix Dashboard links**: Change stat card `href` values:
-   - `/admin/leads/contacts` → `/admin/leads`
-   - `/admin/leads/quotes` → `/admin/leads`
-   - `/admin/leads/meetings` → `/admin/leads`
+**২. AdminClients.tsx**
+- Dialog: `<DialogContent>` → `<DialogContent className="max-h-[90vh] overflow-y-auto">`
+- `DialogDescription` যোগ: "ক্লায়েন্ট তৈরি বা সম্পাদনা করুন"
 
-4. **Fix sidebar `isActive` for settings**: Make settings sub-routes not falsely highlight the footer Settings link by checking exact match or using a more specific condition
+**৩. AdminPayments.tsx**
+- তিনটি Dialog-ই: `<DialogContent>` → `<DialogContent className="max-h-[90vh] overflow-y-auto">`
+- View/Edit/Add সবগুলোতে `DialogDescription` যোগ
 
-### Files Changed
-- `src/App.tsx` — remove 2 routes + 2 imports
-- `src/pages/admin/AdminDashboard.tsx` — fix 3 href values
-- Delete `src/pages/admin/AdminQuotes.tsx`
-- Delete `src/pages/admin/AdminMeetings.tsx`
+**৪. AdminCareers.tsx**
+- Application Detail: `max-w-lg` → `max-w-lg max-h-[90vh] overflow-y-auto`
+- Job Dialog: `DialogDescription` যোগ
+
+### ফাইল পরিবর্তন
+- `src/pages/admin/AdminLeads.tsx`
+- `src/pages/admin/AdminClients.tsx`
+- `src/pages/admin/AdminPayments.tsx`
+- `src/pages/admin/AdminCareers.tsx`
 
