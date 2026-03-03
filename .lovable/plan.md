@@ -1,34 +1,46 @@
 
 
-## Invoice WhatsApp Send — wa.me Link
+## Sidebar Simplification
 
-### পরিবর্তন: `src/pages/admin/AdminInvoices.tsx`
+### Current → New Structure
 
-DropdownMenu তে "Send via WhatsApp" অপশন যোগ করা হবে। ক্লিক করলে:
+Remove all items not in the user's list. New `navGroups`:
 
-1. ক্লায়েন্টের ফোন নম্বর থেকে `wa.me` URL তৈরি হবে
-2. Pre-filled message এ Invoice নম্বর, total amount (BDT), due date এবং কোম্পানির নাম থাকবে
-3. নতুন ট্যাবে WhatsApp খুলবে
-4. ফোন নম্বর না থাকলে toast warning দেখাবে
+```text
+Dashboard
+  - Overview          /admin
 
-### Implementation
+Sales & Clients
+  - Leads             /admin/leads
+  - Clients           /admin/clients
+  - Invoices          /admin/invoices
+  - Payments          /admin/payments
+  - Quotations        /admin/quotations
+  - Proposals         /admin/proposals
 
-- `handleWhatsAppSend(invoice)` ফাংশন তৈরি — ফোন নম্বর sanitize করে (শুধু digits রাখবে, +88 prefix handle করবে), message format করে, `window.open()` দিয়ে `https://wa.me/{phone}?text={encodedMessage}` খুলবে
-- DropdownMenu তে "Send" এর পাশে "Send via WhatsApp" আইটেম যোগ (MessageCircle icon সহ)
-- ফোন নম্বর ছাড়া warning toast: "Client phone number not available"
+Products & Services
+  - Products          /admin/products
+  - Services          /admin/services
 
-### Message Format:
+Content
+  - Portfolio         /admin/portfolio
+  - Testimonials      /admin/testimonials
+
+Settings
+  - General           /admin/settings
+  - Preferences       /admin/settings/system
+  - Payment Gateway   /admin/settings/payment
+  - SMS Settings      /admin/settings/sms
+
+Team
+  - User Management   /admin/users
+  - Roles & Permissions /admin/roles
+  - Careers           /admin/careers
 ```
-Dear {client_name},
 
-Invoice #{invoice_number}
-Amount: ৳{total}
-Due Date: {due_date}
+### Removed Items
+Blog, Employees, Attendance, Internal Notes, ISP/Somity/Restaurant sub-products, all Frontend Control (CMS pages), Tasks, Notifications, Activity Logs, System Preferences (merged into Settings as "Preferences")
 
-Thank you for your business.
-- {company_name}
-```
-
-### পরিবর্তিত ফাইল:
-- `src/pages/admin/AdminInvoices.tsx`
+### File Changed
+- `src/components/admin/AdminSidebar.tsx` — replace `navGroups` array, remove unused icon imports
 
