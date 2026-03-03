@@ -717,13 +717,58 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
             Terms & Conditions
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
-          <RichTextEditor
-            content={formData.terms}
-            onChange={(value) => setFormData(prev => ({ ...prev, terms: value }))}
-            placeholder="Terms and conditions..."
-            className="min-h-[120px] [&_.ProseMirror]:min-h-[100px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm"
-          />
+        <CardContent className="pt-4 space-y-2">
+          {(() => {
+            const termsArray = formData.terms
+              ? formData.terms.split('\n').filter(t => t.trim() !== '')
+              : [];
+            
+            const updateTerms = (newArr: string[]) => {
+              setFormData(prev => ({ ...prev, terms: newArr.join('\n') }));
+            };
+
+            return (
+              <>
+                {termsArray.map((term, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Badge variant="secondary" className="shrink-0 h-6 w-6 p-0 flex items-center justify-center text-[10px] rounded-md">
+                      {index + 1}
+                    </Badge>
+                    <Input
+                      value={term}
+                      onChange={(e) => {
+                        const updated = [...termsArray];
+                        updated[index] = e.target.value;
+                        updateTerms(updated);
+                      }}
+                      placeholder={`Term ${index + 1}`}
+                      className="h-9 text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => {
+                        const updated = termsArray.filter((_, i) => i !== index);
+                        updateTerms(updated);
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => updateTerms([...termsArray, ''])}
+                  className="w-full flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-2.5 text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Term
+                </button>
+              </>
+            );
+          })()}
         </CardContent>
       </Card>
 
