@@ -1,16 +1,31 @@
 
 
-## সমস্যা
+## পরিবর্তন
 
-PDF-এর প্রতিটি পেইজের ডান পাশে একটি accent strip (vertical line) আসছে। এটি `addAccentStrip` ফাংশন থেকে আসছে যা প্রতিটি পেইজে 3টি semi-transparent rectangle draw করে। স্ক্রিনশটে এটি স্পষ্টভাবে দেখা যাচ্ছে।
+### 1. "Add Item" বাটন ইনলাইন করা
+বর্তমানে "Add Item" বাটন Card Header-এ আছে। এটিকে items list-এর নিচে, CardContent-এর ভিতরে একটি dashed border row হিসেবে রাখা হবে — যাতে ইউজার items-এর ঠিক নিচেই নতুন item যোগ করতে পারে।
 
-## সমাধান — `src/utils/proposalPdfGenerator.ts`
+**ProposalForm.tsx:**
+- Line 421-438: CardHeader থেকে "Add Item" বাটন সরানো, শুধু title রাখা
+- Line 584-586: Items list-এর পরে একটি inline "Add Item" row যোগ করা — full-width dashed border button স্টাইলে
 
-`addAccentStrip` ফাংশনটি সম্পূর্ণ সরিয়ে দেওয়া এবং `addPageFooters` থেকে এর কলটি মুছে ফেলা:
+**QuotationForm.tsx:**
+- একই পরিবর্তন — CardHeader থেকে বাটন সরিয়ে items-এর নিচে inline করা
 
-1. **Line 511-525**: `addAccentStrip` ফাংশন মুছে ফেলা
-2. **Line 537**: `addAccentStrip(doc);` কল মুছে ফেলা
+### 2. Description-এর RichTextEditor কমপ্যাক্ট/কোলাপস স্টাইল
+Description ফিল্ডে RichTextEditor-এর toolbar বেশি জায়গা নেয়। এটিকে কমপ্যাক্ট করতে:
+- `min-h` কমানো: `min-h-[50px]` → `min-h-[36px]`
+- Toolbar collapse স্টাইল: editor-এ CSS ক্লাস যোগ করা যাতে toolbar ডিফল্টে hidden থাকে, focus-এ দেখায়
+
+**ProposalForm.tsx (Lines 528-533, 473-478):**
+- Desktop ও mobile উভয় layout-এ RichTextEditor-এ collapse class যোগ:
+  ```
+  className="[&_.ProseMirror]:min-h-[36px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm [&_.tiptap-toolbar]:hidden [&:focus-within_.tiptap-toolbar]:block"
+  ```
+
+**QuotationForm.tsx:** একই পরিবর্তন
 
 ### ফাইল পরিবর্তন
-- `src/utils/proposalPdfGenerator.ts` — `addAccentStrip` ফাংশন ও তার কল রিমুভ
+- `src/components/admin/ProposalForm.tsx`
+- `src/components/admin/QuotationForm.tsx`
 
