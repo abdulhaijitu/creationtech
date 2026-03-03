@@ -1,30 +1,42 @@
 
 
-## /services পেইজ অডিট ও ফিক্স
+## Topbar ও Menubar ডিজাইন অডিট ও এনহ্যান্সমেন্ট
 
 ### চিহ্নিত সমস্যা
 
-1. **টাইপ সেফটি ভাঙা** — `(service as any).short_description_en`, `(service as any).cta_text_en` ইত্যাদি ব্যবহার করা হচ্ছে, কিন্তু এই ফিল্ডগুলো Supabase types-এ সঠিকভাবে আছে। `as any` সরাতে হবে।
+1. **Topbar ফ্লিকারিং** — স্ক্রল থ্রেশহোল্ড `scrollY < 10` এ টপবার বারবার show/hide হয়, ফলে ফ্লিকার হয়। `max-h-0` ↔ `max-h-12` ট্রানজিশন দেখতে অসুন্দর।
 
-2. **Services Grid-এ `id` অ্যাট্রিবিউট মিসিং** — "Explore Services" বাটন `#services-grid` এ স্ক্রল করে কিন্তু সেকশনে `id="services-grid"` নেই।
+2. **Topbar ভিজুয়াল ফ্ল্যাট** — শুধু `bg-muted/50` ব্যাকগ্রাউন্ড, কোনো গ্র্যাডিয়েন্ট বা ভিজুয়াল ডেপথ নেই। Contact info ও login ভিজুয়ালি দুর্বল।
 
-3. **কার্ড হাইট অসমান** — `CardContent` এ `h-full` + `flex flex-col` নেই, তাই ফিচার লিস্ট বিভিন্ন দৈর্ঘ্যের হলে কার্ডের CTA বাটন ভিন্ন পজিশনে থাকে।
+3. **Menubar-এ কোড রিপিটিশন** — প্রতিটি nav item-এ একই 15-লাইন ব্লক কপি-পেস্ট করা হয়েছে। একটি `navItems` অ্যারে থেকে `.map()` করলে ক্লিন হবে।
 
-4. **ডেসক্রিপশন খুব ছোট** — `text-sm` ব্যবহার হচ্ছে, `text-base` হওয়া উচিত পাঠযোগ্যতার জন্য।
+4. **Desktop CTA এরিয়া খালি দেখায়** — শুধু একটি বাটন আছে, Language toggle ডেস্কটপ মেইন nav-এ নেই (শুধু topbar-এ আছে যা স্ক্রলে হাইড হয়ে যায়)।
 
-5. **Portfolio ও Why Choose Us ব্যাকগ্রাউন্ড একই** — দুটোতেই `bg-muted/30`, ভিজুয়াল সেপারেশন নেই।
+5. **মোবাইল Sheet ডিজাইন বেসিক** — Nav items-এ আইকন নেই, কোনো ভিজুয়াল হায়ারার্কি নেই।
 
-### সমাধান — `src/pages/Services.tsx`
+---
 
-1. **`as any` সরানো** — সরাসরি `service.short_description_en`, `service.cta_text_en`, `service.cta_link`, `service.is_featured` ব্যবহার করা (types-এ আছে)।
+### সমাধান
 
-2. **`id="services-grid"` যোগ** — Services Grid সেকশনে, যাতে "Explore Services" অ্যাংকর লিংক কাজ করে।
+#### 1. Topbar (`src/components/layout/Topbar.tsx`)
+- ব্যাকগ্রাউন্ড `bg-muted/50` → সূক্ষ্ম গ্র্যাডিয়েন্ট `bg-gradient-to-r from-primary/5 via-background to-primary/5` দিয়ে প্রিমিয়াম ফিল
+- Contact info-তে সূক্ষ্ম ডিভাইডার ডট যোগ
+- Login বাটনে সূক্ষ্ম hover effect এনহ্যান্স
+- Phone নম্বরে country code ফরম্যাট: `+880 1833-876434`
 
-3. **কার্ড লেআউট ফিক্স** — `CardContent` এ `flex flex-col h-full` এবং CTA লিংকে `mt-auto` যোগ করে সব কার্ডে CTA একই লেভেলে রাখা।
+#### 2. Header Menubar (`src/components/layout/Header.tsx`)
+- **DRY রিফ্যাক্টর**: সব nav items একটি `navItems` অ্যারেতে রেখে `.map()` দিয়ে রেন্ডার — ডেস্কটপ ও মোবাইল উভয়ক্ষেত্রে
+- **ডেস্কটপ Right সেকশন**: Language toggle যোগ (topbar হাইড হলেও ব্যবহারযোগ্য থাকবে), তারপর CTA বাটন
+- **স্ক্রল থ্রেশহোল্ড ফিক্স**: `scrollY < 10` → `scrollY < 30` করে ফ্লিকারিং কমানো
+- Nav item hover-এ সূক্ষ্ম `bg-accent/50` ব্যাকগ্রাউন্ড যোগ
 
-4. **ডেসক্রিপশন সাইজ** — `text-sm` → `text-base` করা।
+#### 3. মোবাইল Sheet এনহ্যান্স
+- প্রতিটি nav item-এ আইকন যোগ (Home → `Home`, Services → `Briefcase` ইত্যাদি)
+- Active item-এ বাম দিকে একটি ছোট primary বর্ডার ইন্ডিকেটর
 
-5. **সেকশন ব্যাকগ্রাউন্ড** — Portfolio সেকশন `bg-muted/30` রেখে Why Choose Us থেকে `bg-muted/30` সরানো (বা উল্টো), যাতে ভিজুয়াল কনট্রাস্ট হয়।
+---
 
-শুধু একটি ফাইল পরিবর্তন: `src/pages/Services.tsx`
+### পরিবর্তিত ফাইল
+- `src/components/layout/Topbar.tsx`
+- `src/components/layout/Header.tsx`
 
