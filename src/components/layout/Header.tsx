@@ -90,7 +90,7 @@ const Header = () => {
                     <Link
                       to={item.href}
                       className={cn(
-                        'group relative rounded-md px-3.5 py-2 text-sm font-medium transition-all duration-200 inline-flex items-center',
+                        'group/navitem relative rounded-md px-3.5 py-2 text-sm font-medium transition-all duration-200 inline-flex items-center',
                         isActive(item.href)
                           ? 'text-primary bg-primary/5'
                           : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
@@ -102,7 +102,7 @@ const Header = () => {
                           'absolute inset-x-3.5 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
                           isActive(item.href)
                             ? 'scale-x-100'
-                            : 'scale-x-0 group-hover:scale-x-100'
+                            : 'scale-x-0 group-hover/navitem:scale-x-100'
                         )}
                       />
                     </Link>
