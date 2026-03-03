@@ -1,29 +1,12 @@
 
 
-## Accordion Image Fade-In Animation with Framer Motion
+## Add Portfolio Menu Item After Services
 
 ### Change
-In `src/components/ui/accordion-feature-section.tsx`, wrap the desktop image (line ~68-74) with `AnimatePresence` and `motion.img` using a `key={activeImage}` to trigger a fade-in/out transition on image change.
+Add "Portfolio" as a direct navigation link in the desktop nav bar, positioned between the Services dropdown and the Companies dropdown. Also add it to the mobile sidebar menu.
 
-### Details
-- Import `motion, AnimatePresence` from `framer-motion`
-- Replace the static `<img>` in the desktop section with:
-  ```tsx
-  <AnimatePresence mode="wait">
-    <motion.img
-      key={activeImage}
-      src={activeImage}
-      alt="Feature illustration"
-      className="h-full max-h-[500px] w-full rounded-2xl object-cover"
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      loading="lazy"
-    />
-  </AnimatePresence>
-  ```
-
-### File
-- `src/components/ui/accordion-feature-section.tsx`
+### Files Changed
+- `src/components/layout/Header.tsx`
+  - **Desktop nav (after Services mega menu, ~line 258)**: Insert a new `NavigationMenuItem` with a direct `Link` to `/portfolio` (same pattern as the Home item), with active state styling
+  - **Mobile sidebar (~line 380 area)**: Add a Portfolio link in the mobile nav section, positioned after the Services section
 
