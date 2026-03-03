@@ -51,9 +51,10 @@ const Feature197 = ({ features }: Feature197Props) => {
                     </span>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {tab.description}
-                    </p>
+                    <div 
+                      className="prose prose-sm max-w-none text-muted-foreground leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: tab.description }} 
+                    />
                     <div className="mt-4 lg:hidden">
                       <img
                         src={tab.image}
