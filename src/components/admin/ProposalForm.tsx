@@ -349,25 +349,24 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
             />
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Timeline</Label>
-              <RichTextEditor
-                content={formData.timeline}
-                onChange={(value) => setFormData(prev => ({ ...prev, timeline: value }))}
-                placeholder="Project timeline and milestones..."
-                className={richEditorCompact}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Key Deliverables</Label>
-              <RichTextEditor
-                content={formData.deliverables}
-                onChange={(value) => setFormData(prev => ({ ...prev, deliverables: value }))}
-                placeholder="List of deliverables..."
-                className={richEditorCompact}
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Timeline</Label>
+            <RichTextEditor
+              content={formData.timeline}
+              onChange={(value) => setFormData(prev => ({ ...prev, timeline: value }))}
+              placeholder="Project timeline and milestones..."
+              className={richEditorCompact}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Key Deliverables</Label>
+            <RichTextEditor
+              content={formData.deliverables}
+              onChange={(value) => setFormData(prev => ({ ...prev, deliverables: value }))}
+              placeholder="List of deliverables..."
+              className={richEditorCompact}
+            />
           </div>
 
           <div className="space-y-1.5">
