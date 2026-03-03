@@ -1,49 +1,79 @@
 
 
-## ProposalForm ডিজাইন এনহ্যান্সমেন্ট ও কম্প্যাক্ট পলিশ
+## Budget Details সেকশন এনহ্যান্সমেন্ট ও Recurring Cost সাপোর্ট
 
-### ফাইল: `src/components/admin/ProposalForm.tsx`
+### সমস্যা
+বর্তমানে `proposal_items` টেবিলে শুধু fixed/one-time খরচ ট্র্যাক হয়। মাসিক/বাৎসরিক recurring খরচ আলাদা করে দেখানোর কোনো ব্যবস্থা নেই।
 
-**১. কম্প্যাক্ট সেকশন হেডার**
-- CardHeader padding `pb-4` → `pb-3` সব জায়গায়
-- CardTitle-এ আইকনের রং `text-primary` করা (সব সেকশনে consistent)
-- সেকশন হেডারে হালকা `border-b` separator যোগ
+### সমাধান
 
-**২. Client Information সেকশন কম্প্যাক্ট করা**
-- ৪টি ফিল্ড (Name, Email, Mobile, Select Client) একটি `sm:grid-cols-2 lg:grid-cols-4` গ্রিডে রাখব — ডেস্কটপে এক রো-তে দেখাবে
-- Company ফিল্ড বাদ (client_company ইতিমধ্যে client_name দিয়ে কভার হয়) অথবা 5th ফিল্ড হিসেবে রাখা
+#### ১. Database Migration — `proposal_items` টেবিলে `billing_type` কলাম যোগ
+```sql
+ALTER TABLE public.proposal_items 
+ADD COLUMN billing_type text NOT NULL DEFAULT 'one_time';
+-- Values: 'one_time', 'monthly', 'yearly'
+```
 
-**৩. Proposal Details সেকশন রি-অর্গানাইজ**
-- Subject + Valid Until একই রো-তে (`grid-cols-[1fr_auto]`) — Valid Until ছোট width
-- RichTextEditor গুলোতে consistent compact styling
-- Timeline ও Key Deliverables পাশাপাশি রাখা (এটা ইতিমধ্যে আছে — শুধু gap কমানো)
+#### ২. ProposalForm UI পরিবর্তন (`src/components/admin/ProposalForm.tsx`)
 
-**৪. Budget Details টেবিল পলিশ**
-- হেডার row-তে `bg-muted/50` ব্যাকগ্রাউন্ড ও `py-2` padding
-- আইটেম রো-তে `border` সরিয়ে `divide-y` ব্যবহার — ক্লিনার লুক
-- "Add Item" বাটনে `variant="ghost"` + dashed border style
+**ProposalItem interface আপডেট:**
+```typescript
+interface ProposalItem {
+  id?: string;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  amount: number;
+  billing_type: 'one_time' | 'monthly' | 'yearly';
+}
+```
 
-**৫. Budget Summary কার্ড এনহ্যান্স**
-- `bg-muted/30` → `bg-primary/5 border-primary/20` — প্রাইমারি টিন্ট
-- Total রো-তে `bg-primary/10 rounded-lg p-3` ব্যাকগ্রাউন্ড
+**Budget Details সেকশনে পরিবর্তন:**
+- হেডারে নতুন "Type" কলাম যোগ (grid `12 cols` → Description 4, Type 2, Qty 1.5, Price 2, Amount 1.5, Action 1)
+- প্রতিটি আইটেমে একটি `Select` dropdown: One-time / Monthly / Yearly
+- আইটেমের Amount-এর পাশে ছোট Badge দিয়ে billing type দেখাবে (e.g., `/mo`, `/yr`)
 
-**৬. অ্যাকশন বার Sticky করা**
-- নিচের Save/Cancel বাটনগুলো `sticky bottom-0 bg-background border-t py-4 z-10` করব
-- মোবাইলে full-width বাটন
+**Budget Summary সেকশনে গ্রুপিং:**
+- One-time খরচ আলাদা subtotal
+- Monthly খরচ আলাদা subtotal (with `/mo` label)
+- Yearly খরচ আলাদা subtotal (with `/yr` label)
+- Tax ও Discount শুধু one-time subtotal-এ প্রযোজ্য
+- Grand Total-এ one-time total দেখাবে, এবং আলাদা লাইনে recurring costs
 
-**৭. Offer Letter End + Notes + Terms কম্প্যাক্ট করা**
-- Offer Letter End ও Notes পাশাপাশি (lg:grid-cols-2) রাখব
-- Terms & Conditions আলাদা কার্ডে রাখব (যেমন আছে)
+**Summary কার্ড উদাহরণ:**
+```text
+┌─────────────────────────────────┐
+│ One-time Cost        ৳50,000   │
+│ Monthly Recurring    ৳5,000/mo │
+│ Yearly Recurring     ৳20,000/yr│
+│ ─────────────────────────────  │
+│ Tax (5%)             ৳2,500    │
+│ Discount            -৳3,000    │
+│ ═════════════════════════════  │
+│ Total (One-time)    ৳49,500    │
+│ + Monthly           ৳5,000/mo  │
+│ + Yearly            ৳20,000/yr │
+└─────────────────────────────────┘
+```
 
-### পরিবর্তনের সারাংশ:
+#### ৩. Save/Load লজিক আপডেট
+- `saveMutation`-এ `billing_type` ফিল্ড include করা
+- Item fetch-এ `billing_type` ম্যাপ করা
+- Default value `'one_time'` — backward compatible
+
+#### ৪. AdminProposals লিস্ট ভিউ
+- কোনো পরিবর্তন দরকার নেই — `total_amount` এখনও one-time total হিসেবে থাকবে
+
+### পরিবর্তনের সারাংশ
 
 | বিষয় | পরিবর্তন |
 |---|---|
-| Section headers | Compact padding, consistent icon color, separator |
-| Client info | 4-col grid on desktop |
-| Subject + Date | Same row |
-| Budget items | Cleaner divider style, ghost add button |
-| Budget summary | Primary-tinted card, highlighted total |
-| Action bar | Sticky bottom, full-width on mobile |
-| Layout grouping | Offer Letter End + Notes side by side |
+| Database | `billing_type` কলাম যোগ (`one_time`, `monthly`, `yearly`) |
+| Budget Items | Type dropdown কলাম, billing badge |
+| Budget Summary | গ্রুপ করে one-time, monthly, yearly আলাদা দেখাবে |
+| Save/Load | `billing_type` ফিল্ড সেভ ও লোড |
+
+### ফাইল পরিবর্তন
+- `supabase/migrations/` — নতুন migration ফাইল
+- `src/components/admin/ProposalForm.tsx` — Budget Details ও Summary আপডেট
 
