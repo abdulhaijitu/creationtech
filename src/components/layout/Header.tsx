@@ -32,19 +32,14 @@ const navItems = [
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isTopbarVisible, setIsTopbarVisible] = useState(true);
+  
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { t, language } = useLanguage();
   const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 50);
-      // Hysteresis: show only when near top, hide after scrolling past threshold
-      if (scrollY < 10) setIsTopbarVisible(true);
-      else if (scrollY > 40) setIsTopbarVisible(false);
-      // Between 10-40: keep previous state
+      setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -58,7 +53,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      <Topbar isVisible={isTopbarVisible} />
+      <Topbar />
 
       <nav
         className={cn(
