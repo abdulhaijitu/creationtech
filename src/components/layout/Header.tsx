@@ -63,6 +63,22 @@ const Header = () => {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Fetch active portfolio projects for mega menu
+  const { data: dynamicPortfolio } = useQuery({
+    queryKey: ['nav-portfolio'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('portfolio_projects')
+        .select('id, slug, title_en, title_bn, category')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+        .limit(8);
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -291,27 +307,59 @@ const Header = () => {
                   )}
                 </NavigationMenuItem>
 
-                {/* Portfolio Link */}
+                {/* Portfolio Dropdown */}
                 <NavigationMenuItem>
-                  <Link
-                    to="/portfolio"
+                  <NavigationMenuTrigger
                     className={cn(
-                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
+                      'bg-transparent px-4 py-2 text-sm font-medium',
                       isActive('/portfolio')
                         ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                     )}
                   >
-                    Portfolio
-                    <span
-                      className={cn(
-                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
-                        isActive('/portfolio')
-                          ? 'scale-x-100'
-                          : 'scale-x-0 group-hover:scale-x-100'
-                      )}
-                    />
-                  </Link>
+                    <Link to="/portfolio" onClick={(e) => e.stopPropagation()}>
+                      Portfolio
+                    </Link>
+                  </NavigationMenuTrigger>
+                  {(dynamicPortfolio || []).length > 0 && (
+                    <NavigationMenuContent>
+                      <div className="w-[480px] p-4">
+                        <div className={cn(
+                          "grid gap-2",
+                          (dynamicPortfolio || []).length <= 4 ? "grid-cols-1" : "grid-cols-2"
+                        )}>
+                          {(dynamicPortfolio || []).map((p) => (
+                            <NavigationMenuLink key={p.id} asChild>
+                              <Link
+                                to={`/portfolio/${p.slug}`}
+                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                              >
+                                <div className="text-sm font-medium leading-none">
+                                  {language === 'en' ? p.title_en : (p.title_bn || p.title_en)}
+                                </div>
+                                {p.category && (
+                                  <p className="line-clamp-1 text-xs leading-snug text-muted-foreground mt-1">
+                                    {p.category}
+                                  </p>
+                                )}
+                              </Link>
+                            </NavigationMenuLink>
+                          ))}
+                        </div>
+                        <div className="mt-3 border-t border-border/50 pt-3">
+                          <NavigationMenuLink asChild>
+                            <Link
+                              to="/portfolio"
+                              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline px-3"
+                            >
+                              {language === 'en' ? 'View All Projects' : 'সকল প্রজেক্ট দেখুন'}
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
+                          </NavigationMenuLink>
+                        </div>
+                      </div>
+                    </NavigationMenuContent>
+                  )}
                 </NavigationMenuItem>
 
                 {/* Companies Dropdown */}
@@ -479,22 +527,28 @@ const Header = () => {
                           </Link>
                         ))}
 
-                        {/* Portfolio Link */}
+                        {/* Portfolio Section */}
                         <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                           Portfolio
                         </div>
                         <Link
                           to="/portfolio"
                           onClick={() => setIsSheetOpen(false)}
-                          className={cn(
-                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
-                            isActive('/portfolio')
-                              ? 'bg-primary/10 text-primary'
-                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                          )}
+                          className="rounded-lg px-4 py-2 text-sm font-medium text-primary hover:bg-secondary flex items-center gap-1"
                         >
-                          Portfolio
+                          {language === 'en' ? 'View All Projects' : 'সকল প্রজেক্ট দেখুন'}
+                          <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
+                        {(dynamicPortfolio || []).map((p) => (
+                          <Link
+                            key={p.id}
+                            to={`/portfolio/${p.slug}`}
+                            onClick={() => setIsSheetOpen(false)}
+                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          >
+                            {language === 'en' ? p.title_en : (p.title_bn || p.title_en)}
+                          </Link>
+                        ))}
 
                         {/* Companies Section */}
                         <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
