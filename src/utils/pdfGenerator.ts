@@ -6,6 +6,8 @@ interface LineItem {
   quantity: number;
   unit_price: number;
   amount: number;
+  billing_type?: string;
+  billing_period?: string;
 }
 
 interface CompanyInfo {
@@ -38,6 +40,9 @@ interface DocumentData {
   notes?: string | null;
   terms?: string | null;
   status: string;
+  isRecurring?: boolean;
+  billingPeriodStart?: string | null;
+  billingPeriodEnd?: string | null;
 }
 
 // ── Constants ──
@@ -254,6 +259,22 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
 
   y += 10;
 
+  // ── Billing Period info (for recurring invoices) ──
+  if (data.isRecurring && (data.billingPeriodStart || data.billingPeriodEnd)) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(ACCENT_COLOR[0], ACCENT_COLOR[1], ACCENT_COLOR[2]);
+    doc.text('Billing Period:', MARGIN, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(55, 55, 55);
+    const periodText = [
+      data.billingPeriodStart ? formatDate(data.billingPeriodStart) : '',
+      data.billingPeriodEnd ? formatDate(data.billingPeriodEnd) : '',
+    ].filter(Boolean).join(' — ');
+    doc.text(periodText, MARGIN + 30, y);
+    y += 6;
+  }
+
   // ── "To," client block ──
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
@@ -284,29 +305,62 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   // ── Items table ──
   if (y > maxY - 40) { y = addNewPage(doc, company, logoData); }
 
-  autoTable(doc, {
-    startY: y,
-    head: [['#', 'Description', 'Qty', 'Unit Price', 'Amount']],
-    body: data.items.map((item, index) => [
-      (index + 1).toString(),
-      stripHtml(item.description),
-      item.quantity.toString(),
-      formatCurrency(item.unit_price),
-      formatCurrency(item.amount),
-    ]),
-    theme: 'striped',
-    headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 8.5 },
-    alternateRowStyles: { fillColor: [245, 247, 252] },
-    columnStyles: {
-      0: { cellWidth: 12, halign: 'center' },
-      1: { cellWidth: 'auto' },
-      2: { cellWidth: 18, halign: 'center' },
-      3: { cellWidth: 32, halign: 'right' },
-      4: { cellWidth: 32, halign: 'right' },
-    },
-    margin: { left: MARGIN, right: MARGIN },
-  });
+  // Check if we have mixed billing types
+  const hasBillingTypes = data.items.some(i => i.billing_type && i.billing_type !== 'one_time');
+
+  if (hasBillingTypes) {
+    // Include Type column
+    autoTable(doc, {
+      startY: y,
+      head: [['#', 'Type', 'Description', 'Qty', 'Unit Price', 'Amount']],
+      body: data.items.map((item, index) => [
+        (index + 1).toString(),
+        item.billing_type === 'recurring' ? 'Monthly' : 'One-time',
+        stripHtml(item.description),
+        item.quantity.toString(),
+        formatCurrency(item.unit_price),
+        formatCurrency(item.amount),
+      ]),
+      theme: 'striped',
+      headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8.5 },
+      alternateRowStyles: { fillColor: [245, 247, 252] },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 'auto' },
+        3: { cellWidth: 14, halign: 'center' },
+        4: { cellWidth: 30, halign: 'right' },
+        5: { cellWidth: 30, halign: 'right' },
+      },
+      margin: { left: MARGIN, right: MARGIN },
+    });
+  } else {
+    // Original table without Type column
+    autoTable(doc, {
+      startY: y,
+      head: [['#', 'Description', 'Qty', 'Unit Price', 'Amount']],
+      body: data.items.map((item, index) => [
+        (index + 1).toString(),
+        stripHtml(item.description),
+        item.quantity.toString(),
+        formatCurrency(item.unit_price),
+        formatCurrency(item.amount),
+      ]),
+      theme: 'striped',
+      headStyles: { fillColor: ACCENT_COLOR, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 8.5 },
+      alternateRowStyles: { fillColor: [245, 247, 252] },
+      columnStyles: {
+        0: { cellWidth: 12, halign: 'center' },
+        1: { cellWidth: 'auto' },
+        2: { cellWidth: 18, halign: 'center' },
+        3: { cellWidth: 32, halign: 'right' },
+        4: { cellWidth: 32, halign: 'right' },
+      },
+      margin: { left: MARGIN, right: MARGIN },
+    });
+  }
 
   y = (doc as any).lastAutoTable.finalY + 8;
 
@@ -317,6 +371,28 @@ export const generatePDF = async (data: DocumentData, companyInfo?: CompanyInfo)
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(55, 55, 55);
+
+  // Show separate subtotals if mixed billing types
+  if (hasBillingTypes) {
+    const recurringTotal = data.items.filter(i => i.billing_type === 'recurring').reduce((s, i) => s + i.amount, 0);
+    const oneTimeTotal = data.items.filter(i => i.billing_type !== 'recurring').reduce((s, i) => s + i.amount, 0);
+
+    if (recurringTotal > 0) {
+      doc.text('Monthly Recurring:', totalsX, y);
+      doc.text(formatCurrency(recurringTotal) + '/mo', pageWidth - MARGIN, y, { align: 'right' });
+      y += 6;
+    }
+    if (oneTimeTotal > 0) {
+      doc.text('One-time Charges:', totalsX, y);
+      doc.text(formatCurrency(oneTimeTotal), pageWidth - MARGIN, y, { align: 'right' });
+      y += 6;
+    }
+
+    doc.setDrawColor(200, 210, 230);
+    doc.setLineWidth(0.2);
+    doc.line(totalsX - 5, y, pageWidth - MARGIN, y);
+    y += 4;
+  }
 
   doc.text('Subtotal:', totalsX, y);
   doc.text(formatCurrency(data.subtotal), pageWidth - MARGIN, y, { align: 'right' });

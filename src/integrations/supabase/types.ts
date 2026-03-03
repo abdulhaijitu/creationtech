@@ -431,6 +431,8 @@ export type Database = {
       invoice_items: {
         Row: {
           amount: number
+          billing_period: string | null
+          billing_type: string
           created_at: string
           description: string
           display_order: number | null
@@ -441,6 +443,8 @@ export type Database = {
         }
         Insert: {
           amount: number
+          billing_period?: string | null
+          billing_type?: string
           created_at?: string
           description: string
           display_order?: number | null
@@ -451,6 +455,8 @@ export type Database = {
         }
         Update: {
           amount?: number
+          billing_period?: string | null
+          billing_type?: string
           created_at?: string
           description?: string
           display_order?: number | null
@@ -471,6 +477,8 @@ export type Database = {
       }
       invoices: {
         Row: {
+          billing_period_end: string | null
+          billing_period_start: string | null
           client_address: string | null
           client_email: string | null
           client_id: string | null
@@ -482,6 +490,7 @@ export type Database = {
           due_date: string | null
           id: string
           invoice_number: string
+          is_recurring: boolean | null
           issue_date: string
           notes: string | null
           paid_amount: number | null
@@ -495,6 +504,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          billing_period_end?: string | null
+          billing_period_start?: string | null
           client_address?: string | null
           client_email?: string | null
           client_id?: string | null
@@ -506,6 +517,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           invoice_number: string
+          is_recurring?: boolean | null
           issue_date?: string
           notes?: string | null
           paid_amount?: number | null
@@ -519,6 +531,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          billing_period_end?: string | null
+          billing_period_start?: string | null
           client_address?: string | null
           client_email?: string | null
           client_id?: string | null
@@ -530,6 +544,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           invoice_number?: string
+          is_recurring?: boolean | null
           issue_date?: string
           notes?: string | null
           paid_amount?: number | null
