@@ -463,7 +463,7 @@ const AdminQuotations = () => {
                          <DropdownMenuTrigger asChild>
                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                          </DropdownMenuTrigger>
-                         <DropdownMenuContent align="end">
+                         <DropdownMenuContent align="end" className="max-h-[var(--radix-dropdown-menu-content-available-height,400px)] overflow-y-auto">
                             <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'pending' })}>Mark Pending</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'approved' })}>Mark Approved</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'rejected' })}>Mark Rejected</DropdownMenuItem>
