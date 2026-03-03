@@ -719,36 +719,39 @@ export const ProposalForm = ({ proposal, onSave, onCancel }: ProposalFormProps) 
         </CardHeader>
         <CardContent className="pt-4 space-y-2">
           {(() => {
+            const DELIMITER = '|||';
             const termsArray = formData.terms
-              ? formData.terms.split('\n').filter(t => t.trim() !== '')
+              ? formData.terms.split(DELIMITER)
               : [];
             
             const updateTerms = (newArr: string[]) => {
-              setFormData(prev => ({ ...prev, terms: newArr.join('\n') }));
+              setFormData(prev => ({ ...prev, terms: newArr.join(DELIMITER) }));
             };
 
             return (
               <>
                 {termsArray.map((term, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Badge variant="secondary" className="shrink-0 h-6 w-6 p-0 flex items-center justify-center text-[10px] rounded-md">
+                  <div key={index} className="flex items-start gap-2">
+                    <Badge variant="secondary" className="shrink-0 h-6 w-6 p-0 flex items-center justify-center text-[10px] rounded-md mt-1.5">
                       {index + 1}
                     </Badge>
-                    <Input
-                      value={term}
-                      onChange={(e) => {
-                        const updated = [...termsArray];
-                        updated[index] = e.target.value;
-                        updateTerms(updated);
-                      }}
-                      placeholder={`Term ${index + 1}`}
-                      className="h-9 text-sm"
-                    />
+                    <div className="flex-1 min-w-0">
+                      <RichTextEditor
+                        content={term}
+                        onChange={(val) => {
+                          const updated = [...termsArray];
+                          updated[index] = val;
+                          updateTerms(updated);
+                        }}
+                        placeholder={`Term ${index + 1}`}
+                        className="min-h-0 [&_.ProseMirror]:min-h-[36px] [&_.ProseMirror]:p-2 [&_.ProseMirror]:text-sm [&>div:first-child]:hidden [&:focus-within>div:first-child]:flex"
+                      />
+                    </div>
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive mt-0.5"
                       onClick={() => {
                         const updated = termsArray.filter((_, i) => i !== index);
                         updateTerms(updated);
