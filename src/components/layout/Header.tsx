@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, ChevronDown, ArrowRight } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageToggle from './LanguageToggle';
@@ -15,11 +15,8 @@ import {
 } from '@/components/ui/sheet';
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 import Topbar from './Topbar';
 
@@ -50,34 +47,9 @@ const Header = () => {
 
 
 
-  const companiesItems = [
-    { href: '/about', label: 'About Us', description: 'Learn about our mission, vision, and values.' },
-    { href: '/about#overview', label: 'Company Overview', description: 'Modern software products designed for business tasks.' },
-    { href: '/about#leadership', label: 'Board of Directors', description: 'Meet the leadership team guiding our vision.' },
-    { href: '/about#advisory', label: 'Advisory Board', description: 'Strategic leaders shaping our future.' },
-    { href: '/about#concerns', label: 'Our Concerns', description: 'Product lines focused on reliability and outcomes.' },
-    { href: '/about#life', label: 'Life at CreationTech', description: 'A collaborative workplace where talent grows.' },
-    { href: '/about#partnerships', label: 'Partnerships Program', description: 'Share resources and grow business together.' },
-    { href: '/about#reviews', label: 'Client Reviews', description: 'Hear from clients who trust our service quality.' },
-    { href: '/careers', label: 'Careers', description: 'Explore career opportunities in a supportive environment.' },
-    { href: '/contact', label: 'Contact Us', description: 'Reach out for support, demos, or partnerships.' },
-  ];
-
-  const resourcesItems = [
-    { href: '/blog', label: 'News & Blogs', description: 'Stay updated with company news and industry insights.' },
-    { href: '/contact#faq', label: "FAQ's", description: 'Find answers to common product questions.' },
-    { href: '/contact#schedule', label: 'Schedule a Call', description: 'Book a session to discuss your project goals.' },
-    { href: '/sitemap', label: 'Sitemap', description: 'View a structured list of all pages.' },
-    { href: '/portfolio', label: 'Case Studies', description: 'Real examples of improved efficiency and growth.' },
-  ];
-
   const isActive = (href: string) => {
     if (href === '/') return location.pathname === '/';
     return location.pathname.startsWith(href);
-  };
-
-  const isDropdownActive = (items: { href: string }[]) => {
-    return items.some(item => isActive(item.href));
   };
 
   return (
@@ -211,70 +183,50 @@ const Header = () => {
                   </Link>
                 </NavigationMenuItem>
 
-                {/* Companies Dropdown */}
+                {/* Companies Link */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger
+                  <Link
+                    to="/about"
                     className={cn(
-                      'bg-transparent px-4 py-2 text-sm font-medium',
-                      isDropdownActive(companiesItems)
+                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
+                      isActive('/about')
                         ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    <Link to="/about" onClick={(e) => e.stopPropagation()}>
-                      Companies
-                    </Link>
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid w-[600px] gap-3 p-4 md:grid-cols-2">
-                      {companiesItems.map((item) => (
-                        <NavigationMenuLink key={item.href} asChild>
-                          <Link
-                            to={item.href}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">{item.label}</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              {item.description}
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
+                    Companies
+                    <span
+                      className={cn(
+                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
+                        isActive('/about')
+                          ? 'scale-x-100'
+                          : 'scale-x-0 group-hover:scale-x-100'
+                      )}
+                    />
+                  </Link>
                 </NavigationMenuItem>
 
-                {/* Resources Dropdown */}
+                {/* Resources Link */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger
+                  <Link
+                    to="/blog"
                     className={cn(
-                      'bg-transparent px-4 py-2 text-sm font-medium',
-                      isDropdownActive(resourcesItems)
+                      'group relative px-4 py-2 text-sm font-medium transition-colors duration-200 inline-flex items-center',
+                      isActive('/blog')
                         ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
-                    <Link to="/blog" onClick={(e) => e.stopPropagation()}>
-                      Resources
-                    </Link>
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid w-[500px] gap-3 p-4 md:grid-cols-2">
-                      {resourcesItems.map((item) => (
-                        <NavigationMenuLink key={item.href} asChild>
-                          <Link
-                            to={item.href}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">{item.label}</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              {item.description}
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
+                    Resources
+                    <span
+                      className={cn(
+                        'absolute inset-x-4 -bottom-[1px] h-0.5 rounded-full bg-primary transition-transform duration-200 ease-out origin-left',
+                        isActive('/blog')
+                          ? 'scale-x-100'
+                          : 'scale-x-0 group-hover:scale-x-100'
+                      )}
+                    />
+                  </Link>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
@@ -372,35 +324,33 @@ const Header = () => {
                           {language === 'en' ? 'Portfolio' : 'পোর্টফোলিও'}
                         </Link>
 
-                        {/* Companies Section */}
-                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Companies
-                        </div>
-                        {companiesItems.slice(0, 5).map((item) => (
-                          <Link
-                            key={item.href}
-                            to={item.href}
-                            onClick={() => setIsSheetOpen(false)}
-                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
+                        {/* Companies Link */}
+                        <Link
+                          to="/about"
+                          onClick={() => setIsSheetOpen(false)}
+                          className={cn(
+                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
+                            isActive('/about')
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                          )}
+                        >
+                          {language === 'en' ? 'Companies' : 'কোম্পানি'}
+                        </Link>
 
-                        {/* Resources Section */}
-                        <div className="mt-4 mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          Resources
-                        </div>
-                        {resourcesItems.map((item) => (
-                          <Link
-                            key={item.href}
-                            to={item.href}
-                            onClick={() => setIsSheetOpen(false)}
-                            className="rounded-lg px-4 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
+                        {/* Resources Link */}
+                        <Link
+                          to="/blog"
+                          onClick={() => setIsSheetOpen(false)}
+                          className={cn(
+                            'rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200',
+                            isActive('/blog')
+                              ? 'bg-primary/10 text-primary'
+                              : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                          )}
+                        >
+                          {language === 'en' ? 'Resources' : 'রিসোর্স'}
+                        </Link>
                       </div>
                     </nav>
 
