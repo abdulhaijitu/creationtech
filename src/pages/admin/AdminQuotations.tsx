@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download } from 'lucide-react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download, Trash2 } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
  import ClientLink from '@/components/admin/ClientLink';
  import { generatePDF, DocumentData, CompanyInfo } from '@/utils/pdfGenerator';
@@ -19,13 +19,23 @@ import watermarkImage from '@/assets/jolchap.png';
    SelectTrigger,
    SelectValue,
  } from '@/components/ui/select';
- import {
-   Dialog,
-   DialogContent,
-   DialogDescription,
-   DialogHeader,
-   DialogTitle,
- } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
  import {
    DropdownMenu,
    DropdownMenuContent,
@@ -276,6 +286,23 @@ const AdminQuotations = () => {
     },
   });
 
+  // Delete mutation
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('quotations').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+      toast({ title: 'Quotation deleted successfully' });
+      setDeleteId(null);
+    },
+    onError: (error: any) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+
   // Convert to invoice mutation
   const convertMutation = useMutation({
     mutationFn: async (quotation: Quotation) => {
@@ -468,11 +495,17 @@ const AdminQuotations = () => {
                             <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'approved' })}>Mark Approved</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'rejected' })}>Mark Rejected</DropdownMenuItem>
                             {quotation.status !== 'converted' && (
-                              <DropdownMenuItem onClick={() => convertMutation.mutate(quotation)}>
-                               <ArrowRight className="h-4 w-4 mr-2" /> Convert to Invoice
-                             </DropdownMenuItem>
-                           )}
-                         </DropdownMenuContent>
+                               <DropdownMenuItem onClick={() => convertMutation.mutate(quotation)}>
+                                <ArrowRight className="h-4 w-4 mr-2" /> Convert to Invoice
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => setDeleteId(quotation.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
                        </DropdownMenu>
                      </div>
                    </div>
@@ -503,8 +536,29 @@ const AdminQuotations = () => {
              isLoading={saveMutation.isPending}
            />
          </DialogContent>
-       </Dialog>
-     </AdminLayout>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Quotation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the quotation and all its items.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </AdminLayout>
    );
  };
  
