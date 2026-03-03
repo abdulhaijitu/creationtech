@@ -132,6 +132,7 @@ const AdminSidebar = () => {
 
   const isActive = (href: string) => {
     if (href === '/admin') return location.pathname === '/admin';
+    if (href === '/admin/settings') return location.pathname === '/admin/settings';
     return location.pathname.startsWith(href);
   };
 
