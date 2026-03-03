@@ -1,40 +1,33 @@
 
 
-## সমস্যা বিশ্লেষণ
+## পরিকল্পনা: Portfolio Edit Project-কে Product Edit Page-এর মতো করা
 
-বর্তমান Add/Edit Project মোডালে নিম্নলিখিত UI/UX সমস্যা আছে:
+### সমস্যা
+বর্তমানে Portfolio-র Edit/Add Project একটি Dialog modal-এ আছে, যেখানে Product edit একটি full-page layout ব্যবহার করে (Cards দিয়ে সাজানো)। দুটো ভিন্ন প্যাটার্ন — ইউজার চাচ্ছেন একই ধরনের অভিজ্ঞতা।
 
-1. **কোনো ভিজ্যুয়াল গ্রুপিং নেই** — সব ফিল্ড একটানা নিচে নামছে, কোনো সেকশন বিভাজন নেই। ফলে ফর্মটি দীর্ঘ ও বিশৃঙ্খল মনে হয়।
-2. **Header ও Footer স্ক্রল হয়ে যায়** — `overflow-y-auto` পুরো `DialogContent`-এ আছে, তাই স্ক্রল করলে Title ও Save বাটন দেখা যায় না। Footer সবসময় দৃশ্যমান থাকা উচিত।
-3. **ফিল্ড অর্ডার অগোছালো** — Slug প্রথমে আছে যেটা সাধারণত Title থেকে auto-generate হয়। Title আগে আসা উচিত।
-4. **Required ফিল্ডের ইন্ডিকেশন দুর্বল** — শুধু `*` চিহ্ন আছে, কোনো ভিজ্যুয়াল পার্থক্য নেই।
-5. **Image upload সেকশন আলাদা হিসেবে চেনা যায় না** — অন্য ফিল্ডের সাথে মিশে গেছে।
+### সমাধান
+Portfolio-র Add/Edit Project-কে Dialog modal থেকে বের করে AdminProductDetail-এর মতো **full-page card-based layout**-এ রূপান্তর করা হবে।
 
-## সমাধান
+### পরিবর্তন — `src/pages/admin/AdminPortfolio.tsx`
 
-**`src/pages/admin/AdminPortfolio.tsx`** — মোডাল ফর্মের কাঠামো রিডিজাইন:
+1. **Dialog modal সরানো** — `Dialog`, `DialogContent` ইত্যাদি সরিয়ে ফেলা হবে
+2. **View mode যোগ** — `list` | `create` | `edit` state ব্যবহার করে full-page form দেখানো হবে (Products-এর মতো)
+3. **Card-based form layout** — AdminProductDetail-এর প্যাটার্ন অনুসরণ:
+   - **Card 1: Basic Information** — Title (EN/BN), Slug, Category, Active/Featured toggle (CardTitle-এ)
+   - **Card 2: Client & Description** — Client (EN/BN), Description (EN/BN)
+   - **Card 3: Tags & Results** — Tags, Result (EN/BN)
+   - **Card 4: Project Image** — ProductImageUpload component
+4. **Back button** — "← Back to Portfolio" (ArrowLeft icon)
+5. **Save button** — পৃষ্ঠার নিচে ডানদিকে (Products-এর মতো)
+6. **Delete dialog** — AlertDialog যেমন আছে তেমনই থাকবে
 
-### ১. Sticky Header ও Footer
-- `DialogContent`-এ `overflow` সরিয়ে ভেতরে একটি scrollable `div` রাখা হবে
-- `DialogHeader` ও `DialogFooter` fixed থাকবে, মাঝের ফর্ম বডি স্ক্রল করবে
-
-### ২. সেকশন গ্রুপিং (ভিজ্যুয়াল বিভাজন)
-ফর্মকে লজিক্যাল সেকশনে ভাগ করা হবে, প্রতিটি সেকশনে একটি ছোট heading ও `Separator`:
-- **Basic Info** — Title (EN/BN), Slug, Category
-- **Client & Description** — Client (EN/BN), Description (EN/BN)
-- **Tags & Results** — Tags, Result (EN/BN)
-- **Media & Settings** — Image upload, Featured/Active toggles
-
-### ৩. ফিল্ড অর্ডার সংশোধন
-- Title (EN) প্রথমে, তারপর Title (BN), তারপে Slug ও Category
-
-### ৪. Slug Auto-generate
-- Title (EN) থেকে স্বয়ংক্রিয়ভাবে slug তৈরি হবে (lowercase, spaces → hyphens, special chars removed)। ম্যানুয়ালি এডিটও করা যাবে।
-
-### ৫. উন্নত ভিজ্যুয়াল ফিডব্যাক
-- সেকশন headers-এ muted text color ও small font
-- Required ফিল্ডের label-এ `text-destructive` রঙে `*`
+### কোড কাঠামো
+```text
+viewMode === 'list'  →  Project list + "Add Project" button
+viewMode === 'create' →  Full page form (empty)
+viewMode === 'edit'   →  Full page form (prefilled)
+```
 
 ### পরিবর্তিত ফাইল
-- **`src/pages/admin/AdminPortfolio.tsx`** — মোডাল ফর্ম সেকশনের সম্পূর্ণ পুনর্গঠন
+- **`src/pages/admin/AdminPortfolio.tsx`** — modal → full-page card layout
 
