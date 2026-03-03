@@ -60,7 +60,7 @@ const ProductShowcase = () => {
   const { data: products, isLoading } = useProducts();
 
   return (
-    <section className="section-padding bg-background">
+    <section id="products-showcase" className="section-padding bg-background">
       <div className="container-custom">
         {/* Section Header */}
         <div className="mx-auto mb-12 max-w-2xl text-center lg:mb-16">
@@ -112,7 +112,7 @@ const ProductShowcase = () => {
                 </div>
 
                 {/* Card Content */}
-                <div className="flex flex-col p-6">
+                <div className="flex flex-1 flex-col p-6">
                   {/* Title */}
                   <h3 className="mb-2 text-xl font-bold text-foreground">
                     {language === 'en' ? product.name_en : (product.name_bn || product.name_en)}

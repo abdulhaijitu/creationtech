@@ -3,6 +3,7 @@ import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ProductHero from '@/components/products/ProductHero';
 import ProductShowcase from '@/components/products/ProductShowcase';
+import ProductOverview from '@/components/products/ProductOverview';
 import ProductFeatures from '@/components/products/ProductFeatures';
 import ProductHowItWorks from '@/components/products/ProductHowItWorks';
 import ProductTechnology from '@/components/products/ProductTechnology';
@@ -33,6 +34,7 @@ const Products = () => {
       <Layout>
         <ProductHero />
         <ProductShowcase />
+        <ProductOverview />
         <ProductFeatures />
         <ProductHowItWorks />
         <ProductTechnology />

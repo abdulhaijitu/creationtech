@@ -38,8 +38,8 @@ const ProductCTA = () => {
           <ScrollReveal delay={100}>
             <p className="mb-10 text-lg text-primary-foreground/80 max-w-2xl mx-auto leading-relaxed">
               {language === 'en'
-                ? 'Join thousands of businesses already using CreationOS to automate, analyze, and accelerate their growth.'
-                : 'হাজার হাজার ব্যবসায় যোগ দিন যারা ইতিমধ্যে তাদের বৃদ্ধি অটোমেট, বিশ্লেষণ এবং ত্বরান্বিত করতে CreationOS ব্যবহার করছে।'}
+                ? 'Join thousands of businesses already using Creation Tech solutions to automate, analyze, and accelerate their growth.'
+                : 'হাজার হাজার ব্যবসায় যোগ দিন যারা ইতিমধ্যে তাদের বৃদ্ধি অটোমেট, বিশ্লেষণ এবং ত্বরান্বিত করতে Creation Tech ব্যবহার করছে।'}
             </p>
           </ScrollReveal>
           

@@ -60,7 +60,7 @@ const ProductTechnology = () => {
   const { language } = useLanguage();
 
   return (
-    <section className="section-padding bg-gradient-to-br from-primary/5 via-background to-accent/3">
+    <section className="section-padding bg-muted/30">
       <div className="container-custom">
         {/* Section Header */}
         <ScrollReveal className="mx-auto mb-16 max-w-2xl text-center">

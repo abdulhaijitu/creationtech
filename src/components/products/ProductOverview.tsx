@@ -59,8 +59,8 @@ const ProductOverview = () => {
             <ScrollReveal delay={160}>
               <p className="mb-6 text-lg text-muted-foreground leading-relaxed">
                 {language === 'en'
-                  ? 'Modern businesses struggle with fragmented tools, manual processes, and scaling challenges. CreationOS solves this by unifying your operations into one intelligent platform.'
-                  : 'আধুনিক ব্যবসাগুলি বিচ্ছিন্ন টুলস, ম্যানুয়াল প্রক্রিয়া এবং স্কেলিং চ্যালেঞ্জের সাথে লড়াই করে। CreationOS আপনার অপারেশনগুলিকে একটি বুদ্ধিমান প্ল্যাটফর্মে একীভূত করে এটি সমাধান করে।'}
+                  ? 'Modern businesses struggle with fragmented tools, manual processes, and scaling challenges. Creation Tech solves this by unifying your operations into one intelligent platform.'
+                  : 'আধুনিক ব্যবসাগুলি বিচ্ছিন্ন টুলস, ম্যানুয়াল প্রক্রিয়া এবং স্কেলিং চ্যালেঞ্জের সাথে লড়াই করে। Creation Tech আপনার অপারেশনগুলিকে একটি বুদ্ধিমান প্ল্যাটফর্মে একীভূত করে এটি সমাধান করে।'}
               </p>
             </ScrollReveal>
             
