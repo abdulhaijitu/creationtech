@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download, Trash2, Printer, Send } from 'lucide-react';
+import { Eye, Plus, Search, Calendar, MoreHorizontal, FileText, ArrowRight, Download, Trash2, Printer, Send, MessageCircle } from 'lucide-react';
  import AdminLayout from '@/components/admin/AdminLayout';
  import ClientLink from '@/components/admin/ClientLink';
  import { generatePDF, printPDF, DocumentData, CompanyInfo } from '@/utils/pdfGenerator';
@@ -428,6 +428,31 @@ const AdminQuotations = () => {
     }
     toast({ title: 'Quotation sent', description: 'PDF downloaded and status updated' });
   };
+
+  const handleWhatsAppSend = (quotation: Quotation) => {
+    const phone = quotation.client_phone;
+    if (!phone) {
+      toast({ title: 'Client phone number not available', variant: 'destructive' });
+      return;
+    }
+    let sanitized = phone.replace(/[^0-9]/g, '');
+    if (sanitized.startsWith('0')) {
+      sanitized = '88' + sanitized;
+    } else if (!sanitized.startsWith('88')) {
+      sanitized = '88' + sanitized;
+    }
+    const companyName = businessInfo?.company_name?.value_en || 'Creation Tech';
+    const validUntil = quotation.valid_until ? new Date(quotation.valid_until).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+    const message = `Dear ${quotation.client_name},
+
+Quotation #${quotation.quotation_number}
+Amount: ৳${Number(quotation.total).toLocaleString()}
+Valid Until: ${validUntil}
+
+Thank you for your business.
+- ${companyName}`;
+    window.open(`https://wa.me/${sanitized}?text=${encodeURIComponent(message)}`, '_blank');
+  };
  
    return (
      <AdminLayout>
@@ -513,6 +538,9 @@ const AdminQuotations = () => {
                              </DropdownMenuItem>
                              <DropdownMenuItem onClick={() => handleSendQuotation(quotation)}>
                                <Send className="h-4 w-4 mr-2" /> Send Quotation
+                             </DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => handleWhatsAppSend(quotation)}>
+                               <MessageCircle className="h-4 w-4 mr-2" /> Send via WhatsApp
                              </DropdownMenuItem>
                              <DropdownMenuSeparator />
                              <DropdownMenuItem onClick={() => updateStatusMutation.mutate({ id: quotation.id, status: 'pending' })}>Mark Pending</DropdownMenuItem>
