@@ -1,28 +1,35 @@
 
 
-## Admin Portfolio Page Audit & Fix
+## Hero Section Redesign — Interactive Image Accordion
 
-### Issues Found
+### Overview
+Replace the right side of the hero section with an interactive image accordion component (hover-to-expand panels). Left side keeps existing branding (badge, rotating words, CTAs, trust badges). Right side accordion items will showcase Creation Tech's core services.
 
-**1. Missing `DialogDescription`** — Accessibility warning from Radix UI. The create/edit dialog has no `DialogDescription`.
+### Accordion Items (Creation Tech themed)
+1. **Custom Software** — AI-generated image of custom software development
+2. **AI Solutions** — AI/ML visual
+3. **Mobile Apps** — Mobile app development visual
+4. **Cloud & DevOps** — Cloud infrastructure visual
+5. **UI/UX Design** — Product design visual
 
-**2. No image upload component** — Currently uses a plain text `Image URL` input. Other admin pages (Products) use `ProductGalleryUpload` with Supabase Storage. Portfolio should use a similar image upload approach.
+### Plan
 
-**3. Status badge uses non-standard color classes** — `bg-success-muted`, `bg-neutral-muted` etc. may not exist in the theme. Should use standard Tailwind/theme classes.
+**1. Create `src/components/ui/interactive-image-accordion.tsx`**
+- Adapted from the user-provided component
+- TypeScript-friendly with proper types
+- Tailwind classes matching Creation Tech's dark hero theme (teal accents, navy background)
+- Smooth CSS transitions for expand/collapse
+- Items display vertically-cropped images with title overlay at bottom
+- Active item expands to ~4x width of collapsed items
 
-**4. Console warning** — `DialogFooter` ref warning. The `DialogFooter` is placed at incorrect indentation level (outside the inner content wrapper). Needs structural fix.
+**2. Update `src/components/home/HeroSection.tsx`**
+- Keep left side: badge, rotating headline, subheadline, CTAs, trust badges — unchanged
+- Replace right side (desktop): remove the image/stat card collage, replace with the interactive image accordion
+- Remove unused imports (heroOffice1/2/3, Brain, Cpu, Package, Award, CountUp for right side)
+- Keep mobile stats grid as-is (accordion is desktop-only, like current right side)
+- Use Unsplash images initially (can be replaced with AI-generated later or via admin)
 
-**5. No toggle for active/inactive from list view** — Users must open the edit dialog just to toggle visibility. A quick toggle would improve UX.
-
-### Fix Plan
-
-**1. `AdminPortfolio.tsx` — Dialog fixes**
-- Add `DialogDescription` after `DialogTitle`: `"Fill in the project details below"`
-- Fix DialogFooter indentation/structure — ensure it's properly nested inside the dialog content div
-- Replace plain `Image URL` text input with `ProductImageUpload` component (reuse existing) for proper file upload
-- Add active/inactive quick-toggle button on list cards
-- Fix status badge classes to use standard badge component or proper Tailwind classes
-
-### File Changes
-- `src/pages/admin/AdminPortfolio.tsx`
+### Files Changed
+- `src/components/ui/interactive-image-accordion.tsx` — **new file**
+- `src/components/home/HeroSection.tsx` — replace right-side content
 
