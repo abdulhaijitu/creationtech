@@ -1,79 +1,47 @@
 
 
-## Budget Details সেকশন এনহ্যান্সমেন্ট ও Recurring Cost সাপোর্ট
+## সমস্যা বিশ্লেষণ
 
-### সমস্যা
-বর্তমানে `proposal_items` টেবিলে শুধু fixed/one-time খরচ ট্র্যাক হয়। মাসিক/বাৎসরিক recurring খরচ আলাদা করে দেখানোর কোনো ব্যবস্থা নেই।
+### ১. লাইন স্পেস বেশি (Project Overview, Key Deliverables, Expected Outcome)
+PDF-এ `renderStyledContent` ফাংশনে প্রতিটি empty paragraph (HTML `<p></p>` ট্যাগ থেকে আসে) `PARAGRAPH_GAP = 3` যোগ করে। RichTextEditor প্রায়ই consecutive empty `<p>` ট্যাগ তৈরি করে, ফলে দ্বিগুণ/তিগুণ gap হয়। এছাড়া `LINE_HEIGHT = 5.5` কিছুটা বেশি।
 
-### সমাধান
+### ২. Terms & Conditions সুন্দর লাগছে না
+Terms সেকশনটি অন্যান্য content সেকশনের মতোই `addSection` দিয়ে রেন্ডার হচ্ছে — বড় ফন্ট, সাধারণ paragraph স্টাইল। Terms এর জন্য ছোট ফন্ট ও কম্প্যাক্ট, numbered/bulleted লেআউট বেশি উপযুক্ত।
 
-#### ১. Database Migration — `proposal_items` টেবিলে `billing_type` কলাম যোগ
-```sql
-ALTER TABLE public.proposal_items 
-ADD COLUMN billing_type text NOT NULL DEFAULT 'one_time';
--- Values: 'one_time', 'monthly', 'yearly'
-```
+---
 
-#### ২. ProposalForm UI পরিবর্তন (`src/components/admin/ProposalForm.tsx`)
+## পরিবর্তন পরিকল্পনা
 
-**ProposalItem interface আপডেট:**
-```typescript
-interface ProposalItem {
-  id?: string;
-  description: string;
-  quantity: number;
-  unit_price: number;
-  amount: number;
-  billing_type: 'one_time' | 'monthly' | 'yearly';
-}
-```
+### ফাইল: `src/utils/proposalPdfGenerator.ts`
 
-**Budget Details সেকশনে পরিবর্তন:**
-- হেডারে নতুন "Type" কলাম যোগ (grid `12 cols` → Description 4, Type 2, Qty 1.5, Price 2, Amount 1.5, Action 1)
-- প্রতিটি আইটেমে একটি `Select` dropdown: One-time / Monthly / Yearly
-- আইটেমের Amount-এর পাশে ছোট Badge দিয়ে billing type দেখাবে (e.g., `/mo`, `/yr`)
+**১. Line spacing কমানো:**
+- `LINE_HEIGHT`: `5.5` → `5.0`
+- `PARAGRAPH_GAP`: `3` → `2`
+- `renderStyledContent`-এ consecutive empty paragraphs collapse করা (2+ empty para = max 1 gap)
+- `addSection` return-এ extra gap কমানো: `y + PARAGRAPH_GAP + 1` → `y + PARAGRAPH_GAP`
 
-**Budget Summary সেকশনে গ্রুপিং:**
-- One-time খরচ আলাদা subtotal
-- Monthly খরচ আলাদা subtotal (with `/mo` label)
-- Yearly খরচ আলাদা subtotal (with `/yr` label)
-- Tax ও Discount শুধু one-time subtotal-এ প্রযোজ্য
-- Grand Total-এ one-time total দেখাবে, এবং আলাদা লাইনে recurring costs
+**২. Terms & Conditions সেকশন আলাদাভাবে রেন্ডার:**
+- নতুন `addTermsSection` ফাংশন তৈরি — ছোট ফন্ট (10pt body, 12pt heading), কম line height (4.5), compact padding
+- Terms heading-এর নিচে হালকা accent-colored background box বা left-border accent strip
+- Line 987 এ `addSection` এর বদলে `addTermsSection` কল করা
 
-**Summary কার্ড উদাহরণ:**
 ```text
-┌─────────────────────────────────┐
-│ One-time Cost        ৳50,000   │
-│ Monthly Recurring    ৳5,000/mo │
-│ Yearly Recurring     ৳20,000/yr│
-│ ─────────────────────────────  │
-│ Tax (5%)             ৳2,500    │
-│ Discount            -৳3,000    │
-│ ═════════════════════════════  │
-│ Total (One-time)    ৳49,500    │
-│ + Monthly           ৳5,000/mo  │
-│ + Yearly            ৳20,000/yr │
-└─────────────────────────────────┘
+┌──────────────────────────────────────┐
+│ ▎ Terms & Conditions                │
+│ ▎                                    │
+│ ▎ 1. Payment must be made...         │  ← 10pt, tighter spacing
+│ ▎ 2. Project timeline starts...      │
+│ ▎ 3. Any changes to scope...         │
+└──────────────────────────────────────┘
 ```
 
-#### ৩. Save/Load লজিক আপডেট
-- `saveMutation`-এ `billing_type` ফিল্ড include করা
-- Item fetch-এ `billing_type` ম্যাপ করা
-- Default value `'one_time'` — backward compatible
+### সারাংশ
 
-#### ৪. AdminProposals লিস্ট ভিউ
-- কোনো পরিবর্তন দরকার নেই — `total_amount` এখনও one-time total হিসেবে থাকবে
-
-### পরিবর্তনের সারাংশ
-
-| বিষয় | পরিবর্তন |
+| পরিবর্তন | বিবরণ |
 |---|---|
-| Database | `billing_type` কলাম যোগ (`one_time`, `monthly`, `yearly`) |
-| Budget Items | Type dropdown কলাম, billing badge |
-| Budget Summary | গ্রুপ করে one-time, monthly, yearly আলাদা দেখাবে |
-| Save/Load | `billing_type` ফিল্ড সেভ ও লোড |
+| Line spacing | `LINE_HEIGHT` ও `PARAGRAPH_GAP` কমানো, consecutive empty para collapse |
+| Terms section | আলাদা compact রেন্ডারার — ছোট ফন্ট, left accent border, tighter spacing |
 
 ### ফাইল পরিবর্তন
-- `supabase/migrations/` — নতুন migration ফাইল
-- `src/components/admin/ProposalForm.tsx` — Budget Details ও Summary আপডেট
+- `src/utils/proposalPdfGenerator.ts` — constants, `renderStyledContent`, নতুন `addTermsSection`
 
