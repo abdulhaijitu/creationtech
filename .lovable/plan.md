@@ -1,12 +1,16 @@
 
 
-## হিরো সেকশন টাইটেল ফন্ট সাইজ কমানো
+## টপবার সবসময় দৃশ্যমান রাখা
 
-**ফাইল: `src/components/home/HeroSection.tsx` (line 170)**
+### পরিবর্তন
 
-বর্তমান: `text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-[3.5rem]`
+**`src/components/layout/Header.tsx`**:
+- `isTopbarVisible` state এবং scroll handler থেকে topbar hide/show লজিক সরিয়ে দেওয়া
+- Topbar-এ সবসময় `isVisible={true}` পাঠানো
 
-পরিবর্তন: `text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] xl:text-[3rem]`
+**`src/components/layout/Topbar.tsx`**:
+- `isVisible` prop এবং transform/opacity transition লজিক সরিয়ে সরাসরি দেখানো
+- `overflow-hidden` wrapper সরিয়ে ফেলা
 
-এটা প্রতিটি breakpoint-এ এক ধাপ ছোট করবে — মোবাইল থেকে ডেস্কটপ পর্যন্ত balanced দেখাবে।
+এতে টপবার মেনুবারের মতোই সবসময় sticky থাকবে।
 
