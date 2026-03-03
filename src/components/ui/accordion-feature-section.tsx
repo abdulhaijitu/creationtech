@@ -1,0 +1,85 @@
+import { useState } from "react";
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+interface FeatureItem {
+  id: string | number;
+  title: string;
+  image: string;
+  description: string;
+}
+
+interface Feature197Props {
+  features: FeatureItem[];
+}
+
+const Feature197 = ({ features }: Feature197Props) => {
+  const [activeTabId, setActiveTabId] = useState<string | number>(features[0]?.id);
+  const [activeImage, setActiveImage] = useState(features[0]?.image);
+
+  if (!features.length) return null;
+
+  return (
+    <div className="w-full">
+      <div className="flex flex-col gap-12 lg:grid lg:grid-cols-2 lg:gap-16">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col">
+            <Accordion
+              type="single"
+              value={String(activeTabId)}
+              onValueChange={(value) => {
+                const feature = features.find((f) => String(f.id) === value);
+                if (feature) {
+                  setActiveImage(feature.image);
+                  setActiveTabId(feature.id);
+                }
+              }}
+              collapsible={false}
+            >
+              {features.map((tab) => (
+                <AccordionItem key={tab.id} value={String(tab.id)} className="border-b">
+                  <AccordionTrigger
+                    className="cursor-pointer py-5 !no-underline transition"
+                  >
+                    <span className="text-base font-semibold sm:text-lg">
+                      {tab.title}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {tab.description}
+                    </p>
+                    <div className="mt-4 lg:hidden">
+                      <img
+                        src={tab.image}
+                        alt={tab.title}
+                        className="h-full max-h-80 w-full rounded-xl object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
+
+        <div className="hidden lg:block">
+          <img
+            src={activeImage}
+            alt="Feature illustration"
+            className="h-full max-h-[500px] w-full rounded-2xl object-cover transition-all duration-500"
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export { Feature197 };
